@@ -51,3 +51,4 @@ export function displayFromCm(cm: number | undefined, unit: MeasurementUnit): nu
   }
   return Math.round(cm * 10) / 10;
 }
+

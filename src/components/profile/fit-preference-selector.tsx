@@ -67,3 +67,4 @@ export function FitPreferenceSelector({ value, onChange }: FitPreferenceSelector
     </div>
   );
 }
+

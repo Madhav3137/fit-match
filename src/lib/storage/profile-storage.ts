@@ -45,3 +45,4 @@ export function deleteStoredProfile(): void {
     console.error("Failed to remove profile from localStorage", err);
   }
 }
+
