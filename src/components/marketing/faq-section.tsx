@@ -44,7 +44,7 @@ export function FAQSection() {
   const [openIdx, setOpenIdx] = React.useState<number | null>(0);
 
   return (
-    <section id="faq" className="py-28 bg-[#080808] relative overflow-hidden">
+    <section id="faq" className="py-24 sm:py-28 bg-transparent relative overflow-hidden">
       <Container>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16 space-y-2">

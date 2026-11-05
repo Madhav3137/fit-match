@@ -35,7 +35,7 @@ export function StepFlow() {
   ];
 
   return (
-    <section id="how-it-works" className="py-32 bg-[#080808] relative overflow-hidden">
+    <section id="how-it-works" className="py-24 sm:py-28 bg-transparent relative overflow-hidden">
       <Container>
         <div className="text-center max-w-2xl mx-auto mb-20 space-y-3">
           <motion.div

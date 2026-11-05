@@ -45,7 +45,7 @@ export function RetailerStrip() {
   };
 
   return (
-    <section id="retailers" className="py-28 border-y border-[#1e1e1e] bg-[#090909] relative overflow-hidden">
+    <section id="retailers" className="py-24 sm:py-28 bg-transparent relative overflow-hidden">
       <Container>
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="space-y-2">

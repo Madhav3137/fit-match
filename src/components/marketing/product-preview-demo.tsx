@@ -67,7 +67,7 @@ export function ProductPreviewDemo() {
   }, [chestInput, waistInput, preference]);
 
   return (
-    <section id="demo" className="py-28 bg-[#0a0a0a] border-y border-[#202020] relative overflow-hidden">
+    <section id="demo" className="py-24 sm:py-28 bg-transparent relative overflow-hidden">
       <Container>
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div>

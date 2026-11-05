@@ -2,46 +2,52 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion, useMotionValue, useSpring } from "framer-motion";
-import { Button } from "../ui/button";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Container } from "../layout/container";
+import { Button } from "../ui/button";
 import { MeasurementDiagram } from "../ui/measurement-diagram";
-import { Magnetic } from "../motion/magnetic-button";
 import { MaskedHeading } from "../motion/masked-text";
+import { Magnetic } from "../motion/magnetic-button";
 import { AnimatedCounter } from "../motion/animated-counter";
-import { TRANSITION_EASE, fadeInUp } from "@/lib/motion/variants";
 import { ArrowRight, ChevronDown } from "lucide-react";
+import { fadeInUp, TRANSITION_EASE } from "@/lib/motion/variants";
 
 export function HeroSection() {
-  const rotateX = useSpring(useMotionValue(0), { damping: 20, stiffness: 120 });
-  const rotateY = useSpring(useMotionValue(0), { damping: 20, stiffness: 120 });
+  // 3D Parallax Tilt for the Measurement Graphic Card
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 120, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 120, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["9deg", "-9deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-9deg", "9deg"]);
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    rotateX.set(-y * 0.04);
-    rotateY.set(x * 0.04);
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
   };
 
   const handleCardMouseLeave = () => {
-    rotateX.set(0);
-    rotateY.set(0);
+    x.set(0);
+    y.set(0);
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center pt-28 pb-16 bg-[#080808] bg-grid-pattern overflow-hidden">
-      {/* Subtle vignette and animated atmospheric overlay */}
-      <div className="absolute inset-0 bg-radial-vignette pointer-events-none" />
-
-      <Container className="relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center min-h-[75vh]">
-          {/* Left Column: Editorial Typography, Masked Reveals & Magnetic CTAs */}
-          <div className="lg:col-span-7 flex flex-col justify-center space-y-8">
-            {/* System Identifier */}
+    <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden bg-transparent">
+      <Container>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* Left Column: Editorial Headline & Actions */}
+          <div className="lg:col-span-7 space-y-8">
+            {/* Technical Sub-Header Tag */}
             <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: TRANSITION_EASE }}
               className="flex items-center gap-3"
             >
@@ -55,13 +61,14 @@ export function HeroSection() {
               </span>
             </motion.div>
 
-            {/* Split Headline with Mask Reveals */}
+            {/* Split Headline with Mask Reveals — Refined to prevent single-word breaks */}
             <div className="space-y-1">
               <div className="overflow-hidden">
                 <MaskedHeading
                   as="h1"
                   delay={0.1}
-                  className="font-display text-5xl sm:text-7xl xl:text-8xl font-medium tracking-tight text-white uppercase leading-[1.05]"
+                  wrap={false}
+                  className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-8xl font-medium tracking-[-0.02em] text-white uppercase leading-[1.05]"
                 >
                   YOUR SIZE.
                 </MaskedHeading>
@@ -70,20 +77,21 @@ export function HeroSection() {
                 <MaskedHeading
                   as="h1"
                   delay={0.25}
-                  className="font-display text-5xl sm:text-7xl xl:text-8xl font-normal tracking-tight text-[#888888] uppercase leading-[1.05]"
+                  wrap={false}
+                  className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-8xl font-normal tracking-[-0.02em] text-[#888888] uppercase leading-[1.05]"
                 >
                   EVERY BRAND.
                 </MaskedHeading>
               </div>
             </div>
 
-            {/* Supporting Copy */}
+            {/* Supporting Copy with Balanced Wrap */}
             <motion.p
               variants={fadeInUp}
               initial="hidden"
               animate="visible"
               transition={{ delay: 0.4 }}
-              className="text-base sm:text-lg text-[#999999] max-w-xl font-normal leading-relaxed"
+              className="text-base sm:text-lg text-[#999999] max-w-xl font-normal leading-relaxed text-balance"
             >
               One reusable body profile. Paste any product link to receive brand- and
               garment-aware size recommendations based on real sizing data.
@@ -128,30 +136,56 @@ export function HeroSection() {
                   <AnimatedCounter value={100} suffix="%" />
                 </div>
                 <div className="text-[10px] font-mono text-[#626262] uppercase tracking-wider mt-0.5">
-                  Real Charts
+                  Algorithmic Transparency
                 </div>
               </div>
+
               <div>
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
-                  <AnimatedCounter value={0} prefix="0 " />
+                  <AnimatedCounter value={0} suffix="s" />
                 </div>
                 <div className="text-[10px] font-mono text-[#626262] uppercase tracking-wider mt-0.5">
-                  Guesswork
+                  Fabricated Recommendations
                 </div>
               </div>
+
               <div>
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
-                  <AnimatedCounter value={6} suffix=" PTS" />
+                  <AnimatedCounter value={6} suffix=" pts" />
                 </div>
                 <div className="text-[10px] font-mono text-[#626262] uppercase tracking-wider mt-0.5">
-                  Anatomical Anchor
+                  Standardized Calibration
                 </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Column: Measurement Line-Art Visual with 3D Parallax Tilt */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center">
+          {/* Right Column: Measurement Line-Art Visual with Ambient Depth & 3D Parallax */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+            {/* Subtle background depth spotlight */}
+            <div
+              aria-hidden="true"
+              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0%,transparent_70%)] blur-2xl pointer-events-none -z-10"
+            />
+
+            {/* Technical Marking Crosshairs & Calibration Reticles */}
+            <div aria-hidden="true" className="absolute -top-6 -left-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
+              +0.00 LAT // CALIPER
+            </div>
+            <div aria-hidden="true" className="absolute -top-6 -right-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
+              AXIS // 350×560
+            </div>
+            <div aria-hidden="true" className="absolute -bottom-6 -left-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
+              RADIAL GRID // ALIGN
+            </div>
+            <div aria-hidden="true" className="absolute -bottom-6 -right-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
+              SYS: 01.PRO
+            </div>
+
+            {/* Connecting guide lines */}
+            <div aria-hidden="true" className="absolute -left-12 top-1/2 w-12 h-[1px] bg-gradient-to-r from-transparent to-[#333] hidden xl:block pointer-events-none" />
+            <div aria-hidden="true" className="absolute -right-12 top-1/2 w-12 h-[1px] bg-gradient-to-l from-transparent to-[#333] hidden xl:block pointer-events-none" />
+
             <motion.div
               style={{ rotateX, rotateY, transformPerspective: 1000 }}
               onMouseMove={handleCardMouseMove}
@@ -159,7 +193,7 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
-              className="relative w-full max-w-[420px] border border-[#282828] rounded-2xl bg-[#0c0c0c] p-6 shadow-2xl backdrop-blur-sm transition-colors hover:border-[#444]"
+              className="relative w-full max-w-[420px] border border-[#282828] rounded-2xl bg-[#0c0c0c]/90 backdrop-blur-md p-6 shadow-2xl transition-colors hover:border-[#444]"
             >
               {/* Header on Card */}
               <div className="flex items-center justify-between pb-4 mb-2 border-b border-[#202020] text-[10px] font-mono text-[#626262]">

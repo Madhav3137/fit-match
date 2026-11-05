@@ -8,6 +8,7 @@ interface MaskedHeadingProps {
   className?: string;
   delay?: number;
   as?: "h1" | "h2" | "h3" | "h4" | "p" | "span";
+  wrap?: boolean;
 }
 
 export function MaskedHeading({
@@ -15,6 +16,7 @@ export function MaskedHeading({
   className = "",
   delay = 0,
   as: Component = "h2",
+  wrap = true,
 }: MaskedHeadingProps) {
   const words = children.split(" ");
 
@@ -45,13 +47,19 @@ export function MaskedHeading({
   };
 
   return (
-    <Component className={`overflow-hidden inline-flex flex-wrap gap-x-[0.28em] ${className}`}>
+    <Component
+      className={`overflow-hidden inline-flex ${
+        wrap ? "flex-wrap" : "flex-nowrap whitespace-nowrap"
+      } gap-x-[0.28em] ${className}`}
+    >
       <motion.span
         variants={container}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-80px" }}
-        className="inline-flex flex-wrap gap-x-[0.28em]"
+        className={`inline-flex ${
+          wrap ? "flex-wrap" : "flex-nowrap whitespace-nowrap"
+        } gap-x-[0.28em]`}
       >
         {words.map((word, idx) => (
           <span key={idx} className="overflow-hidden inline-block py-1">
@@ -64,4 +72,3 @@ export function MaskedHeading({
     </Component>
   );
 }
-

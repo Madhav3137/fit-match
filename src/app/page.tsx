@@ -13,7 +13,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col w-full bg-[#080808]">
+    <div className="flex flex-col w-full bg-transparent">
       {/* 1. Editorial Hero Section */}
       <HeroSection />
 
@@ -35,7 +35,7 @@ export default function HomePage() {
       <ScrollDivider />
 
       {/* 5. Editorial CTA Section with Masked Heading & Magnetic Button */}
-      <section className="py-32 border-t border-[#202020] bg-gradient-to-b from-[#0a0a0a] to-[#080808] relative overflow-hidden">
+      <section className="py-24 sm:py-32 bg-transparent relative overflow-hidden">
         <Container>
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
@@ -44,7 +44,7 @@ export default function HomePage() {
 
             <MaskedHeading
               as="h2"
-              className="text-3xl sm:text-5xl font-bold tracking-tight text-white uppercase leading-tight justify-center"
+              className="font-display text-3xl sm:text-5xl md:text-6xl font-medium tracking-tight text-white uppercase leading-tight justify-center"
             >
               Know Your Fit Before You Buy.
             </MaskedHeading>
