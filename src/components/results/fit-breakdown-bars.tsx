@@ -103,3 +103,4 @@ export function FitBreakdownBars({ breakdowns }: FitBreakdownBarsProps) {
     </div>
   );
 }
+

@@ -53,3 +53,4 @@ export function AlternativesList({ alternatives }: AlternativesListProps) {
     </div>
   );
 }
+

@@ -84,3 +84,21 @@ body {
   color: var(--muted);
 }
 
+/* Accessible focus indicators against black canvas */
+:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Reduced Motion Mode (09_ANIMATION_SPEC.md & 10_ACCESSIBILITY_AND_RESPONSIVENESS.md) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
