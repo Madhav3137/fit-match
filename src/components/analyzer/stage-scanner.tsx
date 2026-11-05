@@ -74,3 +74,4 @@ export function StageScanner({ currentStep, stages }: StageScannerProps) {
     </div>
   );
 }
+

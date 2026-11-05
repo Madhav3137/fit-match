@@ -40,3 +40,4 @@ describe("URL Safety & SSRF Guard", () => {
     expect(resInternal.safe).toBe(false);
   });
 });
+

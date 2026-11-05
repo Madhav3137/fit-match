@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { matchSize } from "@/lib/sizing/matcher";
+import { BodyProfile } from "@/lib/sizing/types";
+import { SizeChartData } from "@/lib/retailers/types";
+import { saveAnalysis } from "@/lib/storage/analysis-store";
 
 const ManualAnalyzeSchema = z.object({
   analysisId: z.string().optional(),
@@ -7,6 +11,8 @@ const ManualAnalyzeSchema = z.object({
   brand: z.string().min(1, "Brand name is required."),
   category: z.enum(["top", "trousers", "outerwear", "dress", "other"]),
   chartType: z.enum(["body_ranges", "garment_measures"]).default("body_ranges"),
+  profileData: z.any().optional(),
+  fitPreference: z.enum(["slim", "regular", "relaxed"]).optional().default("regular"),
   sizes: z.array(
     z.object({
       label: z.string().min(1, "Size label is required."),
@@ -40,7 +46,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { productTitle, brand, category, chartType, sizes } = parsed.data;
+    const { productTitle, brand, category, chartType, sizes, profileData, fitPreference } = parsed.data;
     const analysisId = parsed.data.analysisId || `anlz_man_${Date.now()}`;
 
     // Structure into normalized SizeChartData format
@@ -55,9 +61,26 @@ export async function POST(req: NextRequest) {
       source: "manual" as const,
     }));
 
-    return NextResponse.json({
+    const chartData: SizeChartData = {
+      type: chartType,
+      unit: "cm",
+      category,
+      sizes: sizeRows,
+      provenance: {
+        sourceType: "manual",
+        isEstimate: true,
+        verifiedAt: new Date().toISOString(),
+      },
+    };
+
+    let recommendation = null;
+    if (profileData) {
+      recommendation = matchSize(profileData as BodyProfile, chartData, fitPreference);
+    }
+
+    const payload = {
       analysisId,
-      status: "ready_for_matching",
+      status: recommendation ? recommendation.status : "ready_for_matching",
       product: {
         title: productTitle,
         brand,
@@ -69,18 +92,15 @@ export async function POST(req: NextRequest) {
         status: "found",
         sourceType: "manual",
         verifiedAt: new Date().toISOString(),
-        chart: {
-          type: chartType,
-          unit: "cm",
-          category,
-          sizes: sizeRows,
-          provenance: {
-            sourceType: "manual",
-            isEstimate: true,
-          },
-        },
+        chart: chartData,
       },
-    });
+      recommendation,
+      createdAt: new Date().toISOString(),
+    };
+
+    saveAnalysis(payload);
+
+    return NextResponse.json(payload, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: error.message || "Failed to process manual chart." } },

@@ -28,3 +28,4 @@ export class HmAdapter extends GenericRetailerAdapter {
     };
   }
 }
+

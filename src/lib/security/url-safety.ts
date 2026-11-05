@@ -240,3 +240,4 @@ export async function safeFetchHtml(
 
   return { ok: false, status: 508, url: currentUrl, error: "Exceeded maximum allowable redirects." };
 }
+

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { validateSafeUrl, safeFetchHtml } from "@/lib/security/url-safety";
 import { adapterRegistry } from "@/lib/retailers/adapter-registry";
+import { matchSize } from "@/lib/sizing/matcher";
+import { BodyProfile } from "@/lib/sizing/types";
+import { saveAnalysis } from "@/lib/storage/analysis-store";
 
 const AnalyzeRequestSchema = z.object({
   url: z.string().url("A valid product URL is required."),
@@ -76,17 +79,32 @@ export async function POST(req: NextRequest) {
     const chartExtraction = await adapter.extractSizeChart(productExtraction, fetchResult.html);
 
     const analysisId = `anlz_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    let recommendation = null;
 
-    return NextResponse.json(
-      {
-        analysisId,
-        status: chartExtraction.status === "found" ? "ready_for_matching" : "chart_required",
-        product: productExtraction,
-        chart: chartExtraction,
-        recommendation: null, // Computed in Phase 4
-      },
-      { status: 200 }
-    );
+    if (chartExtraction.status === "found" && chartExtraction.chart && parsed.data.profileData) {
+      recommendation = matchSize(
+        parsed.data.profileData as BodyProfile,
+        chartExtraction.chart,
+        parsed.data.fitPreference
+      );
+    }
+
+    const resultPayload = {
+      analysisId,
+      status: recommendation
+        ? recommendation.status
+        : chartExtraction.status === "found"
+        ? "ready_for_matching"
+        : "chart_required",
+      product: productExtraction,
+      chart: chartExtraction,
+      recommendation,
+      createdAt: new Date().toISOString(),
+    };
+
+    saveAnalysis(resultPayload);
+
+    return NextResponse.json(resultPayload, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       {
@@ -99,3 +117,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

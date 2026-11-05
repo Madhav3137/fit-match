@@ -63,3 +63,4 @@ export interface RetailerAdapter {
   extractProduct(html: string, url: URL): Promise<ProductExtractionResult>;
   extractSizeChart(product: ProductExtractionResult, html: string): Promise<ChartExtractionResult>;
 }
+
