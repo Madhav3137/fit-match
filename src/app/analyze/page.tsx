@@ -52,10 +52,15 @@ export default function AnalyzePage() {
     const t2 = setTimeout(() => setScanStep(3), 1200);
 
     try {
+      const storedProf = getStoredProfile();
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({
+          url: url.trim(),
+          profileData: storedProf || undefined,
+          fitPreference: storedProf?.fitPreference || "regular",
+        }),
       });
 
       const data = await res.json();

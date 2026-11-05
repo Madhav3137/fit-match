@@ -41,3 +41,4 @@ export interface RecommendationResult {
   fitBreakdown: FitBreakdownItem[];
   overallScore?: number;
 }
+

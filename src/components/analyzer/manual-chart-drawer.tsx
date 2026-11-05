@@ -4,6 +4,7 @@ import * as React from "react";
 import { Button } from "../ui/button";
 import { GarmentCategory } from "@/lib/retailers/types";
 import { X, Plus, Trash2, Sparkles } from "lucide-react";
+import { getStoredProfile } from "@/lib/storage/profile-storage";
 
 interface ManualSizeRow {
   label: string;
@@ -86,6 +87,7 @@ export function ManualChartDrawer({
     setIsSubmitting(true);
 
     try {
+      const storedProf = getStoredProfile();
       const res = await fetch("/api/analyze/manual", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,6 +96,8 @@ export function ManualChartDrawer({
           brand,
           category,
           chartType: "body_ranges",
+          profileData: storedProf || undefined,
+          fitPreference: storedProf?.fitPreference || "regular",
           sizes,
         }),
       });

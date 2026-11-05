@@ -22,7 +22,7 @@ export function SiteHeader() {
   const navLinks = [
     { name: "How It Works", href: "/#how-it-works" },
     { name: "Retailers", href: "/#retailers" },
-    { name: "Sizing Engine", href: "/#engine" },
+    { name: "Dashboard", href: "/dashboard" },
     { name: "FAQ", href: "/#faq" },
   ];
 
