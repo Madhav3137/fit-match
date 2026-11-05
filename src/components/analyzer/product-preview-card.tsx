@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { ProductExtractionResult, ChartExtractionResult } from "@/lib/retailers/types";
 import { Badge } from "../ui/badge";
 import { AlertCircle, Tag, CheckCircle2 } from "lucide-react";
+import { TRANSITION_EASE } from "@/lib/motion/variants";
 
 interface ProductPreviewCardProps {
   product: ProductExtractionResult;
@@ -18,7 +20,12 @@ export function ProductPreviewCard({
   const needsManualChart = !chart || chart.status === "manual_required" || chart.status === "not_found";
 
   return (
-    <div className="rounded-2xl border border-[#303030] bg-[#111111] p-6 space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 25 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, ease: TRANSITION_EASE }}
+      className="rounded-3xl border border-[#303030] bg-[#111111] p-6 sm:p-8 space-y-6 shadow-2xl"
+    >
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-[#222]">
         <div className="flex items-center gap-2">
@@ -33,13 +40,16 @@ export function ProductPreviewCard({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        {/* Product Image / Line-Art Placeholder */}
-        <div className="md:col-span-4 aspect-square rounded-xl border border-[#242424] bg-[#0c0c0c] flex items-center justify-center overflow-hidden relative">
+        {/* Product Image / Line-Art Placeholder with Shutter Reveal */}
+        <div className="md:col-span-4 aspect-square rounded-2xl border border-[#242424] bg-[#0c0c0c] flex items-center justify-center overflow-hidden relative group">
           {product.imageUrl ? (
-            <img
+            <motion.img
+              initial={{ scale: 1.1, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, ease: TRANSITION_EASE }}
               src={product.imageUrl}
               alt={product.title || "Garment product"}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
             <div className="flex flex-col items-center justify-center p-4 text-center">
@@ -57,7 +67,7 @@ export function ProductPreviewCard({
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-[10px] font-mono text-[#555] mt-2 uppercase">
+              <span className="text-[10px] font-mono text-[#555] mt-2 uppercase tracking-widest">
                 {product.category || "GARMENT"}
               </span>
             </div>
@@ -67,30 +77,30 @@ export function ProductPreviewCard({
         {/* Product Metadata Info */}
         <div className="md:col-span-8 space-y-4">
           <div>
-            <span className="text-[11px] font-mono text-[#666] uppercase block">
+            <span className="text-[11px] font-mono text-[#666] uppercase tracking-wider block">
               {product.brand || product.retailer}
             </span>
-            <h3 className="text-xl font-bold text-white tracking-tight mt-0.5">
+            <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">
               {product.title || "Unnamed Apparel"}
             </h3>
             {product.description && (
-              <p className="text-xs text-[#888] line-clamp-2 mt-1.5 leading-relaxed">
+              <p className="text-xs text-[#888] line-clamp-2 mt-2 leading-relaxed font-sans">
                 {product.description}
               </p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-2 text-xs font-mono">
-            <div className="p-2.5 rounded-lg border border-[#222] bg-[#161616]">
-              <span className="text-[10px] text-[#666] block uppercase">Category</span>
+            <div className="p-3 rounded-xl border border-[#222] bg-[#161616]">
+              <span className="text-[10px] text-[#666] block uppercase tracking-wider">Category</span>
               <span className="text-white font-medium uppercase">
                 {product.category || "Other"}
               </span>
             </div>
-            <div className="p-2.5 rounded-lg border border-[#222] bg-[#161616]">
-              <span className="text-[10px] text-[#666] block uppercase">Chart Status</span>
+            <div className="p-3 rounded-xl border border-[#222] bg-[#161616]">
+              <span className="text-[10px] text-[#666] block uppercase tracking-wider">Chart Status</span>
               <span
-                className={`text-xs font-medium uppercase ${
+                className={`text-xs font-semibold uppercase ${
                   needsManualChart ? "text-amber-400" : "text-emerald-400"
                 }`}
               >
@@ -103,8 +113,8 @@ export function ProductPreviewCard({
 
       {/* Chart Status Banner */}
       {needsManualChart ? (
-        <div className="p-4 rounded-xl border border-amber-900/40 bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-start gap-2.5">
+        <div className="p-4 sm:p-5 rounded-2xl border border-amber-900/40 bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div className="text-xs text-amber-200/90 leading-relaxed">
               <span className="font-semibold block text-amber-300">
@@ -118,19 +128,18 @@ export function ProductPreviewCard({
             <button
               type="button"
               onClick={onOpenManualModal}
-              className="px-3.5 py-2 text-xs font-mono uppercase tracking-wider rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 shrink-0 transition-colors"
+              className="px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 shrink-0 transition-colors shadow-sm"
             >
               Configure Chart
             </button>
           )}
         </div>
       ) : (
-        <div className="p-3 rounded-xl border border-emerald-900/40 bg-emerald-950/20 flex items-center gap-2 text-xs text-emerald-300 font-mono">
+        <div className="p-4 rounded-2xl border border-emerald-900/40 bg-emerald-950/20 flex items-center gap-2.5 text-xs text-emerald-300 font-mono">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>Product-specific size dimensions successfully resolved from retailer feed.</span>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
-

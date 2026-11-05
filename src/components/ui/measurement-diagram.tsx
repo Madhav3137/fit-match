@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { TRANSITION_EASE } from "@/lib/motion/variants";
 
 interface MeasurementDiagramProps {
@@ -9,295 +9,357 @@ interface MeasurementDiagramProps {
   className?: string;
   interactive?: boolean;
   onSelectDimension?: (dim: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam") => void;
+  currentValues?: {
+    height?: number | string;
+    chest?: number | string;
+    waist?: number | string;
+    hip?: number | string;
+    shoulder?: number | string;
+    inseam?: number | string;
+  };
+  unit?: string;
 }
 
 export function MeasurementDiagram({
   activeDimension = null,
   className = "",
-  interactive = false,
+  interactive = true,
   onSelectDimension,
+  currentValues,
+  unit = "cm",
 }: MeasurementDiagramProps) {
-  const isDimActive = (dim: string) => activeDimension === dim;
+  const [hoveredDim, setHoveredDim] = React.useState<string | null>(null);
+
+  const currentActive = activeDimension || hoveredDim;
+  const isDimActive = (dim: string) => currentActive === dim;
 
   return (
-    <div className={`relative flex items-center justify-center p-4 ${className}`}>
+    <div className={`relative flex items-center justify-center p-2 select-none ${className}`}>
       <svg
-        viewBox="0 0 340 540"
+        viewBox="0 0 350 560"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full max-w-[320px] md:max-w-[380px] h-auto select-none overflow-visible"
-        aria-label="Human body measurement diagram"
+        className="w-full max-w-[340px] md:max-w-[400px] h-auto overflow-visible"
+        aria-label="Interactive anatomical clothing measurement caliper"
         role="img"
       >
         <defs>
-          {/* Subtle grid pattern for diagram background */}
-          <pattern id="diagram-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          {/* Technical caliper millimeter grid */}
+          <pattern id="caliper-grid" width="20" height="20" patternUnits="userSpaceOnUse">
             <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#161616" strokeWidth="0.5" />
           </pattern>
+          {/* Subtle glow filter for active calipers */}
+          <filter id="active-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
 
-        <rect x="0" y="0" width="340" height="540" fill="url(#diagram-grid)" opacity="0.7" />
+        <rect x="0" y="0" width="350" height="560" fill="url(#caliper-grid)" opacity="0.8" />
 
-        {/* Outer technical caliper frame */}
-        <line x1="20" y1="20" x2="320" y2="20" stroke="#222" strokeWidth="1" strokeDasharray="3 3" />
-        <line x1="20" y1="520" x2="320" y2="520" stroke="#222" strokeWidth="1" strokeDasharray="3 3" />
-        <line x1="20" y1="20" x2="20" y2="520" stroke="#222" strokeWidth="1" strokeDasharray="3 3" />
-        <line x1="320" y1="20" x2="320" y2="520" stroke="#222" strokeWidth="1" strokeDasharray="3 3" />
+        {/* Outer technical caliper framing */}
+        <g opacity="0.6">
+          <line x1="20" y1="20" x2="330" y2="20" stroke="#262626" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="20" y1="540" x2="330" y2="540" stroke="#262626" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="20" y1="20" x2="20" y2="540" stroke="#262626" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="330" y1="20" x2="330" y2="540" stroke="#262626" strokeWidth="1" strokeDasharray="3 3" />
+        </g>
 
-        {/* Minimalist stylized human silhouette outline */}
+        {/* 1. Human Body Silhouette with SVG stroke path-length reveal */}
         <g id="body-silhouette">
-          {/* Head & Neck */}
+          {/* Head & Cranium */}
           <motion.ellipse
-            cx="170"
-            cy="70"
+            cx="175"
+            cy="75"
             rx="18"
-            ry="24"
-            stroke="#555"
+            ry="25"
+            stroke="#4a4a4a"
             strokeWidth="1.2"
-            fill="#0d0d0d"
+            fill="#0c0c0c"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
             transition={{ duration: 1.2, ease: TRANSITION_EASE }}
           />
+          {/* Neck */}
           <motion.path
-            d="M 164 94 L 164 108 M 176 94 L 176 108"
-            stroke="#555"
+            d="M 169 99 L 169 112 M 181 99 L 181 112"
+            stroke="#4a4a4a"
             strokeWidth="1.2"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           />
 
-          {/* Torso & Shoulders */}
+          {/* Torso, Shoulders & Lower Body Silhouette */}
           <motion.path
             d="
-              M 164 108
-              C 150 110 126 122 120 135
-              L 110 200
-              C 108 215 116 220 122 220
-              L 132 170
-              L 136 240
-              L 142 300
-              L 155 315
-              L 158 480
-              L 168 480
-              L 170 340
-              L 172 480
-              L 182 480
-              L 185 315
-              L 198 300
-              L 204 240
-              L 208 170
-              L 218 220
-              C 224 220 232 215 230 200
-              L 220 135
-              C 214 122 190 110 176 108
+              M 169 112
+              C 155 114 130 126 122 140
+              L 112 205
+              C 110 220 118 225 124 225
+              L 134 175
+              L 138 245
+              L 144 305
+              L 157 322
+              L 161 490
+              L 172 490
+              L 175 350
+              L 178 490
+              L 189 490
+              L 193 322
+              L 206 305
+              L 212 245
+              L 216 175
+              L 226 225
+              C 232 225 240 220 238 205
+              L 228 140
+              C 220 126 195 114 181 112
             "
             stroke="#444"
             strokeWidth="1.2"
-            fill="#0b0b0b"
+            fill="#090909"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
             transition={{ duration: 1.6, ease: TRANSITION_EASE, delay: 0.2 }}
           />
         </g>
 
-        {/* 1. HEIGHT Dimension Line */}
+        {/* 2. HEIGHT Caliper */}
         <g
-          className={`cursor-pointer transition-opacity ${interactive ? "hover:opacity-100" : ""}`}
+          className="cursor-pointer group"
+          onMouseEnter={() => interactive && setHoveredDim("height")}
+          onMouseLeave={() => interactive && setHoveredDim(null)}
           onClick={() => interactive && onSelectDimension?.("height")}
         >
           <motion.line
             x1="45"
-            y1="46"
+            y1="50"
             x2="45"
-            y2="480"
-            stroke={isDimActive("height") ? "#fff" : "#383838"}
-            strokeWidth={isDimActive("height") ? "1.5" : "1"}
-            strokeDasharray="4 2"
+            y2="490"
+            stroke={isDimActive("height") ? "#ffffff" : "#333333"}
+            strokeWidth={isDimActive("height") ? "1.8" : "1"}
+            strokeDasharray={isDimActive("height") ? "none" : "4 2"}
+            filter={isDimActive("height") ? "url(#active-glow)" : undefined}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 1.2, delay: 0.4 }}
           />
-          <line x1="38" y1="46" x2="52" y2="46" stroke={isDimActive("height") ? "#fff" : "#444"} strokeWidth="1" />
-          <line x1="38" y1="480" x2="52" y2="480" stroke={isDimActive("height") ? "#fff" : "#444"} strokeWidth="1" />
+          {/* Top and Bottom Ticks */}
+          <line x1="38" y1="50" x2="52" y2="50" stroke={isDimActive("height") ? "#fff" : "#444"} strokeWidth="1.2" />
+          <line x1="38" y1="490" x2="52" y2="490" stroke={isDimActive("height") ? "#fff" : "#444"} strokeWidth="1.2" />
+          
           <text
-            x="36"
-            y="265"
-            fill={isDimActive("height") ? "#fff" : "#777"}
+            x="34"
+            y="270"
+            fill={isDimActive("height") ? "#ffffff" : "#777777"}
             fontSize="9"
             fontFamily="monospace"
-            letterSpacing="0.16em"
-            transform="rotate(-90 36 265)"
+            letterSpacing="0.18em"
+            transform="rotate(-90 34 270)"
             textAnchor="middle"
+            className="transition-colors duration-200"
           >
-            HEIGHT (CM)
+            HEIGHT {currentValues?.height ? `(${currentValues.height} ${unit})` : "(CM)"}
           </text>
         </g>
 
-        {/* 2. SHOULDER Dimension */}
+        {/* 3. SHOULDER Caliper */}
         <g
-          className={`cursor-pointer transition-opacity ${interactive ? "hover:opacity-100" : ""}`}
+          className="cursor-pointer group"
+          onMouseEnter={() => interactive && setHoveredDim("shoulder")}
+          onMouseLeave={() => interactive && setHoveredDim(null)}
           onClick={() => interactive && onSelectDimension?.("shoulder")}
         >
           <motion.line
-            x1="120"
-            y1="135"
-            x2="220"
-            y2="135"
-            stroke={isDimActive("shoulder") ? "#fff" : "#444"}
-            strokeWidth={isDimActive("shoulder") ? "1.5" : "1"}
+            x1="122"
+            y1="140"
+            x2="228"
+            y2="140"
+            stroke={isDimActive("shoulder") ? "#ffffff" : "#3d3d3d"}
+            strokeWidth={isDimActive("shoulder") ? "1.8" : "1"}
+            filter={isDimActive("shoulder") ? "url(#active-glow)" : undefined}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           />
-          <circle cx="120" cy="135" r="2.5" fill={isDimActive("shoulder") ? "#fff" : "#666"} />
-          <circle cx="220" cy="135" r="2.5" fill={isDimActive("shoulder") ? "#fff" : "#666"} />
-          {/* Guide callout right */}
-          <line x1="220" y1="135" x2="275" y2="135" stroke={isDimActive("shoulder") ? "#fff" : "#2a2a2a"} strokeWidth="0.8" />
+          {/* Pulsing Measurement Anchor Points */}
+          <circle cx="122" cy="140" r="3" fill={isDimActive("shoulder") ? "#fff" : "#666"} />
+          <circle cx="228" cy="140" r="3" fill={isDimActive("shoulder") ? "#fff" : "#666"} />
+
+          {/* Guide Line Extending Outward */}
+          <motion.line
+            x1="228"
+            y1="140"
+            x2="285"
+            y2="140"
+            stroke={isDimActive("shoulder") ? "#fff" : "#282828"}
+            strokeWidth="0.8"
+            strokeDasharray="2 2"
+          />
           <text
-            x="280"
-            y="138"
-            fill={isDimActive("shoulder") ? "#fff" : "#888"}
+            x="292"
+            y="143"
+            fill={isDimActive("shoulder") ? "#ffffff" : "#888888"}
             fontSize="8"
             fontFamily="monospace"
-            letterSpacing="0.12em"
+            letterSpacing="0.14em"
+            className="transition-colors duration-200"
           >
-            SHOULDER
+            SHOULDERS {currentValues?.shoulder ? `[${currentValues.shoulder}]` : ""}
           </text>
         </g>
 
-        {/* 3. CHEST / BUST Dimension */}
+        {/* 4. CHEST / BUST Caliper */}
         <g
-          className={`cursor-pointer transition-opacity ${interactive ? "hover:opacity-100" : ""}`}
+          className="cursor-pointer group"
+          onMouseEnter={() => interactive && setHoveredDim("chest")}
+          onMouseLeave={() => interactive && setHoveredDim(null)}
           onClick={() => interactive && onSelectDimension?.("chest")}
         >
           <motion.ellipse
-            cx="170"
-            cy="172"
-            rx="42"
-            ry="9"
-            stroke={isDimActive("chest") ? "#fff" : "#444"}
-            strokeWidth={isDimActive("chest") ? "1.5" : "1"}
-            fill="none"
+            cx="175"
+            cy="178"
+            rx="45"
+            ry="10"
+            stroke={isDimActive("chest") ? "#ffffff" : "#3d3d3d"}
+            strokeWidth={isDimActive("chest") ? "1.8" : "1"}
             strokeDasharray={isDimActive("chest") ? "none" : "3 2"}
+            filter={isDimActive("chest") ? "url(#active-glow)" : undefined}
+            fill="none"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.9, delay: 0.7 }}
           />
-          <line x1="212" y1="172" x2="275" y2="172" stroke={isDimActive("chest") ? "#fff" : "#2a2a2a"} strokeWidth="0.8" />
+          {/* Guide Line Extending Outward */}
+          <line x1="220" y1="178" x2="285" y2="178" stroke={isDimActive("chest") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
           <text
-            x="280"
-            y="175"
-            fill={isDimActive("chest") ? "#fff" : "#888"}
+            x="292"
+            y="181"
+            fill={isDimActive("chest") ? "#ffffff" : "#888888"}
             fontSize="8"
             fontFamily="monospace"
-            letterSpacing="0.12em"
+            letterSpacing="0.14em"
+            className="transition-colors duration-200"
           >
-            CHEST / BUST
+            CHEST / BUST {currentValues?.chest ? `[${currentValues.chest}]` : ""}
           </text>
         </g>
 
-        {/* 4. WAIST Dimension */}
+        {/* 5. WAIST Caliper */}
         <g
-          className={`cursor-pointer transition-opacity ${interactive ? "hover:opacity-100" : ""}`}
+          className="cursor-pointer group"
+          onMouseEnter={() => interactive && setHoveredDim("waist")}
+          onMouseLeave={() => interactive && setHoveredDim(null)}
           onClick={() => interactive && onSelectDimension?.("waist")}
         >
           <motion.ellipse
-            cx="170"
-            cy="235"
-            rx="34"
-            ry="8"
-            stroke={isDimActive("waist") ? "#fff" : "#444"}
-            strokeWidth={isDimActive("waist") ? "1.5" : "1"}
-            fill="none"
+            cx="175"
+            cy="242"
+            rx="36"
+            ry="9"
+            stroke={isDimActive("waist") ? "#ffffff" : "#3d3d3d"}
+            strokeWidth={isDimActive("waist") ? "1.8" : "1"}
             strokeDasharray={isDimActive("waist") ? "none" : "3 2"}
+            filter={isDimActive("waist") ? "url(#active-glow)" : undefined}
+            fill="none"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.9, delay: 0.8 }}
           />
-          <line x1="204" y1="235" x2="275" y2="235" stroke={isDimActive("waist") ? "#fff" : "#2a2a2a"} strokeWidth="0.8" />
+          {/* Guide Line Extending Outward */}
+          <line x1="211" y1="242" x2="285" y2="242" stroke={isDimActive("waist") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
           <text
-            x="280"
-            y="238"
-            fill={isDimActive("waist") ? "#fff" : "#888"}
+            x="292"
+            y="245"
+            fill={isDimActive("waist") ? "#ffffff" : "#888888"}
             fontSize="8"
             fontFamily="monospace"
-            letterSpacing="0.12em"
+            letterSpacing="0.14em"
+            className="transition-colors duration-200"
           >
-            WAIST
+            WAIST {currentValues?.waist ? `[${currentValues.waist}]` : ""}
           </text>
         </g>
 
-        {/* 5. HIP Dimension */}
+        {/* 6. HIPS Caliper */}
         <g
-          className={`cursor-pointer transition-opacity ${interactive ? "hover:opacity-100" : ""}`}
+          className="cursor-pointer group"
+          onMouseEnter={() => interactive && setHoveredDim("hip")}
+          onMouseLeave={() => interactive && setHoveredDim(null)}
           onClick={() => interactive && onSelectDimension?.("hip")}
         >
           <motion.ellipse
-            cx="170"
-            cy="285"
-            rx="40"
-            ry="9"
-            stroke={isDimActive("hip") ? "#fff" : "#444"}
-            strokeWidth={isDimActive("hip") ? "1.5" : "1"}
-            fill="none"
+            cx="175"
+            cy="292"
+            rx="43"
+            ry="10"
+            stroke={isDimActive("hip") ? "#ffffff" : "#3d3d3d"}
+            strokeWidth={isDimActive("hip") ? "1.8" : "1"}
             strokeDasharray={isDimActive("hip") ? "none" : "3 2"}
+            filter={isDimActive("hip") ? "url(#active-glow)" : undefined}
+            fill="none"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.9, delay: 0.9 }}
           />
-          <line x1="210" y1="285" x2="275" y2="285" stroke={isDimActive("hip") ? "#fff" : "#2a2a2a"} strokeWidth="0.8" />
+          {/* Guide Line Extending Outward */}
+          <line x1="218" y1="292" x2="285" y2="292" stroke={isDimActive("hip") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
           <text
-            x="280"
-            y="288"
-            fill={isDimActive("hip") ? "#fff" : "#888"}
+            x="292"
+            y="295"
+            fill={isDimActive("hip") ? "#ffffff" : "#888888"}
             fontSize="8"
             fontFamily="monospace"
-            letterSpacing="0.12em"
+            letterSpacing="0.14em"
+            className="transition-colors duration-200"
           >
-            HIPS
+            HIPS {currentValues?.hip ? `[${currentValues.hip}]` : ""}
           </text>
         </g>
 
-        {/* 6. INSEAM Dimension */}
+        {/* 7. INSEAM Caliper */}
         <g
-          className={`cursor-pointer transition-opacity ${interactive ? "hover:opacity-100" : ""}`}
+          className="cursor-pointer group"
+          onMouseEnter={() => interactive && setHoveredDim("inseam")}
+          onMouseLeave={() => interactive && setHoveredDim(null)}
           onClick={() => interactive && onSelectDimension?.("inseam")}
         >
           <motion.line
-            x1="170"
-            y1="340"
-            x2="170"
-            y2="475"
-            stroke={isDimActive("inseam") ? "#fff" : "#444"}
-            strokeWidth={isDimActive("inseam") ? "1.5" : "1"}
-            strokeDasharray="3 2"
+            x1="175"
+            y1="348"
+            x2="175"
+            y2="485"
+            stroke={isDimActive("inseam") ? "#ffffff" : "#3d3d3d"}
+            strokeWidth={isDimActive("inseam") ? "1.8" : "1"}
+            strokeDasharray={isDimActive("inseam") ? "none" : "3 2"}
+            filter={isDimActive("inseam") ? "url(#active-glow)" : undefined}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 1.0, delay: 1.0 }}
           />
-          <line x1="165" y1="475" x2="175" y2="475" stroke={isDimActive("inseam") ? "#fff" : "#555"} strokeWidth="1" />
-          <line x1="170" y1="410" x2="275" y2="410" stroke={isDimActive("inseam") ? "#fff" : "#2a2a2a"} strokeWidth="0.8" />
+          <line x1="168" y1="485" x2="182" y2="485" stroke={isDimActive("inseam") ? "#fff" : "#555"} strokeWidth="1.2" />
+          <line x1="175" y1="418" x2="285" y2="418" stroke={isDimActive("inseam") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
           <text
-            x="280"
-            y="413"
-            fill={isDimActive("inseam") ? "#fff" : "#888"}
+            x="292"
+            y="421"
+            fill={isDimActive("inseam") ? "#ffffff" : "#888888"}
             fontSize="8"
             fontFamily="monospace"
-            letterSpacing="0.12em"
+            letterSpacing="0.14em"
+            className="transition-colors duration-200"
           >
-            INSEAM
+            INSEAM {currentValues?.inseam ? `[${currentValues.inseam}]` : ""}
           </text>
         </g>
 
-        {/* Technical crosshairs at corners */}
-        <path d="M 15 25 L 25 25 M 20 20 L 20 30" stroke="#333" strokeWidth="1" />
-        <path d="M 315 25 L 325 25 M 320 20 L 320 30" stroke="#333" strokeWidth="1" />
-        <path d="M 15 515 L 25 515 M 20 510 L 20 520" stroke="#333" strokeWidth="1" />
-        <path d="M 315 515 L 325 515 M 320 510 L 320 520" stroke="#333" strokeWidth="1" />
+        {/* Precision Crosshairs in corners */}
+        <g stroke="#333" strokeWidth="1">
+          <path d="M 15 25 L 25 25 M 20 20 L 20 30" />
+          <path d="M 325 25 L 335 25 M 330 20 L 330 30" />
+          <path d="M 15 535 L 25 535 M 20 530 L 20 540" />
+          <path d="M 325 535 L 335 535 M 330 530 L 330 540" />
+        </g>
       </svg>
     </div>
   );
 }
-

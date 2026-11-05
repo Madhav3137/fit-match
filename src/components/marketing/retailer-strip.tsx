@@ -1,7 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Badge } from "../ui/badge";
 import { Container } from "../layout/container";
+import { TRANSITION_EASE } from "@/lib/motion/variants";
+import { MaskedHeading } from "../motion/masked-text";
 
 interface RetailerItem {
   name: string;
@@ -22,26 +25,51 @@ const RETAILERS: RetailerItem[] = [
 ];
 
 export function RetailerStrip() {
+  const container = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: TRANSITION_EASE },
+    },
+  };
+
   return (
-    <section id="retailers" className="py-20 border-y border-[#202020] bg-[#0c0c0c]">
+    <section id="retailers" className="py-28 border-y border-[#1e1e1e] bg-[#090909] relative overflow-hidden">
       <Container>
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="space-y-2">
             <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
               // ECOSYSTEM REPOSITORIES
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase">
+            <MaskedHeading as="h2" className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase">
               Supported Retailers & Brands
-            </h2>
+            </MaskedHeading>
           </div>
-          <p className="text-xs text-[#888] max-w-md font-mono">
+          <p className="text-xs text-[#888] max-w-md font-mono leading-relaxed">
             Integrity-first integrations. Automatic extraction is labeled by live testing status;
             unsupported stores smoothly fall back to manual chart calibration.
           </p>
         </div>
 
-        {/* Retailer Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
+        {/* Retailer Grid with Staggered Entrance */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4"
+        >
           {RETAILERS.map((retailer) => {
             const getBadgeVariant = (s: string) => {
               if (s === "active") return "active";
@@ -58,12 +86,17 @@ export function RetailerStrip() {
             };
 
             return (
-              <div
+              <motion.div
                 key={retailer.name}
-                className="group relative p-5 rounded-xl border border-[#262626] bg-[#111111] hover:border-[#555] transition-all duration-200"
+                variants={item}
+                whileHover={{ y: -3 }}
+                className="group relative p-6 rounded-2xl border border-[#222222] bg-[#0e0e0e] hover:border-neutral-400 transition-all duration-200 overflow-hidden"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono text-[#555]">
+                {/* Subtle border sheen accent */}
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-mono text-[#555] tracking-wider uppercase">
                     {retailer.category}
                   </span>
                   <Badge variant={getBadgeVariant(retailer.status)}>
@@ -71,19 +104,19 @@ export function RetailerStrip() {
                   </Badge>
                 </div>
 
-                <div className="text-lg font-bold tracking-wider text-white">
+                <div className="text-lg font-bold tracking-wider text-white group-hover:tracking-widest transition-all duration-200">
                   {retailer.name}
                 </div>
                 <div className="text-[11px] font-mono text-[#666] mt-0.5">
                   {retailer.domain}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* Footnote on Scraping & Integrity */}
-        <div className="mt-8 pt-6 border-t border-[#1a1a1a] flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] font-mono text-[#666] gap-2">
+        <div className="mt-12 pt-6 border-t border-[#1a1a1a] flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] font-mono text-[#666] gap-2">
           <span>SSRF PROTECTED // ONLY HTTPS SERVER-SIDE FETCH</span>
           <span>NEVER PASSWORDS OR SCRAPED ACCOUNTS</span>
         </div>
@@ -91,4 +124,3 @@ export function RetailerStrip() {
     </section>
   );
 }
-

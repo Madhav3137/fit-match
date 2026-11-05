@@ -212,6 +212,15 @@ export function ProfileForm() {
             activeDimension={activeDimension}
             interactive={true}
             onSelectDimension={(dim) => setActiveDimension(dim)}
+            currentValues={{
+              height,
+              chest,
+              waist,
+              hip,
+              shoulder,
+              inseam,
+            }}
+            unit={unit}
           />
 
           <div className="mt-4 pt-3 border-t border-[#1a1a1a] text-[10px] font-mono text-[#666] flex items-center justify-between">

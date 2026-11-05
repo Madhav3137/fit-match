@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { LuxuryCursor } from "@/components/motion/luxury-cursor";
+import { SpotlightCanvas } from "@/components/motion/spotlight-canvas";
+import { CinematicIntro } from "@/components/motion/cinematic-intro";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,12 +33,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-screen bg-[#080808] text-[#f5f5f5] antialiased selection:bg-neutral-800 selection:text-white">
+      <body className="min-h-screen bg-[#080808] text-[#f5f5f5] antialiased selection:bg-neutral-800 selection:text-white relative">
+        <CinematicIntro />
+        <SpotlightCanvas />
+        <LuxuryCursor />
         <SiteHeader />
-        <main className="min-h-screen flex flex-col">{children}</main>
+        <main className="min-h-screen flex flex-col relative z-10">{children}</main>
         <SiteFooter />
       </body>
     </html>
   );
 }
-
