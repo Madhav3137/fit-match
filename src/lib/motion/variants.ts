@@ -66,3 +66,4 @@ export const cardHover = {
     transition: { duration: 0.2, ease: TRANSITION_EASE },
   },
 };
+
