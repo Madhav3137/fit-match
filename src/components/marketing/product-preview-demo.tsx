@@ -74,7 +74,7 @@ export function ProductPreviewDemo() {
             <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase mb-1">
               // INTERACTIVE SIZING TERMINAL
             </div>
-            <MaskedHeading as="h2" className="text-3xl font-bold tracking-tight text-white uppercase">
+            <MaskedHeading as="h2" className="font-display text-3xl sm:text-4xl font-medium tracking-tight text-white uppercase">
               Live Mathematical Calibration
             </MaskedHeading>
           </div>

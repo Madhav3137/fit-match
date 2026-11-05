@@ -88,7 +88,7 @@ export function SizeHeroCard({
             <span className="text-xs font-mono text-[#888] uppercase tracking-wider block">
               {product.brand || product.retailer}
             </span>
-            <h2 className="text-2xl font-bold text-white tracking-tight mt-0.5">
+            <h2 className="font-display text-2xl sm:text-3xl font-medium text-white tracking-tight mt-0.5">
               {product.title || "Garment Item"}
             </h2>
             <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#666]">

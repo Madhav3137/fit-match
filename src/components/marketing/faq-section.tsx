@@ -51,7 +51,7 @@ export function FAQSection() {
             <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
               // TECHNICAL KNOWLEDGE BASE
             </div>
-            <MaskedHeading as="h2" className="text-3xl font-bold tracking-tight text-white uppercase justify-center">
+            <MaskedHeading as="h2" className="font-display text-3xl sm:text-5xl font-medium tracking-tight text-white uppercase justify-center">
               Frequently Clarified
             </MaskedHeading>
           </div>

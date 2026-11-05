@@ -49,7 +49,7 @@ export function StepFlow() {
 
           <MaskedHeading
             as="h2"
-            className="text-3xl sm:text-4xl font-bold tracking-tight text-white uppercase justify-center"
+            className="font-display text-3xl sm:text-5xl font-medium tracking-tight text-white uppercase justify-center"
           >
             Precision in Three Movements
           </MaskedHeading>

@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
               // USER DASHBOARD
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white uppercase mt-0.5">
+            <h1 className="font-display text-3xl sm:text-5xl font-medium tracking-tight text-white uppercase mt-0.5">
               Profile & Analysis Hub
             </h1>
           </div>

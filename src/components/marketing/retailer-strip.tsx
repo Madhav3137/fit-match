@@ -52,7 +52,7 @@ export function RetailerStrip() {
             <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
               // ECOSYSTEM REPOSITORIES
             </div>
-            <MaskedHeading as="h2" className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase">
+            <MaskedHeading as="h2" className="font-display text-2xl sm:text-4xl font-medium tracking-tight text-white uppercase">
               Supported Retailers & Brands
             </MaskedHeading>
           </div>

@@ -25,3 +25,4 @@ export function ScrollDivider({ className = "" }: ScrollDividerProps) {
     </div>
   );
 }
+

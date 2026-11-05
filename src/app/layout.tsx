@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Bodoni_Moda, Manrope } from "next/font/google";
 import "@/styles/globals.css";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { LuxuryCursor } from "@/components/motion/luxury-cursor";
 import { SpotlightCanvas } from "@/components/motion/spotlight-canvas";
 import { CinematicIntro } from "@/components/motion/cinematic-intro";
+import { ContinuousBackground } from "@/components/motion/continuous-background";
 
-const inter = Inter({
+const bodoniModa = Bodoni_Moda({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
+  variable: "--font-display",
   display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -32,9 +42,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${bodoniModa.variable} ${manrope.variable} font-body`}>
       <body className="min-h-screen bg-[#080808] text-[#f5f5f5] antialiased selection:bg-neutral-800 selection:text-white relative">
         <CinematicIntro />
+        <ContinuousBackground />
         <SpotlightCanvas />
         <LuxuryCursor />
         <SiteHeader />

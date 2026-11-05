@@ -37,7 +37,7 @@ export default function ProfilePage() {
           <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
             // PROFILE CALIBRATION
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white uppercase leading-tight">
+          <h1 className="font-display text-4xl sm:text-6xl font-medium tracking-tight text-white uppercase leading-tight">
             Universal Size Profile
           </h1>
           <p className="text-sm text-[#8e8e8e] leading-relaxed">

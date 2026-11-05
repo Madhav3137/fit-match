@@ -29,8 +29,29 @@ const config: Config = {
         content: "var(--content-max)",
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "Inter", "system-ui", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "monospace"],
+        display: [
+          "var(--font-display)",
+          "'Bodoni Moda'",
+          "Didot",
+          "'Bodoni MT'",
+          "Georgia",
+          "serif",
+        ],
+        body: [
+          "var(--font-body)",
+          "Manrope",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
+        sans: [
+          "var(--font-body)",
+          "Manrope",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       letterSpacing: {
         technical: "0.16em",
@@ -42,4 +63,3 @@ const config: Config = {
 };
 
 export default config;
-

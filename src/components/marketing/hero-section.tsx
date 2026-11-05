@@ -61,7 +61,7 @@ export function HeroSection() {
                 <MaskedHeading
                   as="h1"
                   delay={0.1}
-                  className="text-4xl sm:text-6xl xl:text-7xl font-bold tracking-tight text-white uppercase leading-[1.05]"
+                  className="font-display text-5xl sm:text-7xl xl:text-8xl font-medium tracking-tight text-white uppercase leading-[1.05]"
                 >
                   YOUR SIZE.
                 </MaskedHeading>
@@ -70,7 +70,7 @@ export function HeroSection() {
                 <MaskedHeading
                   as="h1"
                   delay={0.25}
-                  className="text-4xl sm:text-6xl xl:text-7xl font-bold tracking-tight text-[#888888] uppercase leading-[1.05]"
+                  className="font-display text-5xl sm:text-7xl xl:text-8xl font-normal tracking-tight text-[#888888] uppercase leading-[1.05]"
                 >
                   EVERY BRAND.
                 </MaskedHeading>
