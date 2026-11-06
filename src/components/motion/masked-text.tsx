@@ -50,24 +50,24 @@ export function MaskedHeading({
 
   return (
     <Component
-      className={`overflow-hidden inline-flex ${
-        wrap ? "flex-wrap" : "flex-nowrap whitespace-nowrap"
+      className={`overflow-visible inline-flex ${
+        wrap ? "flex-wrap" : "flex-nowrap"
       } gap-x-[0.28em] ${className}`}
     >
       <motion.span
         variants={container}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-60px" }}
+        viewport={{ once: true, margin: "-20px" }}
         className={`inline-flex ${
-          wrap ? "flex-wrap" : "flex-nowrap whitespace-nowrap"
-        } gap-x-[0.28em]`}
+          wrap ? "flex-wrap" : "flex-nowrap"
+        } gap-x-[0.28em] w-full`}
       >
         {mode === "characters"
           ? words.map((word, wordIdx) => (
               <span
                 key={wordIdx}
-                className="inline-flex overflow-hidden py-1 whitespace-nowrap"
+                className="inline-flex overflow-hidden py-2 px-0.5 whitespace-nowrap"
               >
                 {word.split("").map((char, charIdx) => (
                   <motion.span
@@ -81,7 +81,7 @@ export function MaskedHeading({
               </span>
             ))
           : words.map((word, idx) => (
-              <span key={idx} className="overflow-hidden inline-block py-1">
+              <span key={idx} className="overflow-hidden inline-block py-2 px-0.5">
                 <motion.span variants={child} className="inline-block">
                   {word}
                 </motion.span>

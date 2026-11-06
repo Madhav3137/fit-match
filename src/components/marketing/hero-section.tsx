@@ -59,24 +59,24 @@ export function HeroSection() {
 
             {/* Split Headline with Character-by-Character Mask Reveals */}
             <div className="space-y-1">
-              <div className="overflow-hidden">
+              <div>
                 <MaskedHeading
                   as="h1"
                   delay={0.1}
-                  wrap={false}
+                  wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-8xl font-medium tracking-[-0.02em] text-white uppercase leading-[1.05]"
+                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-medium tracking-tight text-white uppercase leading-[1.08]"
                 >
                   YOUR SIZE.
                 </MaskedHeading>
               </div>
-              <div className="overflow-hidden">
+              <div>
                 <MaskedHeading
                   as="h1"
                   delay={0.25}
-                  wrap={false}
+                  wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-8xl font-normal tracking-[-0.02em] text-[#888888] uppercase leading-[1.05]"
+                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.08]"
                 >
                   EVERY BRAND.
                 </MaskedHeading>
@@ -133,26 +133,26 @@ export function HeroSection() {
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
                   <AnimatedCounter value={100} suffix="%" />
                 </div>
-                <div className="text-[10px] font-mono text-[#626262] uppercase tracking-wider mt-0.5">
-                  Algorithmic Transparency
+                <div className="text-[10px] font-mono text-[#777] uppercase tracking-wider mt-0.5">
+                  Algorithmic Clarity
                 </div>
               </div>
 
               <div>
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
-                  <AnimatedCounter value={0} suffix="s" />
+                  <AnimatedCounter value={0} suffix="%" />
                 </div>
-                <div className="text-[10px] font-mono text-[#626262] uppercase tracking-wider mt-0.5">
-                  Fabricated Recommendations
+                <div className="text-[10px] font-mono text-[#777] uppercase tracking-wider mt-0.5">
+                  Fabricated Sizing Data
                 </div>
               </div>
 
               <div>
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
-                  <AnimatedCounter value={6} suffix=" pts" />
+                  <AnimatedCounter value={6} suffix="" />
                 </div>
-                <div className="text-[10px] font-mono text-[#626262] uppercase tracking-wider mt-0.5">
-                  Standardized Calibration
+                <div className="text-[10px] font-mono text-[#777] uppercase tracking-wider mt-0.5">
+                  Calibrated Dimensions
                 </div>
               </div>
             </motion.div>

@@ -53,7 +53,7 @@ export function SiteFooter() {
             </div>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/#engine" className="hover:text-white transition-colors">
+                <Link href="/#chapter-synthesis" className="hover:text-white transition-colors">
                   Matching Engine
                 </Link>
               </li>

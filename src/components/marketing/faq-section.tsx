@@ -44,10 +44,10 @@ export function FAQSection() {
   const [openIdx, setOpenIdx] = React.useState<number | null>(0);
 
   return (
-    <section id="faq" className="py-24 sm:py-28 bg-transparent relative overflow-hidden">
+    <section id="faq" className="py-16 sm:py-20 bg-transparent relative overflow-hidden">
       <Container>
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16 space-y-2">
+          <div className="text-center mb-12 space-y-2">
             <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
               // TECHNICAL KNOWLEDGE BASE
             </div>

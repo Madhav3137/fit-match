@@ -39,7 +39,7 @@ export function ClosingCTA() {
     <section
       ref={sectionRef}
       onMouseMove={handleMouseMove}
-      className="relative py-20 sm:py-28 bg-transparent overflow-hidden border-t border-[#181818]"
+      className="relative py-16 sm:py-24 bg-transparent overflow-hidden border-t border-[#181818]"
     >
       {/* Background 3D Orbital Vortex Rings */}
       <div
@@ -90,24 +90,24 @@ export function ClosingCTA() {
 
           {/* Masked Bodoni Headlines */}
           <div className="space-y-1 sm:space-y-2">
-            <div className="overflow-hidden">
+            <div>
               <MaskedHeading
                 as="h2"
                 delay={0.1}
-                wrap={false}
+                wrap={true}
                 mode="characters"
-                className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-medium tracking-[-0.02em] text-white uppercase leading-[1.05] justify-center"
+                className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-medium tracking-tight text-white uppercase leading-[1.1] justify-center"
               >
                 YOUR NEXT PURCHASE.
               </MaskedHeading>
             </div>
-            <div className="overflow-hidden">
+            <div>
               <MaskedHeading
                 as="h2"
                 delay={0.25}
-                wrap={false}
+                wrap={true}
                 mode="characters"
-                className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-[-0.02em] text-[#888888] uppercase leading-[1.05] justify-center"
+                className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.1] justify-center"
               >
                 A BETTER FIT.
               </MaskedHeading>
