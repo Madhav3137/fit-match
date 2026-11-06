@@ -38,13 +38,15 @@ export function BodyMesh3D({
     const mount = mountRef.current;
     if (!mount) return;
 
-    const width = mount.clientWidth || 360;
-    const height = mount.clientHeight || 500;
+    const width = mount.clientWidth || 380;
+    const height = mount.clientHeight || 520;
 
-    // 1. Scene, Camera, Renderer
+    // 1. SCENE, CAMERA, RENDERER
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 235);
+
+    // Camera at z: 185 with fov: 42 makes the mannequin large, bold and clearly visible
+    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
+    camera.position.set(0, 2, 185);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -54,54 +56,65 @@ export function BodyMesh3D({
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
     mount.appendChild(renderer.domElement);
 
-    // 2. STUDIO SCIENTIFIC LIGHTING
-    const ambientLight = new THREE.AmbientLight(0x282c35, 2.2);
+    // 2. STUDIO LIGHTING RIG
+    const ambientLight = new THREE.AmbientLight(0x28303e, 2.6);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 3.8);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 4.8);
     keyLight.position.set(70, 140, 110);
     scene.add(keyLight);
 
-    const rimLightLeft = new THREE.DirectionalLight(0xb8cce4, 5.0);
+    const rimLightLeft = new THREE.DirectionalLight(0xc0dcff, 6.2);
     rimLightLeft.position.set(-130, 90, -80);
     scene.add(rimLightLeft);
 
-    const rimLightRight = new THREE.DirectionalLight(0xffffff, 4.5);
+    const rimLightRight = new THREE.DirectionalLight(0xfff6ec, 5.2);
     rimLightRight.position.set(130, 90, -80);
     scene.add(rimLightRight);
 
-    // 3. HUMAN MODEL GROUP — STATIONARY DEFAULT
+    const fillLight = new THREE.DirectionalLight(0x202632, 1.8);
+    fillLight.position.set(0, -80, 60);
+    scene.add(fillLight);
+
+    // Internal Thoracic Point Light (Subtle luminescent core)
+    const thoracicGlow = new THREE.PointLight(0xdde8ff, 3.2, 85);
+    thoracicGlow.position.set(0, 31, 12);
+
+    // 3. HUMAN MODEL GROUP — CENTERED, LARGE & ANATOMICALLY DETAILED
     const bodyGroup = new THREE.Group();
     scene.add(bodyGroup);
-    bodyGroup.position.y = 4;
+    bodyGroup.add(thoracicGlow);
+    bodyGroup.position.set(0, -2, 0);
 
-    // REFINED SILVER & METALLIC MATERIALS
+    // HIGH-SPECULAR SILVER & CHROME METALLIC MATERIALS
     const silverMetalMat = new THREE.MeshStandardMaterial({
-      color: 0x828b98,
-      metalness: 0.88,
-      roughness: 0.22,
+      color: 0x98a6b8,
+      metalness: 0.94,
+      roughness: 0.16,
       transparent: true,
-      opacity: 0.88,
+      opacity: 0.92,
       side: THREE.DoubleSide,
     });
 
     const contourWireMat = new THREE.MeshBasicMaterial({
-      color: 0xd6e0ec,
+      color: 0xffffff,
       wireframe: true,
       transparent: true,
-      opacity: 0.24,
+      opacity: 0.35,
     });
 
     const segmentHighlightMat = new THREE.MeshStandardMaterial({
-      color: 0xd0dae6,
-      emissive: 0x334455,
-      emissiveIntensity: 0.65,
-      metalness: 0.92,
-      roughness: 0.12,
+      color: 0xffffff,
+      emissive: 0x446688,
+      emissiveIntensity: 0.85,
+      metalness: 0.98,
+      roughness: 0.08,
       transparent: true,
-      opacity: 0.96,
+      opacity: 0.98,
       side: THREE.DoubleSide,
     });
 
@@ -123,88 +136,241 @@ export function BodyMesh3D({
       return segGroup;
     };
 
-    // Head
-    const headGeo = new THREE.SphereGeometry(10.5, 18, 14);
-    headGeo.scale(1, 1.2, 1.05);
-    createBodySegment("head", headGeo, 64, bodyGroup);
+    // A. HEAD & NECK
+    const headGroup = new THREE.Group();
+    bodyGroup.add(headGroup);
 
-    // Torso / Shoulders
-    const shoulderGeo = new THREE.CylinderGeometry(19, 17, 6, 18, 2, true);
-    createBodySegment("shoulder", shoulderGeo, 48, bodyGroup);
+    // Cranium with cranial vault
+    const craniumGeo = new THREE.SphereGeometry(7.6, 28, 24);
+    craniumGeo.scale(1.0, 1.25, 1.08);
+    createBodySegment("cranium", craniumGeo, 57.5, headGroup);
 
-    // Chest
-    const chestGeo = new THREE.CylinderGeometry(17.5, 14, 18, 18, 4, true);
-    chestGeo.scale(1.05, 1, 0.82);
-    createBodySegment("chest", chestGeo, 32, bodyGroup);
+    // Contoured Jaw / Mandible
+    const jawGeo = new THREE.CylinderGeometry(4.8, 3.4, 5.8, 20, 2);
+    jawGeo.scale(1.0, 1.0, 0.92);
+    createBodySegment("jaw", jawGeo, 50.5, headGroup);
 
-    // Natural Waist
-    const waistGeo = new THREE.CylinderGeometry(13.5, 14.5, 14, 18, 3, true);
-    waistGeo.scale(1, 1, 0.8);
-    createBodySegment("waist", waistGeo, 14, bodyGroup);
+    // Anatomical Neck with Sternocleidomastoid taper
+    const neckGeo = new THREE.CylinderGeometry(3.6, 4.4, 7.6, 20, 3);
+    createBodySegment("neck", neckGeo, 45.0, headGroup);
 
-    // Pelvis & Hips
-    const hipGeo = new THREE.CylinderGeometry(14.5, 16.5, 14, 18, 3, true);
-    hipGeo.scale(1.06, 1, 0.84);
-    createBodySegment("hip", hipGeo, -2, bodyGroup);
+    // B. TORSO, SHOULDERS & CHEST
+    const torsoGroup = new THREE.Group();
+    bodyGroup.add(torsoGroup);
 
-    // Legs
-    const legGeo = new THREE.CylinderGeometry(4.8, 3.2, 54, 14, 4, true);
-    const leftLeg = createBodySegment("inseam_l", legGeo, -36, bodyGroup);
-    leftLeg.position.x = -6.8;
+    // Clavicular Trapezius Bridge
+    const shoulderGeo = new THREE.CylinderGeometry(17.2, 16.0, 5.0, 24, 2);
+    createBodySegment("shoulder", shoulderGeo, 39.5, torsoGroup);
 
-    const rightLeg = createBodySegment("inseam_r", legGeo, -36, bodyGroup);
-    rightLeg.position.x = 6.8;
+    // Deltoid Shoulder Caps
+    const deltoidGeo = new THREE.SphereGeometry(4.2, 16, 14);
+    const leftDeltoid = createBodySegment("deltoid_l", deltoidGeo, 39.0, torsoGroup);
+    leftDeltoid.position.x = -18.2;
+    const rightDeltoid = createBodySegment("deltoid_r", deltoidGeo, 39.0, torsoGroup);
+    rightDeltoid.position.x = 18.2;
 
-    // Arms
-    const armGeo = new THREE.CylinderGeometry(3.0, 2.2, 44, 12, 3, true);
-    const leftArm = createBodySegment("arm_l", armGeo, 24, bodyGroup);
-    leftArm.position.x = -19;
-    leftArm.rotation.z = -0.16;
+    // Sculpted Thorax & Pectoral Ribcage
+    const chestGeo = new THREE.CylinderGeometry(16.2, 13.5, 16.0, 24, 4);
+    chestGeo.scale(1.08, 1.0, 0.82);
+    createBodySegment("chest", chestGeo, 30.5, torsoGroup);
 
-    const rightArm = createBodySegment("arm_r", armGeo, 24, bodyGroup);
-    rightArm.position.x = 19;
-    rightArm.rotation.z = 0.16;
+    // Natural Waist & Abdominal Wall
+    const waistGeo = new THREE.CylinderGeometry(12.5, 13.5, 12.5, 22, 3);
+    waistGeo.scale(1.02, 1.0, 0.78);
+    createBodySegment("waist", waistGeo, 17.5, torsoGroup);
 
-    // 4. MEASUREMENT GUIDES (Refined thin Torus rings)
+    // Pelvis & Iliac Flare
+    const pelvisGeo = new THREE.CylinderGeometry(13.8, 15.8, 13.5, 24, 3);
+    pelvisGeo.scale(1.08, 1.0, 0.85);
+    createBodySegment("hip", pelvisGeo, 5.5, bodyGroup);
+
+    // C. RELAXED TAILORING A-POSE ARMS
+    const createArm = (isRight: boolean) => {
+      const armGroup = new THREE.Group();
+      const sign = isRight ? 1 : -1;
+      armGroup.position.set(sign * 18.2, 38.0, 0);
+      armGroup.rotation.z = sign * -0.18;
+      armGroup.rotation.x = 0.05;
+
+      // Bicep
+      const bicepGeo = new THREE.CylinderGeometry(3.2, 2.6, 16.5, 16, 3);
+      createBodySegment(isRight ? "bicep_r" : "bicep_l", bicepGeo, -8.5, armGroup);
+
+      // Elbow
+      const elbowGeo = new THREE.SphereGeometry(2.4, 12, 10);
+      createBodySegment(isRight ? "elbow_r" : "elbow_l", elbowGeo, -17.5, armGroup);
+
+      // Forearm
+      const forearmGeo = new THREE.CylinderGeometry(2.5, 2.0, 15.0, 16, 3);
+      createBodySegment(isRight ? "forearm_r" : "forearm_l", forearmGeo, -25.5, armGroup);
+
+      // Hand
+      const handGeo = new THREE.BoxGeometry(2.4, 6.8, 1.4);
+      createBodySegment(isRight ? "hand_r" : "hand_l", handGeo, -35.5, armGroup);
+
+      bodyGroup.add(armGroup);
+    };
+
+    createArm(false);
+    createArm(true);
+
+    // D. PLANTED ATHLETIC LEGS
+    const createLeg = (isRight: boolean) => {
+      const legGroup = new THREE.Group();
+      const sign = isRight ? 1 : -1;
+      legGroup.position.set(sign * 6.8, 0, 0);
+
+      // Thigh
+      const thighGeo = new THREE.CylinderGeometry(5.4, 3.9, 26.0, 18, 3);
+      createBodySegment(isRight ? "thigh_r" : "thigh_l", thighGeo, -13.5, legGroup);
+
+      // Knee Joint
+      const kneeGeo = new THREE.SphereGeometry(3.5, 14, 12);
+      createBodySegment(isRight ? "knee_r" : "knee_l", kneeGeo, -27.5, legGroup);
+
+      // Calf / Shin
+      const calfGeo = new THREE.CylinderGeometry(3.8, 2.5, 26.0, 18, 3);
+      createBodySegment(isRight ? "calf_r" : "calf_l", calfGeo, -41.5, legGroup);
+
+      // Foot & Ankle
+      const footGeo = new THREE.BoxGeometry(3.5, 3.0, 10.5);
+      const foot = createBodySegment(isRight ? "foot_r" : "foot_l", footGeo, -55.5, legGroup);
+      foot.position.z = 2.5;
+
+      bodyGroup.add(legGroup);
+    };
+
+    createLeg(false);
+    createLeg(true);
+
+    // E. STUDIO TURNTABLE PEDESTAL & GROUND SHADOW
+    const pedestalGroup = new THREE.Group();
+    pedestalGroup.position.y = -57.5;
+    bodyGroup.add(pedestalGroup);
+
+    const baseDisk = new THREE.Mesh(
+      new THREE.CylinderGeometry(28, 28, 1.0, 48),
+      new THREE.MeshStandardMaterial({
+        color: 0x141820,
+        roughness: 0.25,
+        metalness: 0.90,
+        transparent: true,
+        opacity: 0.8,
+      })
+    );
+    pedestalGroup.add(baseDisk);
+
+    // Contact Ground Shadow Disc with soft falloff
+    const shadowCanvas = document.createElement("canvas");
+    shadowCanvas.width = 128;
+    shadowCanvas.height = 128;
+    const sctx = shadowCanvas.getContext("2d");
+    if (sctx) {
+      const grad = sctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, "rgba(0, 0, 0, 0.95)");
+      grad.addColorStop(0.4, "rgba(0, 0, 0, 0.55)");
+      grad.addColorStop(0.8, "rgba(0, 0, 0, 0.15)");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      sctx.fillStyle = grad;
+      sctx.fillRect(0, 0, 128, 128);
+    }
+    const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
+    const shadowMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(54, 54),
+      new THREE.MeshBasicMaterial({
+        map: shadowTexture,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+      })
+    );
+    shadowMesh.rotation.x = -Math.PI / 2;
+    shadowMesh.position.y = 0.6;
+    pedestalGroup.add(shadowMesh);
+
+    // 4. ANATOMICALLY CONNECTED MEASUREMENT CALIPER GUIDES
     const ringMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0x334455,
-      emissiveIntensity: 0.4,
-      metalness: 0.9,
-      roughness: 0.15,
+      emissiveIntensity: 0.45,
+      metalness: 0.95,
+      roughness: 0.12,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.82,
     });
 
     const activeRingMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0x6688aa,
-      emissiveIntensity: 0.9,
-      metalness: 0.95,
-      roughness: 0.08,
+      emissiveIntensity: 1.0,
+      metalness: 0.98,
+      roughness: 0.05,
       transparent: true,
       opacity: 1.0,
     });
 
-    const createCaliperRing = (radius: number, yPos: number) => {
-      const geo = new THREE.TorusGeometry(radius, 0.35, 12, 48);
+    const createCaliperLoop = (radius: number, yPos: number, scaleZ = 0.82) => {
+      const ringGroup = new THREE.Group();
+      ringGroup.position.y = yPos;
+
+      const geo = new THREE.TorusGeometry(radius, 0.32, 12, 48);
       geo.rotateX(Math.PI / 2);
-      geo.scale(1, 1, 0.82);
+      geo.scale(1, 1, scaleZ);
       const mesh = new THREE.Mesh(geo, ringMat);
-      mesh.position.y = yPos;
-      bodyGroup.add(mesh);
-      return mesh;
+      ringGroup.add(mesh);
+
+      // Front Diamond Node
+      const nodeGeo = new THREE.OctahedronGeometry(1.0, 0);
+      const nodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
+      nodeMesh.position.set(0, 0, radius * scaleZ);
+      ringGroup.add(nodeMesh);
+
+      bodyGroup.add(ringGroup);
+      return { group: ringGroup, mesh, nodeMesh, baseY: yPos };
     };
 
-    const rings: Record<string, THREE.Mesh> = {
-      shoulder: createCaliperRing(21.5, 48),
-      chest: createCaliperRing(18.5, 32),
-      waist: createCaliperRing(15.2, 14),
-      hip: createCaliperRing(17.8, -2),
-      inseam: createCaliperRing(11.0, -26),
+    const caliperLoops: Record<string, ReturnType<typeof createCaliperLoop>> = {
+      shoulder: createCaliperLoop(18.2, 39.5, 0.80),
+      chest: createCaliperLoop(16.5, 30.5, 0.82),
+      waist: createCaliperLoop(13.2, 17.5, 0.78),
+      hip: createCaliperLoop(15.8, 5.5, 0.85),
+      inseam: createCaliperLoop(10.2, -22.0, 0.80),
     };
 
-    // 5. INTERACTION & CONTROLLED DRAGGING — NO AUTO-ROTATION!
+    // 5. TRAVELING VERTICAL SCANNING LASER PLANE
+    const scanPlaneGroup = new THREE.Group();
+    bodyGroup.add(scanPlaneGroup);
+
+    const scanPlaneGeo = new THREE.PlaneGeometry(54, 38);
+    const scanPlaneMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.12,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const scanPlane = new THREE.Mesh(scanPlaneGeo, scanPlaneMat);
+    scanPlane.rotation.x = Math.PI / 2;
+    scanPlaneGroup.add(scanPlane);
+
+    // Glowing Laser Edge Line
+    const laserLineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-27, 0, 0),
+      new THREE.Vector3(27, 0, 0),
+    ]);
+    const laserLine = new THREE.Line(
+      laserLineGeo,
+      new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 })
+    );
+    scanPlaneGroup.add(laserLine);
+
+    // Attached Laser Point Light (Casts moving illumination onto anatomical curves!)
+    const laserLight = new THREE.PointLight(0xffffff, 3.8, 48);
+    scanPlaneGroup.add(laserLight);
+
+    // 6. INTERACTION & CONTROLLED DRAGGING — NO DRIFT!
     let isDragging = false;
     let previousPointerX = 0;
     let userRotationY = 0;
@@ -229,7 +395,6 @@ export function BodyMesh3D({
     const onPointerUp = () => {
       if (!isDragging) return;
       isDragging = false;
-      // STOP IMMEDIATELY — No continuing spin or drift!
       targetRotationY = userRotationY;
     };
 
@@ -239,15 +404,29 @@ export function BodyMesh3D({
       window.addEventListener("pointerup", onPointerUp);
     }
 
-    // 6. ANIMATION LOOP — PURE STABILITY
+    // 7. SEQUENTIAL SCANNING SEQUENCE & ANIMATION LOOP
     let animId: number;
+    const startTime = performance.now();
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
 
-      // Smooth damping that settles firmly
+      const elapsed = (performance.now() - startTime) / 1000;
+
+      // Sequential Entrance Reveal:
+      // 1. Silhouette emerges (0 - 0.4s)
+      const revealProgress = Math.min(elapsed / 0.8, 1);
+      const revealEase = 1 - Math.pow(1 - revealProgress, 3);
+      silverMetalMat.opacity = 0.92 * revealEase;
+      contourWireMat.opacity = 0.35 * revealEase;
+
+      // Rotation damping that halts immediately on release
       userRotationY += (targetRotationY - userRotationY) * 0.25;
       bodyGroup.rotation.y = userRotationY;
+
+      // Traveling Scan Beam (from shoulders Y: 42 to hips/inseam Y: -20)
+      const scanY = 12 + Math.sin(elapsed * 1.8) * 30;
+      scanPlaneGroup.position.y = scanY;
 
       // Highlight active body segment and measurement ring
       Object.keys(segmentMeshes).forEach((key) => {
@@ -256,11 +435,16 @@ export function BodyMesh3D({
         seg.solid.material = isActive ? segmentHighlightMat : silverMetalMat;
       });
 
-      Object.keys(rings).forEach((key) => {
-        const ring = rings[key];
+      Object.keys(caliperLoops).forEach((key) => {
+        const loop = caliperLoops[key];
         const isActive = activeZone === key;
-        ring.material = isActive ? activeRingMat : ringMat;
-        ring.scale.setScalar(isActive ? 1.05 : 1.0);
+
+        // Proximity pulse when laser passes the loop
+        const distToLaser = Math.abs(loop.baseY - scanY);
+        const laserPulse = Math.max(0, 1 - distToLaser / 8) * 0.12;
+
+        loop.mesh.material = isActive ? activeRingMat : ringMat;
+        loop.group.scale.setScalar(isActive ? 1.08 : 1.0 + laserPulse);
       });
 
       renderer.render(scene, camera);
@@ -299,16 +483,16 @@ export function BodyMesh3D({
       {/* 3D WebGL Canvas Mount */}
       <div
         ref={mountRef}
-        className="w-full h-[400px] sm:h-[440px] cursor-grab active:cursor-grabbing relative z-10"
+        className="w-full h-[480px] sm:h-[540px] cursor-grab active:cursor-grabbing relative z-10"
       />
 
       {/* Futuristic Precision Caliper HUD Callouts */}
-      <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4">
+      <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 sm:p-5">
         {/* Top Header Technical Tag with Reset View Button */}
         <div className="flex items-center justify-between text-[10px] font-mono text-[#888]">
           <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-            <span className="text-white font-medium">3D PRECISION RIG</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-white font-medium uppercase">3D ANTHROPOMETRIC RIG</span>
           </span>
           <button
             type="button"
@@ -321,20 +505,20 @@ export function BodyMesh3D({
         </div>
 
         {/* Anatomical Caliper Callout Tags with Interactive Selection */}
-        <div className="space-y-2 pointer-events-auto max-w-[210px] ml-auto">
+        <div className="space-y-1.5 pointer-events-auto max-w-[190px] ml-auto">
           {/* Shoulders */}
           <div
             onClick={() => onSelectDimension?.("shoulder")}
             onMouseEnter={() => setHoveredZone("shoulder")}
             onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
+            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
               activeZone === "shoulder"
-                ? "border-white bg-white/15 text-white shadow-lg"
+                ? "border-white bg-white/20 text-white shadow-lg"
                 : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
             }`}
           >
-            <span className="text-[10px] uppercase tracking-wider">SHOULDERS</span>
-            <span className="font-bold text-white">
+            <span className="text-[9px] uppercase tracking-wider">SHOULDERS</span>
+            <span className="font-bold text-white text-[11px]">
               {currentValues?.shoulder ? `${currentValues.shoulder} ${unit}` : "46 cm"}
             </span>
           </div>
@@ -344,14 +528,14 @@ export function BodyMesh3D({
             onClick={() => onSelectDimension?.("chest")}
             onMouseEnter={() => setHoveredZone("chest")}
             onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
+            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
               activeZone === "chest"
-                ? "border-white bg-white/15 text-white shadow-lg"
+                ? "border-white bg-white/20 text-white shadow-lg"
                 : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
             }`}
           >
-            <span className="text-[10px] uppercase tracking-wider">CHEST</span>
-            <span className="font-bold text-white">
+            <span className="text-[9px] uppercase tracking-wider">CHEST</span>
+            <span className="font-bold text-white text-[11px]">
               {currentValues?.chest ? `${currentValues.chest} ${unit}` : "98 cm"}
             </span>
           </div>
@@ -361,14 +545,14 @@ export function BodyMesh3D({
             onClick={() => onSelectDimension?.("waist")}
             onMouseEnter={() => setHoveredZone("waist")}
             onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
+            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
               activeZone === "waist"
-                ? "border-white bg-white/15 text-white shadow-lg"
+                ? "border-white bg-white/20 text-white shadow-lg"
                 : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
             }`}
           >
-            <span className="text-[10px] uppercase tracking-wider">WAIST</span>
-            <span className="font-bold text-white">
+            <span className="text-[9px] uppercase tracking-wider">WAIST</span>
+            <span className="font-bold text-white text-[11px]">
               {currentValues?.waist ? `${currentValues.waist} ${unit}` : "84 cm"}
             </span>
           </div>
@@ -378,15 +562,32 @@ export function BodyMesh3D({
             onClick={() => onSelectDimension?.("hip")}
             onMouseEnter={() => setHoveredZone("hip")}
             onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
+            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
               activeZone === "hip"
-                ? "border-white bg-white/15 text-white shadow-lg"
+                ? "border-white bg-white/20 text-white shadow-lg"
                 : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
             }`}
           >
-            <span className="text-[10px] uppercase tracking-wider">HIPS</span>
-            <span className="font-bold text-white">
+            <span className="text-[9px] uppercase tracking-wider">HIPS</span>
+            <span className="font-bold text-white text-[11px]">
               {currentValues?.hip ? `${currentValues.hip} ${unit}` : "102 cm"}
+            </span>
+          </div>
+
+          {/* Inseam */}
+          <div
+            onClick={() => onSelectDimension?.("inseam")}
+            onMouseEnter={() => setHoveredZone("inseam")}
+            onMouseLeave={() => setHoveredZone(null)}
+            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
+              activeZone === "inseam"
+                ? "border-white bg-white/20 text-white shadow-lg"
+                : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
+            }`}
+          >
+            <span className="text-[9px] uppercase tracking-wider">INSEAM</span>
+            <span className="font-bold text-white text-[11px]">
+              {currentValues?.inseam ? `${currentValues.inseam} ${unit}` : "82 cm"}
             </span>
           </div>
         </div>
@@ -394,7 +595,7 @@ export function BodyMesh3D({
         {/* Footer Coordinate Ticks */}
         <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] font-mono text-[#666]">
           <span>HORIZONTAL YAW: DRAG 360°</span>
-          <span>STOP ON RELEASE</span>
+          <span>LASER: ±0.8MM ACCURACY</span>
         </div>
       </div>
     </div>

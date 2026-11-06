@@ -211,7 +211,7 @@ export function Chapter01Profile() {
                 onSelectDimension={(dim) => setActiveDim(dim)}
                 currentValues={measurements}
                 unit={unit}
-                className="w-full min-h-[380px] sm:min-h-[420px]"
+                className="w-full min-h-[480px] sm:min-h-[540px]"
               />
             </div>
 
