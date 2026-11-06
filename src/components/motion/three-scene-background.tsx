@@ -17,7 +17,7 @@ export function ThreeSceneBackground() {
 
     // 1. SCENE, CAMERA, RENDERER
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x050507, 0.0009);
+    scene.fog = new THREE.FogExp2(0x050507, 0.00085);
 
     const camera = new THREE.PerspectiveCamera(48, width / height, 0.1, 2000);
     camera.position.set(0, 0, 310);
@@ -34,35 +34,35 @@ export function ThreeSceneBackground() {
     renderer.toneMappingExposure = 1.35;
     container.appendChild(renderer.domElement);
 
-    // 2. PROCEDURAL HIGH-CONTRAST STUDIO REFLECTION MAP (Makes chrome and liquid silver gleam)
+    // 2. PROCEDURAL HIGH-CONTRAST STUDIO REFLECTION MAP
     const envCanvas = document.createElement("canvas");
     envCanvas.width = 512;
     envCanvas.height = 256;
     const ectx = envCanvas.getContext("2d");
     if (ectx) {
-      ectx.fillStyle = "#080a0e";
+      ectx.fillStyle = "#07090d";
       ectx.fillRect(0, 0, 512, 256);
 
       // Studio softbox 1 (top right)
       const grad1 = ectx.createRadialGradient(380, 60, 0, 380, 60, 160);
       grad1.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-      grad1.addColorStop(0.3, "rgba(200, 225, 255, 0.7)");
-      grad1.addColorStop(1, "rgba(8, 10, 14, 0)");
+      grad1.addColorStop(0.3, "rgba(200, 225, 255, 0.75)");
+      grad1.addColorStop(1, "rgba(7, 9, 13, 0)");
       ectx.fillStyle = grad1;
       ectx.fillRect(200, 0, 312, 180);
 
       // Studio softbox 2 (left edge rim)
       const grad2 = ectx.createRadialGradient(80, 120, 0, 80, 120, 140);
-      grad2.addColorStop(0, "rgba(210, 235, 255, 0.95)");
-      grad2.addColorStop(0.4, "rgba(120, 160, 220, 0.5)");
-      grad2.addColorStop(1, "rgba(8, 10, 14, 0)");
+      grad2.addColorStop(0, "rgba(215, 238, 255, 0.95)");
+      grad2.addColorStop(0.4, "rgba(125, 165, 225, 0.5)");
+      grad2.addColorStop(1, "rgba(7, 9, 13, 0)");
       ectx.fillStyle = grad2;
       ectx.fillRect(0, 0, 220, 256);
 
-      // Horizontal studio floor strip
+      // Studio floor reflection strip
       const grad3 = ectx.createLinearGradient(0, 200, 0, 256);
-      grad3.addColorStop(0, "rgba(30, 40, 55, 0)");
-      grad3.addColorStop(0.5, "rgba(140, 170, 210, 0.35)");
+      grad3.addColorStop(0, "rgba(30, 42, 60, 0)");
+      grad3.addColorStop(0.5, "rgba(150, 180, 220, 0.4)");
       grad3.addColorStop(1, "rgba(10, 12, 18, 0)");
       ectx.fillStyle = grad3;
       ectx.fillRect(0, 200, 512, 56);
@@ -72,31 +72,31 @@ export function ThreeSceneBackground() {
     scene.environment = envTexture;
 
     // 3. CINEMATIC MULTI-LIGHT RIG
-    const ambientLight = new THREE.AmbientLight(0x2a3242, 2.6);
+    const ambientLight = new THREE.AmbientLight(0x2a3242, 2.8);
     scene.add(ambientLight);
 
     // Primary Dynamic Key Softbox
-    const keyLight = new THREE.DirectionalLight(0xffffff, 5.2);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 5.4);
     keyLight.position.set(130, 180, 150);
     scene.add(keyLight);
 
-    // Dynamic Mouse-Tracking Spotlight (Directly illuminates 3D objects near the cursor!)
-    const mouseLight = new THREE.PointLight(0xd8e8ff, 4.5, 360);
+    // Dynamic Mouse-Tracking Spotlight (Follows cursor in 3D world space)
+    const mouseLight = new THREE.PointLight(0xd8e8ff, 4.8, 380);
     mouseLight.position.set(50, 20, 80);
     scene.add(mouseLight);
 
     // Cool Blue-Silver Rim Light Left
-    const rimLightLeft = new THREE.DirectionalLight(0xc0dcff, 7.5);
+    const rimLightLeft = new THREE.DirectionalLight(0xc0dcff, 7.8);
     rimLightLeft.position.set(-190, 130, -110);
     scene.add(rimLightLeft);
 
     // Warm Platinum Rim Light Right
-    const rimLightRight = new THREE.DirectionalLight(0xfff6ec, 6.2);
+    const rimLightRight = new THREE.DirectionalLight(0xfff6ec, 6.4);
     rimLightRight.position.set(190, 110, -110);
     scene.add(rimLightRight);
 
     // Ground Bounce Fill
-    const groundBounce = new THREE.DirectionalLight(0x222a38, 2.2);
+    const groundBounce = new THREE.DirectionalLight(0x242c3c, 2.2);
     groundBounce.position.set(0, -130, 90);
     scene.add(groundBounce);
 
@@ -105,11 +105,11 @@ export function ThreeSceneBackground() {
     coreGlow.position.set(38, 12, -25);
     scene.add(coreGlow);
 
-    // 4. MASTER 3D SCENE OBJECTS
+    // 4. MASTER ROOTS
     const environmentMaster = new THREE.Group();
     scene.add(environmentMaster);
 
-    // A. METALLIC SCULPTURAL FORMS (Gleaming Liquid Chrome Torus Knot)
+    // A. CENTRAL METALLIC SCULPTURAL FORM (Fluid Chrome Torus Knot)
     const sculptureGroup = new THREE.Group();
     sculptureGroup.position.set(isMobile ? 0 : 38, 8, -35);
     environmentMaster.add(sculptureGroup);
@@ -119,13 +119,12 @@ export function ThreeSceneBackground() {
       color: 0xc2d0e2,
       metalness: 0.98,
       roughness: 0.10,
-      envMapIntensity: 1.45,
+      envMapIntensity: 1.5,
       transparent: true,
       opacity: 0.94,
       side: THREE.DoubleSide,
     });
     const knotMesh = new THREE.Mesh(knotGeo, chromeMat);
-    knotMesh.userData = { isInteractiveSculpture: true };
     sculptureGroup.add(knotMesh);
 
     // Architectural Wireframe Cage Accents
@@ -145,7 +144,7 @@ export function ThreeSceneBackground() {
       color: 0xffffff,
       metalness: 0.95,
       roughness: 0.18,
-      envMapIntensity: 1.2,
+      envMapIntensity: 1.25,
       transparent: true,
       opacity: 0.65,
     });
@@ -160,7 +159,140 @@ export function ThreeSceneBackground() {
     orbitRing2.rotation.y = Math.PI * 0.32;
     sculptureGroup.add(orbitRing2);
 
-    // B. DYNAMIC HIGH-LUMINOSITY SILK FABRIC SIMULATION
+    // B. FLOATING METALLIC RIBBONS & SPLINE CURVES
+    const ribbonCurvesGroup = new THREE.Group();
+    environmentMaster.add(ribbonCurvesGroup);
+
+    // Curve 1: Floating chrome spline ribbon weaving through deep space
+    const curvePoints1 = [
+      new THREE.Vector3(-90, -40, -60),
+      new THREE.Vector3(-30, 30, -30),
+      new THREE.Vector3(50, 60, -50),
+      new THREE.Vector3(110, 10, -70),
+      new THREE.Vector3(150, -40, -40),
+    ];
+    const curve1 = new THREE.CatmullRomCurve3(curvePoints1);
+    const tubeGeo1 = new THREE.TubeGeometry(curve1, 90, 1.2, 12, false);
+    const chromeTubeMat = new THREE.MeshStandardMaterial({
+      color: 0xd8e4f5,
+      metalness: 0.98,
+      roughness: 0.08,
+      envMapIntensity: 1.6,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const ribbonTube1 = new THREE.Mesh(tubeGeo1, chromeTubeMat);
+    ribbonCurvesGroup.add(ribbonTube1);
+
+    // Curve 2: Elegant lower accent ribbon
+    const curvePoints2 = [
+      new THREE.Vector3(-120, -20, -40),
+      new THREE.Vector3(-40, -70, -20),
+      new THREE.Vector3(40, -50, -30),
+      new THREE.Vector3(120, -60, -60),
+    ];
+    const curve2 = new THREE.CatmullRomCurve3(curvePoints2);
+    const tubeGeo2 = new THREE.TubeGeometry(curve2, 70, 0.9, 12, false);
+    const ribbonTube2 = new THREE.Mesh(tubeGeo2, chromeTubeMat);
+    ribbonCurvesGroup.add(ribbonTube2);
+
+    // C. SMALL CHROME SPHERES & SATELLITE NODES
+    const sphereGroup = new THREE.Group();
+    environmentMaster.add(sphereGroup);
+
+    const sphereInstances: { mesh: THREE.Mesh; baseAngle: number; radius: number; speed: number; yOffset: number }[] = [];
+    const smallSphereGeo = new THREE.SphereGeometry(3.6, 28, 24);
+    const sphereMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 0.98,
+      roughness: 0.08,
+      envMapIntensity: 1.8,
+    });
+
+    const sphereConfigs = [
+      { r: 72, y: 35, speed: 0.35, angle: 0 },
+      { r: 92, y: -25, speed: -0.28, angle: 2.1 },
+      { r: 110, y: 15, speed: 0.22, angle: 4.2 },
+      { r: 65, y: -45, speed: -0.4, angle: 1.2 },
+      { r: 125, y: -10, speed: 0.18, angle: 3.5 },
+      { r: 85, y: 55, speed: -0.3, angle: 5.4 },
+    ];
+
+    sphereConfigs.forEach((cfg) => {
+      const mesh = new THREE.Mesh(smallSphereGeo, sphereMat);
+      sphereGroup.add(mesh);
+      sphereInstances.push({
+        mesh,
+        baseAngle: cfg.angle,
+        radius: cfg.r,
+        speed: cfg.speed,
+        yOffset: cfg.y,
+      });
+    });
+
+    // D. TRANSLUCENT GLASS PANELS WITH DEPTH
+    const glassGroup = new THREE.Group();
+    environmentMaster.add(glassGroup);
+
+    const glassGeo = new THREE.BoxGeometry(38, 56, 1.2);
+    const glassMat = new THREE.MeshPhysicalMaterial({
+      color: 0xdfe9f6,
+      metalness: 0.1,
+      roughness: 0.12,
+      transmission: 0.75,
+      transparent: true,
+      opacity: 0.48,
+      envMapIntensity: 1.4,
+      reflectivity: 0.85,
+    });
+
+    const glassPanel1 = new THREE.Mesh(glassGeo, glassMat);
+    glassPanel1.position.set(-60, 40, -50);
+    glassPanel1.rotation.set(0.2, 0.35, -0.15);
+    glassGroup.add(glassPanel1);
+
+    const glassPanel2 = new THREE.Mesh(glassGeo, glassMat);
+    glassPanel2.position.set(110, -35, -45);
+    glassPanel2.rotation.set(-0.25, -0.4, 0.2);
+    glassGroup.add(glassPanel2);
+
+    // Thin chrome framing rim around glass
+    const glassFrameGeo = new THREE.BoxGeometry(38.6, 56.6, 0.4);
+    const glassFrameMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.25 });
+    glassPanel1.add(new THREE.Mesh(glassFrameGeo, glassFrameMat));
+    glassPanel2.add(new THREE.Mesh(glassFrameGeo, glassFrameMat));
+
+    // E. FLOATING GEOMETRIC SHARDS & FRAGMENTS
+    const shardGroup = new THREE.Group();
+    environmentMaster.add(shardGroup);
+
+    const shardInstances: { mesh: THREE.Mesh; rotSpeedX: number; rotSpeedY: number }[] = [];
+    const shardGeo = new THREE.OctahedronGeometry(2.4, 0);
+    const shardMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 0.98,
+      roughness: 0.08,
+      envMapIntensity: 1.6,
+      transparent: true,
+      opacity: 0.85,
+    });
+
+    for (let i = 0; i < 14; i++) {
+      const shard = new THREE.Mesh(shardGeo, shardMat);
+      shard.position.set(
+        (Math.random() - 0.5) * 450 + 40,
+        (Math.random() - 0.5) * 350,
+        (Math.random() - 0.5) * 200 - 40
+      );
+      shardGroup.add(shard);
+      shardInstances.push({
+        mesh: shard,
+        rotSpeedX: (Math.random() - 0.5) * 0.8,
+        rotSpeedY: (Math.random() - 0.5) * 0.8,
+      });
+    }
+
+    // F. DYNAMIC HIGH-LUMINOSITY SILK FABRIC SIMULATION
     const fabricGroup = new THREE.Group();
     fabricGroup.position.set(isMobile ? 0 : 30, -6, -15);
     environmentMaster.add(fabricGroup);
@@ -183,7 +315,6 @@ export function ThreeSceneBackground() {
     const ribbon1Mesh = new THREE.Mesh(ribbon1Geo, ribbon1Mat);
     ribbon1Mesh.rotation.x = -Math.PI * 0.18;
     ribbon1Mesh.rotation.z = Math.PI * 0.08;
-    ribbon1Mesh.userData = { isInteractiveFabric: true };
     fabricGroup.add(ribbon1Mesh);
 
     const posAttr1 = ribbon1Geo.attributes.position;
@@ -209,13 +340,13 @@ export function ThreeSceneBackground() {
     const posAttr2 = ribbon2Geo.attributes.position;
     const originalPositions2 = Float32Array.from(posAttr2.array);
 
-    // C. TECHNICAL TAILORING MEASUREMENT GEOMETRY (Chapter 01 & 02)
+    // G. TECHNICAL TAILORING MEASUREMENT GEOMETRY (Chapter 01 & 02)
     const techGroup = new THREE.Group();
     techGroup.position.set(isMobile ? 0 : 38, 8, -55);
     environmentMaster.add(techGroup);
 
     const arcMat = new THREE.LineBasicMaterial({ color: 0x647a96, transparent: true, opacity: 0.45 });
-    [70, 102, 134].forEach((r) => {
+    [70, 102, 134, 166].forEach((r) => {
       const curve = new THREE.EllipseCurve(0, 0, r, r * 0.84, 0, Math.PI * 2, false, 0);
       const points = curve.getPoints(90);
       const arcGeo = new THREE.BufferGeometry().setFromPoints(points);
@@ -223,7 +354,7 @@ export function ThreeSceneBackground() {
       techGroup.add(line);
     });
 
-    // Traveling Optical Scanning Beam across Fabric
+    // Minimal Traveling Optical Scanning Beam across Fabric
     const scanLineGeo = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(-150, 0, 0),
       new THREE.Vector3(150, 0, 0),
@@ -236,7 +367,7 @@ export function ThreeSceneBackground() {
     const scanLine = new THREE.Line(scanLineGeo, scanLineMat);
     fabricGroup.add(scanLine);
 
-    // D. HIGH-INTERACTION METALLIC PARTICLES
+    // H. HIGH-INTERACTION METALLIC PARTICLES
     const particleCount = isMobile ? 380 : 850;
     const particlePositions = new Float32Array(particleCount * 3);
     const particleVelocities = new Float32Array(particleCount * 3);
@@ -282,7 +413,6 @@ export function ThreeSceneBackground() {
     let targetCameraX = 0;
     let targetCameraY = 0;
 
-    // Projected mouse world coordinate on the fabric plane (z = 0)
     let mouseWorldX = 0;
     let mouseWorldY = 0;
 
@@ -315,9 +445,9 @@ export function ThreeSceneBackground() {
         return;
       }
 
-      // Raycast against the sculpture
+      // Raycast against the sculpture and glass
       raycaster.setFromCamera(mouseVector, camera);
-      const hits = raycaster.intersectObjects([knotMesh, ribbon1Mesh]);
+      const hits = raycaster.intersectObjects([knotMesh, ribbon1Mesh, glassPanel1, glassPanel2]);
       if (hits.length > 0) {
         document.body.style.cursor = "grab";
         chromeMat.roughness = 0.06;
@@ -386,7 +516,7 @@ export function ThreeSceneBackground() {
       // 1. Entrance Light Ramp
       const entranceProgress = Math.min(elapsed / 2.0, 1);
       const entranceEase = 1 - Math.pow(1 - entranceProgress, 3);
-      keyLight.intensity = 5.2 * entranceEase;
+      keyLight.intensity = 5.4 * entranceEase;
       chromeMat.opacity = 0.94 * entranceEase;
       ribbon1Mat.opacity = 0.88 * entranceEase;
       ribbon2Mat.opacity = 0.74 * entranceEase;
@@ -399,7 +529,6 @@ export function ThreeSceneBackground() {
         const baseKnotRotY = elapsed * 0.16;
         const baseKnotRotX = Math.sin(elapsed * 0.28) * 0.14;
 
-        // Subtle orientational tracking towards cursor
         const mouseTiltY = mouseX * 0.35;
         const mouseTiltX = -mouseY * 0.25;
 
@@ -409,12 +538,39 @@ export function ThreeSceneBackground() {
         orbitRing1.rotation.z = elapsed * 0.09;
         orbitRing2.rotation.z = -elapsed * 0.07;
 
+        // Animate floating chrome spline ribbons
+        ribbonCurvesGroup.rotation.y = elapsed * 0.05;
+        ribbonTube1.rotation.z = Math.sin(elapsed * 0.2) * 0.1;
+        ribbonTube2.rotation.z = -Math.cos(elapsed * 0.25) * 0.12;
+
+        // Animate orbiting chrome spheres at individual speeds
+        sphereInstances.forEach((inst) => {
+          const a = inst.baseAngle + elapsed * inst.speed;
+          inst.mesh.position.set(
+            sculptureGroup.position.x + Math.cos(a) * inst.radius,
+            inst.yOffset + Math.sin(elapsed * 0.5 + a) * 8.0,
+            sculptureGroup.position.z + Math.sin(a) * (inst.radius * 0.7)
+          );
+        });
+
+        // Animate floating glass panels
+        glassPanel1.rotation.y = 0.35 + Math.sin(elapsed * 0.3) * 0.12;
+        glassPanel1.rotation.x = 0.2 + Math.cos(elapsed * 0.25) * 0.08;
+
+        glassPanel2.rotation.y = -0.4 + Math.cos(elapsed * 0.35) * 0.14;
+        glassPanel2.rotation.x = -0.25 + Math.sin(elapsed * 0.2) * 0.09;
+
+        // Animate floating geometric shards
+        shardInstances.forEach((s) => {
+          s.mesh.rotation.x += s.rotSpeedX * 0.02;
+          s.mesh.rotation.y += s.rotSpeedY * 0.02;
+        });
+
         // 3. Dynamic Silk Fabric Undulation with Cursor Proximity Ripples!
         const pos1 = ribbon1Geo.attributes.position;
         const orig1 = originalPositions1;
         const count1 = pos1.count;
 
-        // Relative mouse coordinates in fabric local space
         const localMouseX = mouseWorldX - fabricGroup.position.x;
         const localMouseY = mouseWorldY - fabricGroup.position.y;
 
@@ -422,11 +578,9 @@ export function ThreeSceneBackground() {
           const ox = orig1[i * 3];
           const oy = orig1[i * 3 + 1];
 
-          // Distance from cursor on fabric
           const distToMouse = Math.hypot(ox - localMouseX, oy - localMouseY);
           const mouseRipple = Math.sin(distToMouse * 0.06 - elapsed * 4.5) * Math.exp(-distToMouse * 0.016) * 14.0;
 
-          // Natural ambient silk wave + interactive cursor ripple
           const waveZ =
             Math.sin(ox * 0.032 + elapsed * 1.6) * 12.0 +
             Math.cos(oy * 0.042 + elapsed * 1.8) * 7.0 +
@@ -463,7 +617,7 @@ export function ThreeSceneBackground() {
         if (scanLineY > 34) scanLineY = -34;
         scanLine.position.y = scanLineY;
 
-        // 5. Interactive Metallic Particle Swarm (Reacts to cursor proximity!)
+        // 5. Interactive Metallic Particle Swarm
         const pPos = particleGeo.attributes.position;
         const pArray = pPos.array as Float32Array;
 
@@ -473,23 +627,19 @@ export function ThreeSceneBackground() {
           const hx = particleHome[i];
           const hy = particleHome[i + 1];
 
-          // Vector from cursor to particle
           const dx = px - mouseWorldX;
           const dy = py - mouseWorldY;
           const d = Math.hypot(dx, dy);
 
-          // Cursor repulsion impulse
           if (d < 140 && d > 1) {
             const force = (1 - d / 140) * 3.5;
             particleVelocities[i] += (dx / d) * force;
             particleVelocities[i + 1] += (dy / d) * force;
           }
 
-          // Elastic spring return to home position
           particleVelocities[i] += (hx - px) * 0.015;
           particleVelocities[i + 1] += (hy - py) * 0.015;
 
-          // Friction damping
           particleVelocities[i] *= 0.92;
           particleVelocities[i + 1] *= 0.92;
 
@@ -513,9 +663,13 @@ export function ThreeSceneBackground() {
       camera.position.x += (targetCameraX - camera.position.x) * 0.04;
       camera.position.y += (targetCameraY - camera.position.y) * 0.04;
 
-      // 7. Scroll-Driven Cinematic Chapter Transitions
+      // 7. Scroll-Driven Cinematic Chapter Transitions & Parallax Depth
       const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
       const scrollProgress = Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
+
+      // Layered Parallax: Foreground glass moves faster than background sculpture
+      glassGroup.position.y = scrollProgress * -90;
+      ribbonCurvesGroup.position.y = scrollProgress * -45;
 
       if (scrollProgress < 0.22) {
         // HERO: Sculptural chrome & silk ribbon framing deep-space behind content
@@ -575,6 +729,17 @@ export function ThreeSceneBackground() {
       orbitRing1Geo.dispose();
       orbitRing1Mat.dispose();
       orbitRing2Geo.dispose();
+      tubeGeo1.dispose();
+      tubeGeo2.dispose();
+      chromeTubeMat.dispose();
+      smallSphereGeo.dispose();
+      sphereMat.dispose();
+      glassGeo.dispose();
+      glassMat.dispose();
+      glassFrameGeo.dispose();
+      glassFrameMat.dispose();
+      shardGeo.dispose();
+      shardMat.dispose();
       ribbon1Geo.dispose();
       ribbon1Mat.dispose();
       ribbon2Geo.dispose();

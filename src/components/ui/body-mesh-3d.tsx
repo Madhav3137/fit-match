@@ -39,14 +39,14 @@ export function BodyMesh3D({
     if (!mount) return;
 
     const width = mount.clientWidth || 380;
-    const height = mount.clientHeight || 520;
+    const height = mount.clientHeight || 540;
 
     // 1. SCENE, CAMERA, RENDERER
     const scene = new THREE.Scene();
 
-    // Camera at z: 185 with fov: 42 makes the mannequin large, bold and clearly visible
-    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
-    camera.position.set(0, 2, 185);
+    // Camera at z: 152 with fov: 40 makes the human model large and visually dominant (filling ~90% of card height)
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+    camera.position.set(0, 1.5, 152);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -57,44 +57,44 @@ export function BodyMesh3D({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.3;
     mount.appendChild(renderer.domElement);
 
-    // 2. STUDIO LIGHTING RIG
-    const ambientLight = new THREE.AmbientLight(0x28303e, 2.6);
+    // 2. STUDIO SCIENTIFIC LIGHTING RIG
+    const ambientLight = new THREE.AmbientLight(0x283244, 2.8);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 4.8);
-    keyLight.position.set(70, 140, 110);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 5.0);
+    keyLight.position.set(65, 130, 100);
     scene.add(keyLight);
 
-    const rimLightLeft = new THREE.DirectionalLight(0xc0dcff, 6.2);
-    rimLightLeft.position.set(-130, 90, -80);
+    const rimLightLeft = new THREE.DirectionalLight(0xc2dcff, 6.5);
+    rimLightLeft.position.set(-120, 85, -70);
     scene.add(rimLightLeft);
 
-    const rimLightRight = new THREE.DirectionalLight(0xfff6ec, 5.2);
-    rimLightRight.position.set(130, 90, -80);
+    const rimLightRight = new THREE.DirectionalLight(0xfff6ec, 5.5);
+    rimLightRight.position.set(120, 85, -70);
     scene.add(rimLightRight);
 
-    const fillLight = new THREE.DirectionalLight(0x202632, 1.8);
-    fillLight.position.set(0, -80, 60);
+    const fillLight = new THREE.DirectionalLight(0x202838, 2.0);
+    fillLight.position.set(0, -75, 55);
     scene.add(fillLight);
 
     // Internal Thoracic Point Light (Subtle luminescent core)
-    const thoracicGlow = new THREE.PointLight(0xdde8ff, 3.2, 85);
-    thoracicGlow.position.set(0, 31, 12);
+    const thoracicGlow = new THREE.PointLight(0xdde8ff, 3.2, 80);
+    thoracicGlow.position.set(0, 29, 10);
 
-    // 3. HUMAN MODEL GROUP — CENTERED, LARGE & ANATOMICALLY DETAILED
+    // 3. HUMAN MODEL GROUP — CENTERED, TALL & ANATOMICALLY DETAILED
     const bodyGroup = new THREE.Group();
     scene.add(bodyGroup);
     bodyGroup.add(thoracicGlow);
-    bodyGroup.position.set(0, -2, 0);
+    bodyGroup.position.set(0, -1.5, 0);
 
     // HIGH-SPECULAR SILVER & CHROME METALLIC MATERIALS
     const silverMetalMat = new THREE.MeshStandardMaterial({
-      color: 0x98a6b8,
-      metalness: 0.94,
-      roughness: 0.16,
+      color: 0x98a8bc,
+      metalness: 0.95,
+      roughness: 0.15,
       transparent: true,
       opacity: 0.92,
       side: THREE.DoubleSide,
@@ -143,16 +143,16 @@ export function BodyMesh3D({
     // Cranium with cranial vault
     const craniumGeo = new THREE.SphereGeometry(7.6, 28, 24);
     craniumGeo.scale(1.0, 1.25, 1.08);
-    createBodySegment("cranium", craniumGeo, 57.5, headGroup);
+    createBodySegment("cranium", craniumGeo, 56.5, headGroup);
 
     // Contoured Jaw / Mandible
     const jawGeo = new THREE.CylinderGeometry(4.8, 3.4, 5.8, 20, 2);
     jawGeo.scale(1.0, 1.0, 0.92);
-    createBodySegment("jaw", jawGeo, 50.5, headGroup);
+    createBodySegment("jaw", jawGeo, 49.5, headGroup);
 
     // Anatomical Neck with Sternocleidomastoid taper
     const neckGeo = new THREE.CylinderGeometry(3.6, 4.4, 7.6, 20, 3);
-    createBodySegment("neck", neckGeo, 45.0, headGroup);
+    createBodySegment("neck", neckGeo, 44.0, headGroup);
 
     // B. TORSO, SHOULDERS & CHEST
     const torsoGroup = new THREE.Group();
@@ -160,35 +160,35 @@ export function BodyMesh3D({
 
     // Clavicular Trapezius Bridge
     const shoulderGeo = new THREE.CylinderGeometry(17.2, 16.0, 5.0, 24, 2);
-    createBodySegment("shoulder", shoulderGeo, 39.5, torsoGroup);
+    createBodySegment("shoulder", shoulderGeo, 38.5, torsoGroup);
 
     // Deltoid Shoulder Caps
     const deltoidGeo = new THREE.SphereGeometry(4.2, 16, 14);
-    const leftDeltoid = createBodySegment("deltoid_l", deltoidGeo, 39.0, torsoGroup);
+    const leftDeltoid = createBodySegment("deltoid_l", deltoidGeo, 38.0, torsoGroup);
     leftDeltoid.position.x = -18.2;
-    const rightDeltoid = createBodySegment("deltoid_r", deltoidGeo, 39.0, torsoGroup);
+    const rightDeltoid = createBodySegment("deltoid_r", deltoidGeo, 38.0, torsoGroup);
     rightDeltoid.position.x = 18.2;
 
     // Sculpted Thorax & Pectoral Ribcage
     const chestGeo = new THREE.CylinderGeometry(16.2, 13.5, 16.0, 24, 4);
     chestGeo.scale(1.08, 1.0, 0.82);
-    createBodySegment("chest", chestGeo, 30.5, torsoGroup);
+    createBodySegment("chest", chestGeo, 29.5, torsoGroup);
 
     // Natural Waist & Abdominal Wall
     const waistGeo = new THREE.CylinderGeometry(12.5, 13.5, 12.5, 22, 3);
     waistGeo.scale(1.02, 1.0, 0.78);
-    createBodySegment("waist", waistGeo, 17.5, torsoGroup);
+    createBodySegment("waist", waistGeo, 16.5, torsoGroup);
 
     // Pelvis & Iliac Flare
     const pelvisGeo = new THREE.CylinderGeometry(13.8, 15.8, 13.5, 24, 3);
     pelvisGeo.scale(1.08, 1.0, 0.85);
-    createBodySegment("hip", pelvisGeo, 5.5, bodyGroup);
+    createBodySegment("hip", pelvisGeo, 4.5, bodyGroup);
 
     // C. RELAXED TAILORING A-POSE ARMS
     const createArm = (isRight: boolean) => {
       const armGroup = new THREE.Group();
       const sign = isRight ? 1 : -1;
-      armGroup.position.set(sign * 18.2, 38.0, 0);
+      armGroup.position.set(sign * 18.2, 37.0, 0);
       armGroup.rotation.z = sign * -0.18;
       armGroup.rotation.x = 0.05;
 
@@ -331,10 +331,10 @@ export function BodyMesh3D({
     };
 
     const caliperLoops: Record<string, ReturnType<typeof createCaliperLoop>> = {
-      shoulder: createCaliperLoop(18.2, 39.5, 0.80),
-      chest: createCaliperLoop(16.5, 30.5, 0.82),
-      waist: createCaliperLoop(13.2, 17.5, 0.78),
-      hip: createCaliperLoop(15.8, 5.5, 0.85),
+      shoulder: createCaliperLoop(18.2, 38.5, 0.80),
+      chest: createCaliperLoop(16.5, 29.5, 0.82),
+      waist: createCaliperLoop(13.2, 16.5, 0.78),
+      hip: createCaliperLoop(15.8, 4.5, 0.85),
       inseam: createCaliperLoop(10.2, -22.0, 0.80),
     };
 
@@ -413,8 +413,7 @@ export function BodyMesh3D({
 
       const elapsed = (performance.now() - startTime) / 1000;
 
-      // Sequential Entrance Reveal:
-      // 1. Silhouette emerges (0 - 0.4s)
+      // Sequential Entrance Reveal (0 to 0.8s)
       const revealProgress = Math.min(elapsed / 0.8, 1);
       const revealEase = 1 - Math.pow(1 - revealProgress, 3);
       silverMetalMat.opacity = 0.92 * revealEase;
@@ -425,7 +424,7 @@ export function BodyMesh3D({
       bodyGroup.rotation.y = userRotationY;
 
       // Traveling Scan Beam (from shoulders Y: 42 to hips/inseam Y: -20)
-      const scanY = 12 + Math.sin(elapsed * 1.8) * 30;
+      const scanY = 11 + Math.sin(elapsed * 1.8) * 30;
       scanPlaneGroup.position.y = scanY;
 
       // Highlight active body segment and measurement ring
@@ -483,10 +482,10 @@ export function BodyMesh3D({
       {/* 3D WebGL Canvas Mount */}
       <div
         ref={mountRef}
-        className="w-full h-[480px] sm:h-[540px] cursor-grab active:cursor-grabbing relative z-10"
+        className="w-full h-[500px] sm:h-[560px] cursor-grab active:cursor-grabbing relative z-10"
       />
 
-      {/* Futuristic Precision Caliper HUD Callouts */}
+      {/* Futuristic Precision Caliper HUD Callouts with Balanced Flanking Layout */}
       <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 sm:p-5">
         {/* Top Header Technical Tag with Reset View Button */}
         <div className="flex items-center justify-between text-[10px] font-mono text-[#888]">
@@ -504,96 +503,102 @@ export function BodyMesh3D({
           </button>
         </div>
 
-        {/* Anatomical Caliper Callout Tags with Interactive Selection */}
-        <div className="space-y-1.5 pointer-events-auto max-w-[190px] ml-auto">
-          {/* Shoulders */}
-          <div
-            onClick={() => onSelectDimension?.("shoulder")}
-            onMouseEnter={() => setHoveredZone("shoulder")}
-            onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeZone === "shoulder"
-                ? "border-white bg-white/20 text-white shadow-lg"
-                : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
-            }`}
-          >
-            <span className="text-[9px] uppercase tracking-wider">SHOULDERS</span>
-            <span className="font-bold text-white text-[11px]">
-              {currentValues?.shoulder ? `${currentValues.shoulder} ${unit}` : "46 cm"}
-            </span>
+        {/* Balanced Anatomical Measurement Callouts across Left & Right Flanks */}
+        <div className="relative flex-1 my-2 flex items-center justify-between pointer-events-none">
+          {/* Left Flank Callouts: Shoulders (Top), Waist (Center), Inseam (Lower) */}
+          <div className="flex flex-col justify-between h-[85%] pointer-events-auto z-20 space-y-4">
+            {/* Shoulders */}
+            <div
+              onClick={() => onSelectDimension?.("shoulder")}
+              onMouseEnter={() => setHoveredZone("shoulder")}
+              onMouseLeave={() => setHoveredZone(null)}
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+                activeZone === "shoulder"
+                  ? "border-white bg-white/20 text-white"
+                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
+              }`}
+            >
+              <span className="text-[9px] uppercase tracking-wider">01 // SHOULDERS</span>
+              <span className="font-bold text-white text-[11px]">
+                {currentValues?.shoulder ? `${currentValues.shoulder} ${unit}` : "46 cm"}
+              </span>
+            </div>
+
+            {/* Natural Waist */}
+            <div
+              onClick={() => onSelectDimension?.("waist")}
+              onMouseEnter={() => setHoveredZone("waist")}
+              onMouseLeave={() => setHoveredZone(null)}
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+                activeZone === "waist"
+                  ? "border-white bg-white/20 text-white"
+                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
+              }`}
+            >
+              <span className="text-[9px] uppercase tracking-wider">03 // WAIST</span>
+              <span className="font-bold text-white text-[11px]">
+                {currentValues?.waist ? `${currentValues.waist} ${unit}` : "84 cm"}
+              </span>
+            </div>
+
+            {/* Inner Inseam */}
+            <div
+              onClick={() => onSelectDimension?.("inseam")}
+              onMouseEnter={() => setHoveredZone("inseam")}
+              onMouseLeave={() => setHoveredZone(null)}
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+                activeZone === "inseam"
+                  ? "border-white bg-white/20 text-white"
+                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
+              }`}
+            >
+              <span className="text-[9px] uppercase tracking-wider">05 // INSEAM</span>
+              <span className="font-bold text-white text-[11px]">
+                {currentValues?.inseam ? `${currentValues.inseam} ${unit}` : "82 cm"}
+              </span>
+            </div>
           </div>
 
-          {/* Chest */}
-          <div
-            onClick={() => onSelectDimension?.("chest")}
-            onMouseEnter={() => setHoveredZone("chest")}
-            onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeZone === "chest"
-                ? "border-white bg-white/20 text-white shadow-lg"
-                : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
-            }`}
-          >
-            <span className="text-[9px] uppercase tracking-wider">CHEST</span>
-            <span className="font-bold text-white text-[11px]">
-              {currentValues?.chest ? `${currentValues.chest} ${unit}` : "98 cm"}
-            </span>
-          </div>
+          {/* Right Flank Callouts: Chest (Top), Hips (Lower) */}
+          <div className="flex flex-col justify-around h-[70%] pointer-events-auto z-20 space-y-6">
+            {/* Chest / Bust */}
+            <div
+              onClick={() => onSelectDimension?.("chest")}
+              onMouseEnter={() => setHoveredZone("chest")}
+              onMouseLeave={() => setHoveredZone(null)}
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+                activeZone === "chest"
+                  ? "border-white bg-white/20 text-white"
+                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
+              }`}
+            >
+              <span className="text-[9px] uppercase tracking-wider">02 // CHEST</span>
+              <span className="font-bold text-white text-[11px]">
+                {currentValues?.chest ? `${currentValues.chest} ${unit}` : "98 cm"}
+              </span>
+            </div>
 
-          {/* Waist */}
-          <div
-            onClick={() => onSelectDimension?.("waist")}
-            onMouseEnter={() => setHoveredZone("waist")}
-            onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeZone === "waist"
-                ? "border-white bg-white/20 text-white shadow-lg"
-                : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
-            }`}
-          >
-            <span className="text-[9px] uppercase tracking-wider">WAIST</span>
-            <span className="font-bold text-white text-[11px]">
-              {currentValues?.waist ? `${currentValues.waist} ${unit}` : "84 cm"}
-            </span>
-          </div>
-
-          {/* Hips */}
-          <div
-            onClick={() => onSelectDimension?.("hip")}
-            onMouseEnter={() => setHoveredZone("hip")}
-            onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeZone === "hip"
-                ? "border-white bg-white/20 text-white shadow-lg"
-                : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
-            }`}
-          >
-            <span className="text-[9px] uppercase tracking-wider">HIPS</span>
-            <span className="font-bold text-white text-[11px]">
-              {currentValues?.hip ? `${currentValues.hip} ${unit}` : "102 cm"}
-            </span>
-          </div>
-
-          {/* Inseam */}
-          <div
-            onClick={() => onSelectDimension?.("inseam")}
-            onMouseEnter={() => setHoveredZone("inseam")}
-            onMouseLeave={() => setHoveredZone(null)}
-            className={`group flex items-center justify-between px-2.5 py-1 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeZone === "inseam"
-                ? "border-white bg-white/20 text-white shadow-lg"
-                : "border-white/10 bg-[#0c0d12]/80 text-[#888] hover:border-white/30 hover:text-white"
-            }`}
-          >
-            <span className="text-[9px] uppercase tracking-wider">INSEAM</span>
-            <span className="font-bold text-white text-[11px]">
-              {currentValues?.inseam ? `${currentValues.inseam} ${unit}` : "82 cm"}
-            </span>
+            {/* Pelvic Seat / Hips */}
+            <div
+              onClick={() => onSelectDimension?.("hip")}
+              onMouseEnter={() => setHoveredZone("hip")}
+              onMouseLeave={() => setHoveredZone(null)}
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+                activeZone === "hip"
+                  ? "border-white bg-white/20 text-white"
+                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
+              }`}
+            >
+              <span className="text-[9px] uppercase tracking-wider">04 // HIPS</span>
+              <span className="font-bold text-white text-[11px]">
+                {currentValues?.hip ? `${currentValues.hip} ${unit}` : "102 cm"}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Footer Coordinate Ticks */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] font-mono text-[#666]">
+        <div className="flex items-center justify-between pt-2.5 border-t border-white/10 text-[9px] font-mono text-[#666]">
           <span>HORIZONTAL YAW: DRAG 360°</span>
           <span>LASER: ±0.8MM ACCURACY</span>
         </div>
