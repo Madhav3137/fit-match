@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 import { Container } from "../layout/container";
 import { Button } from "../ui/button";
 import { MaskedHeading } from "../motion/masked-text";
@@ -12,64 +12,16 @@ import { TRANSITION_EASE } from "@/lib/motion/variants";
 
 export function ClosingCTA() {
   const sectionRef = React.useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end end"],
-  });
-
-  const mouseX = useMotionValue(0.5);
-  const mouseY = useMotionValue(0.5);
-  const smoothMouseX = useSpring(mouseX, { stiffness: 60, damping: 25 });
-  const smoothMouseY = useSpring(mouseY, { stiffness: 60, damping: 25 });
-
-  const spotX = useTransform(smoothMouseX, [0, 1], ["20%", "80%"]);
-  const spotY = useTransform(smoothMouseY, [0, 1], ["20%", "80%"]);
-
-  const orbitalRotate = useTransform(scrollYProgress, [0, 1], [0, 240]);
-  const orbitalScale = useTransform(scrollYProgress, [0, 0.6, 1], [0.85, 1.1, 1]);
-  const ringRotate = useTransform(scrollYProgress, [0, 1], [360, 0]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left) / rect.width);
-    mouseY.set((e.clientY - rect.top) / rect.height);
-  };
 
   return (
     <section
       ref={sectionRef}
-      onMouseMove={handleMouseMove}
-      className="relative py-12 sm:py-16 bg-transparent overflow-hidden border-t border-[#181818]"
+      className="relative py-16 sm:py-20 bg-transparent overflow-hidden border-t border-[#181818]"
     >
-      {/* Background 3D Orbital Vortex Rings */}
+      {/* Subtle Studio Depth Radial Glow */}
       <div
         aria-hidden="true"
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[760px] h-[760px] pointer-events-none opacity-[0.11] select-none"
-      >
-        <motion.svg
-          style={{ rotate: orbitalRotate, scale: orbitalScale }}
-          viewBox="0 0 760 760"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full"
-        >
-          <circle cx="380" cy="380" r="370" stroke="#ffffff" strokeWidth="1" strokeDasharray="8 12" />
-          <circle cx="380" cy="380" r="300" stroke="#ffffff" strokeWidth="0.8" strokeDasharray="3 6" />
-          <circle cx="380" cy="380" r="230" stroke="#ffffff" strokeWidth="0.5" />
-          <line x1="380" y1="10" x2="380" y2="750" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="4 8" />
-          <line x1="10" y1="380" x2="750" y2="380" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="4 8" />
-          <circle cx="380" cy="10" r="3.5" fill="#ffffff" />
-          <circle cx="380" cy="750" r="3.5" fill="#ffffff" />
-          <circle cx="10" cy="380" r="3.5" fill="#ffffff" />
-          <circle cx="750" cy="380" r="3.5" fill="#ffffff" />
-        </motion.svg>
-      </div>
-
-      {/* Mouse-following spotlight field */}
-      <motion.div
-        aria-hidden="true"
-        style={{ left: spotX, top: spotY }}
-        className="absolute w-[500px] h-[500px] rounded-full -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.07)_0%,transparent_70%)] blur-3xl pointer-events-none -z-10"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.025)_0%,transparent_70%)] pointer-events-none -z-10"
       />
 
       <Container>
@@ -125,15 +77,8 @@ export function ClosingCTA() {
             Your measurements. Every brand. One universal profile.
           </motion.p>
 
-          {/* Centered CTA with Animated Surrounding 3D Ring */}
+          {/* Centered CTA Buttons */}
           <div className="relative pt-6 flex flex-col items-center justify-center">
-            {/* Animated 3D Ring Surrounding the CTA button */}
-            <motion.div
-              style={{ rotate: ringRotate }}
-              aria-hidden="true"
-              className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full border border-dashed border-white/25 pointer-events-none -z-10 animate-[pulse_4s_easeInOut_infinite]"
-            />
-
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}

@@ -44,6 +44,17 @@ export function Chapter01Profile() {
     inseam: 82,
   });
 
+  React.useEffect(() => {
+    const handleSelectDim = (e: Event) => {
+      const customEvent = e as CustomEvent<{ dimension: DimensionKey }>;
+      if (customEvent.detail?.dimension) {
+        setActiveDim(customEvent.detail.dimension);
+      }
+    };
+    window.addEventListener("fitmatch:select_dimension", handleSelectDim);
+    return () => window.removeEventListener("fitmatch:select_dimension", handleSelectDim);
+  }, []);
+
   const updateVal = (key: DimensionKey, val: number) => {
     setMeasurements((prev) => ({ ...prev, [key]: val }));
     if (typeof window !== "undefined") {

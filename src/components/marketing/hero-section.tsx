@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { MaskedHeading } from "../motion/masked-text";
 import { Magnetic } from "../motion/magnetic-button";
 import { AnimatedCounter } from "../motion/animated-counter";
-import { ArrowRight, ChevronDown, Compass, Activity } from "lucide-react";
+import { ArrowRight, ChevronDown, Compass, Activity, RotateCcw } from "lucide-react";
 import { fadeInUp, TRANSITION_EASE } from "@/lib/motion/variants";
 
 export function HeroSection() {
@@ -156,7 +156,18 @@ export function HeroSection() {
                   <Activity className="w-3.5 h-3.5 text-white animate-pulse" />
                   <span className="text-white font-semibold uppercase tracking-wider">3D TELEMETRY</span>
                 </div>
-                <span className="text-emerald-400 font-bold">CALIBRATED</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("fitmatch:reset_view"));
+                    }
+                  }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 transition-colors"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>RESET</span>
+                </button>
               </div>
 
               {/* Real-Time Anthropometric Coordinates Feed */}
