@@ -6,7 +6,9 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { LuxuryCursor } from "@/components/motion/luxury-cursor";
 import { SpotlightCanvas } from "@/components/motion/spotlight-canvas";
 import { CinematicIntro } from "@/components/motion/cinematic-intro";
+import { ThreeSceneBackground } from "@/components/motion/three-scene-background";
 import { ContinuousBackground } from "@/components/motion/continuous-background";
+import { SmoothScroll } from "@/components/motion/smooth-scroll";
 
 const bodoniModa = Bodoni_Moda({
   subsets: ["latin"],
@@ -44,13 +46,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${bodoniModa.variable} ${manrope.variable} font-body`}>
       <body className="min-h-screen bg-[#080808] text-[#f5f5f5] antialiased selection:bg-neutral-800 selection:text-white relative">
-        <CinematicIntro />
-        <ContinuousBackground />
-        <SpotlightCanvas />
-        <LuxuryCursor />
-        <SiteHeader />
-        <main className="min-h-screen flex flex-col relative z-10">{children}</main>
-        <SiteFooter />
+        <SmoothScroll>
+          <CinematicIntro />
+          <ThreeSceneBackground />
+          <ContinuousBackground />
+          <SpotlightCanvas />
+          <LuxuryCursor />
+          <SiteHeader />
+          <main className="min-h-screen flex flex-col relative z-10">{children}</main>
+          <SiteFooter />
+        </SmoothScroll>
       </body>
     </html>
   );

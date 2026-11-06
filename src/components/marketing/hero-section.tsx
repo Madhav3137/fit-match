@@ -5,32 +5,28 @@ import Link from "next/link";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Container } from "../layout/container";
 import { Button } from "../ui/button";
-import { MeasurementDiagram } from "../ui/measurement-diagram";
+import { BodyMesh3D } from "../ui/body-mesh-3d";
 import { MaskedHeading } from "../motion/masked-text";
 import { Magnetic } from "../motion/magnetic-button";
 import { AnimatedCounter } from "../motion/animated-counter";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import { fadeInUp, TRANSITION_EASE } from "@/lib/motion/variants";
 
 export function HeroSection() {
-  // 3D Parallax Tilt for the Measurement Graphic Card
+  // 3D Parallax Tilt for the Card Frame
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
   const mouseXSpring = useSpring(x, { stiffness: 120, damping: 20 });
   const mouseYSpring = useSpring(y, { stiffness: 120, damping: 20 });
 
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["9deg", "-9deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-9deg", "9deg"]);
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["6deg", "-6deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    x.set(mouseX / width - 0.5);
-    y.set(mouseY / height - 0.5);
+    x.set((e.clientX - rect.left) / rect.width - 0.5);
+    y.set((e.clientY - rect.top) / rect.height - 0.5);
   };
 
   const handleCardMouseLeave = () => {
@@ -162,52 +158,15 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Right Column: Measurement Line-Art Visual with Ambient Depth & 3D Parallax */}
+          {/* Right Column: 3D Holographic Human Calibration Instrument */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
-            {/* Subtle rotating orbital caliper graphic behind illustration */}
-            <motion.div
-              aria-hidden="true"
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-              className="absolute w-[500px] h-[500px] pointer-events-none opacity-[0.14] -z-10 select-none"
-            >
-              <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                <circle cx="250" cy="250" r="240" stroke="#ffffff" strokeWidth="1" strokeDasharray="6 10" />
-                <circle cx="250" cy="250" r="210" stroke="#ffffff" strokeWidth="0.75" strokeDasharray="2 6" />
-                <circle cx="250" cy="250" r="160" stroke="#ffffff" strokeWidth="0.5" />
-                <line x1="250" y1="0" x2="250" y2="500" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="3 6" />
-                <line x1="0" y1="250" x2="500" y2="250" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="3 6" />
-                <circle cx="250" cy="10" r="3" fill="#ffffff" />
-                <circle cx="250" cy="490" r="3" fill="#ffffff" />
-                <circle cx="10" cy="250" r="3" fill="#ffffff" />
-                <circle cx="490" cy="250" r="3" fill="#ffffff" />
-              </svg>
-            </motion.div>
-
-            {/* Subtle background depth spotlight */}
+            {/* Ambient Illumination Orb behind the 3D model */}
             <div
               aria-hidden="true"
-              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,transparent_70%)] blur-2xl pointer-events-none -z-10"
+              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,transparent_70%)] blur-3xl pointer-events-none -z-10"
             />
 
-            {/* Technical Marking Crosshairs & Calibration Reticles */}
-            <div aria-hidden="true" className="absolute -top-6 -left-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
-              +0.00 LAT // CALIPER
-            </div>
-            <div aria-hidden="true" className="absolute -top-6 -right-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
-              AXIS // 350×560
-            </div>
-            <div aria-hidden="true" className="absolute -bottom-6 -left-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
-              RADIAL GRID // ALIGN
-            </div>
-            <div aria-hidden="true" className="absolute -bottom-6 -right-6 text-[9px] font-mono text-[#444] pointer-events-none select-none hidden sm:block">
-              SYS: 01.PRO
-            </div>
-
-            {/* Connecting guide lines */}
-            <div aria-hidden="true" className="absolute -left-12 top-1/2 w-12 h-[1px] bg-gradient-to-r from-transparent to-[#333] hidden xl:block pointer-events-none" />
-            <div aria-hidden="true" className="absolute -right-12 top-1/2 w-12 h-[1px] bg-gradient-to-l from-transparent to-[#333] hidden xl:block pointer-events-none" />
-
+            {/* Holographic Container with 3D Tilt Frame */}
             <motion.div
               style={{ rotateX, rotateY, transformPerspective: 1000 }}
               onMouseMove={handleCardMouseMove}
@@ -215,25 +174,18 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
-              className="relative w-full max-w-[420px] border border-[#282828] rounded-2xl bg-[#0c0c0c]/90 backdrop-blur-md p-6 shadow-2xl transition-colors hover:border-[#444]"
+              className="relative w-full max-w-[430px] border border-[#2a2a2a] rounded-3xl bg-[#0a0a0a]/90 backdrop-blur-md p-4 sm:p-6 shadow-2xl transition-colors hover:border-neutral-500 overflow-hidden"
             >
-              {/* Header on Card */}
-              <div className="flex items-center justify-between pb-4 mb-2 border-b border-[#202020] text-[10px] font-mono text-[#626262]">
-                <span className="text-[#a0a0a0]">CALIBRATION // M-01</span>
-                <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>METRIC (CM)</span>
-                </span>
+              {/* Subtle moving corner reticles */}
+              <div aria-hidden="true" className="absolute top-3 left-3 text-[9px] font-mono text-[#555] select-none">
+                +0.00 LAT // 3D
+              </div>
+              <div aria-hidden="true" className="absolute top-3 right-3 text-[9px] font-mono text-[#555] select-none">
+                AXIS // 360°
               </div>
 
-              {/* The Interactive SVG Measurement Graphic */}
-              <MeasurementDiagram interactive={true} />
-
-              {/* Caption */}
-              <div className="mt-4 pt-3 border-t border-[#1a1a1a] flex items-center justify-between text-[10px] font-mono text-[#666]">
-                <span>UNIVERSAL HUMAN PROFILE</span>
-                <span className="text-white">6 DATA POINTS</span>
-              </div>
+              {/* The Genuine 3D Wireframe Calibration Instrument */}
+              <BodyMesh3D interactive={true} />
             </motion.div>
           </div>
         </div>
@@ -243,7 +195,7 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="flex justify-center pt-8 text-neutral-600 hover:text-neutral-400 transition-colors"
+          className="flex justify-center pt-10 text-neutral-600 hover:text-neutral-400 transition-colors"
         >
           <Link href="#how-it-works" className="flex flex-col items-center gap-1 group">
             <span className="text-[10px] font-mono tracking-technical uppercase text-[#555] group-hover:text-[#999]">

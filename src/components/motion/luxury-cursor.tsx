@@ -12,25 +12,48 @@ export function LuxuryCursor() {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // Silky smooth spring physics
-  const springConfig = { damping: 28, stiffness: 350, mass: 0.5 };
+  // Velocity deformation state
+  const [angle, setAngle] = React.useState(0);
+  const [scaleFactor, setScaleFactor] = React.useState(1);
+
+  // Spring physics for outer trailing ring
+  const springConfig = { damping: 26, stiffness: 320, mass: 0.4 };
   const smoothX = useSpring(cursorX, springConfig);
   const smoothY = useSpring(cursorY, springConfig);
 
   React.useEffect(() => {
-    // Disable on touch devices or small screens
+    // Disable on touch devices
     if (window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768) {
       setIsTouchDevice(true);
       return;
     }
     setIsTouchDevice(false);
 
+    let prevX = -100;
+    let prevY = -100;
+
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
       if (!isVisible) setIsVisible(true);
 
-      // Detect if hovering interactive targets
+      // Velocity & angle calculation for fluid cursor deformation
+      const vx = e.clientX - prevX;
+      const vy = e.clientY - prevY;
+      const speed = Math.sqrt(vx * vx + vy * vy);
+
+      if (speed > 1) {
+        const rad = Math.atan2(vy, vx);
+        setAngle(rad * (180 / Math.PI));
+        setScaleFactor(Math.min(1 + speed / 65, 1.45));
+      } else {
+        setScaleFactor(1);
+      }
+
+      prevX = e.clientX;
+      prevY = e.clientY;
+
+      // Target detection
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -79,7 +102,7 @@ export function LuxuryCursor() {
         }}
       />
 
-      {/* Atmospheric outer fine ring with spring follow and clean RGBA interpolation */}
+      {/* Atmospheric outer ring with velocity stretching & rotation deformation */}
       <motion.div
         className="fixed top-0 left-0 rounded-full pointer-events-none z-[9998] border border-white/40"
         style={{
@@ -87,10 +110,13 @@ export function LuxuryCursor() {
           y: smoothY,
           translateX: "-50%",
           translateY: "-50%",
+          rotate: angle,
+          scaleX: isHovered ? 1 : scaleFactor,
+          scaleY: isHovered ? 1 : 1 / scaleFactor,
         }}
         animate={{
-          width: isHovered ? 48 : isClicking ? 20 : 32,
-          height: isHovered ? 48 : isClicking ? 20 : 32,
+          width: isHovered ? 52 : isClicking ? 22 : 32,
+          height: isHovered ? 52 : isClicking ? 22 : 32,
           backgroundColor: isHovered
             ? "rgba(255, 255, 255, 0.08)"
             : "rgba(255, 255, 255, 0)",

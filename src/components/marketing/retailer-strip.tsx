@@ -25,7 +25,7 @@ const RETAILERS: RetailerItem[] = [
   { name: "ASOS", domain: "asos.com", status: "planned", category: "Multi-Brand" },
 ];
 
-function RetailerCard({ retailer }: { retailer: RetailerItem }) {
+function RetailerCard({ retailer, index }: { retailer: RetailerItem; index: number }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -33,8 +33,8 @@ function RetailerCard({ retailer }: { retailer: RetailerItem }) {
   const smoothX = useSpring(x, springConfig);
   const smoothY = useSpring(y, springConfig);
 
-  const rotateX = useTransform(smoothY, [-0.5, 0.5], ["7deg", "-7deg"]);
-  const rotateY = useTransform(smoothX, [-0.5, 0.5], ["-7deg", "7deg"]);
+  const rotateX = useTransform(smoothY, [-0.5, 0.5], ["8deg", "-8deg"]);
+  const rotateY = useTransform(smoothX, [-0.5, 0.5], ["-8deg", "8deg"]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -61,11 +61,14 @@ function RetailerCard({ retailer }: { retailer: RetailerItem }) {
     return "ACTIVE";
   };
 
+  // Alternate entry direction (left/right stagger)
+  const isEven = index % 2 === 0;
+
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: TRANSITION_EASE } },
+        hidden: { opacity: 0, x: isEven ? -25 : 25, y: 20 },
+        visible: { opacity: 1, x: 0, y: 0, transition: { duration: 0.7, ease: TRANSITION_EASE } },
       }}
       style={{ rotateX, rotateY, transformPerspective: 1000 }}
       onMouseMove={handleMouseMove}
@@ -73,7 +76,7 @@ function RetailerCard({ retailer }: { retailer: RetailerItem }) {
       className="group relative p-6 rounded-2xl border border-[#222222] bg-[#0e0e0e]/90 backdrop-blur-sm hover:border-neutral-400 transition-colors duration-300 overflow-hidden shadow-lg cursor-pointer"
     >
       {/* Subtle border sheen accent traveling on hover */}
-      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       {/* Internal subtle spotlight follow */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -87,10 +90,10 @@ function RetailerCard({ retailer }: { retailer: RetailerItem }) {
         </Badge>
       </div>
 
-      <div className="text-lg font-bold tracking-wider text-white group-hover:tracking-widest group-hover:text-white transition-all duration-300 relative z-10">
+      <div className="text-xl font-bold tracking-wider text-white group-hover:tracking-widest transition-all duration-300 relative z-10 font-display">
         {retailer.name}
       </div>
-      <div className="text-[11px] font-mono text-[#666] mt-0.5 group-hover:text-[#999] transition-colors relative z-10">
+      <div className="text-[11px] font-mono text-[#666] mt-0.5 group-hover:text-[#aaa] transition-colors relative z-10">
         {retailer.domain}
       </div>
     </motion.div>
@@ -98,18 +101,24 @@ function RetailerCard({ retailer }: { retailer: RetailerItem }) {
 }
 
 export function RetailerStrip() {
-  const container = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-      },
-    },
-  };
+  const marqueeText =
+    "// ACTIVE ADAPTERS: ZARA • H&M • COS • UNIQLO • ARKET • MANGO • SSENSE • ASOS // ANTI-SSRF GUARD // ZERO FABRICATED MEASUREMENTS // REVERSIBLE CM/INCH CALIBRATION // ";
 
   return (
     <section id="retailers" className="py-24 sm:py-28 bg-transparent relative overflow-hidden">
+      {/* Visual Experimentation: Continuous Kinetic Telemetry Marquee */}
+      <div className="w-full overflow-hidden border-y border-[#1c1c1c] bg-[#0a0a0a]/60 py-3 mb-16 select-none">
+        <motion.div
+          animate={{ x: [0, -1200] }}
+          transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
+          className="flex whitespace-nowrap text-xs font-mono tracking-widest text-[#666]"
+        >
+          <span>{marqueeText}</span>
+          <span>{marqueeText}</span>
+          <span>{marqueeText}</span>
+        </motion.div>
+      </div>
+
       <Container>
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="space-y-2">
@@ -126,16 +135,16 @@ export function RetailerStrip() {
           </p>
         </div>
 
-        {/* Retailer Grid with Staggered Entrance & 3D Tilt */}
+        {/* Retailer Grid with Spatial Entrance & 3D Tilt */}
         <motion.div
-          variants={container}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
+          transition={{ staggerChildren: 0.08 }}
           className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 relative"
         >
-          {RETAILERS.map((retailer) => (
-            <RetailerCard key={retailer.name} retailer={retailer} />
+          {RETAILERS.map((retailer, i) => (
+            <RetailerCard key={retailer.name} retailer={retailer} index={i} />
           ))}
         </motion.div>
 
