@@ -15,10 +15,10 @@ export function HeroSection() {
   return (
     <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-24 overflow-hidden bg-transparent">
       <Container>
-        {/* Three-Part Strategic Layout: Left Copy (5 cols) | Center 3D Clearance (4 cols) | Far-Right Compact HUD (3 cols) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
-          {/* Part 1: Left Column — Editorial Typography & Actions */}
-          <div className="lg:col-span-6 xl:col-span-5 space-y-8 relative z-20">
+        {/* Strategic 3-Part Proportional Layout: Left 38% | Center 35% | Right 27% */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-4 relative">
+          {/* Part 1: Left 38% — Editorial Typography & CTAs */}
+          <div className="w-full lg:w-[38%] space-y-8 relative z-20 shrink-0">
             {/* Technical Sub-Header Tag */}
             <motion.div
               initial={{ opacity: 0, x: -15 }}
@@ -137,18 +137,18 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Part 2: Center/Right 3D Spatial Clearing (Columns 7-9) */}
-          {/* Completely transparent and unobstructed, allowing the large 3D mannequin to dominate */}
-          <div className="hidden lg:block lg:col-span-2 xl:col-span-3 pointer-events-none" aria-hidden="true" />
+          {/* Part 2: Center 35% — 3D Spatial Centerpiece Clearing */}
+          {/* Dedicated open viewing corridor for the large, dominant 3D anatomical mannequin */}
+          <div className="hidden lg:block lg:w-[35%] pointer-events-none self-stretch min-h-[480px]" aria-hidden="true" />
 
-          {/* Part 3: Far-Right Column (Columns 10-12) — Compact Telemetry & Sensing Panel */}
-          {/* Docked to the far right flank so it NEVER obscures the mannequin's head, torso or rings */}
-          <div className="lg:col-span-4 xl:col-span-4 flex justify-end relative z-20 pointer-events-none">
+          {/* Part 3: Right 27% — Anthropometric Telemetry & Calibration Panel */}
+          {/* Vertically aligned with the mannequin's torso */}
+          <div className="w-full lg:w-[27%] flex justify-end relative z-20 pointer-events-none shrink-0">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1.0, delay: 0.45, ease: TRANSITION_EASE }}
-              className="w-full max-w-[300px] p-5 rounded-2xl border border-white/10 bg-[#0c0c10]/75 backdrop-blur-md shadow-2xl flex flex-col justify-between space-y-4 pointer-events-auto"
+              className="w-full max-w-[280px] p-5 rounded-2xl border border-white/10 bg-[#0c0c10]/80 backdrop-blur-md shadow-2xl flex flex-col justify-between space-y-4 pointer-events-auto"
             >
               {/* Top Status */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10 text-[10px] font-mono">
@@ -171,23 +171,67 @@ export function HeroSection() {
               </div>
 
               {/* Real-Time Anthropometric Coordinates Feed */}
-              <div className="space-y-2.5 text-[11px] font-mono">
-                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+              <div className="space-y-2 text-[11px] font-mono">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "shoulder" } }));
+                    }
+                  }}
+                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
+                >
                   <span className="text-[#888]">SHOULDERS</span>
                   <span className="text-white font-bold">46.0 CM</span>
-                </div>
-                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "chest" } }));
+                    }
+                  }}
+                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
+                >
                   <span className="text-[#888]">CHEST RING</span>
                   <span className="text-white font-bold">98.0 CM</span>
-                </div>
-                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "waist" } }));
+                    }
+                  }}
+                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
+                >
                   <span className="text-[#888]">NATURAL WAIST</span>
                   <span className="text-white font-bold">84.0 CM</span>
-                </div>
-                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "hip" } }));
+                    }
+                  }}
+                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
+                >
                   <span className="text-[#888]">PELVIC SEAT</span>
                   <span className="text-white font-bold">102.0 CM</span>
-                </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "inseam" } }));
+                    }
+                  }}
+                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
+                >
+                  <span className="text-[#888]">INNER INSEAM</span>
+                  <span className="text-white font-bold">82.0 CM</span>
+                </button>
               </div>
 
               {/* 360° Drag Cue & Laser Status */}

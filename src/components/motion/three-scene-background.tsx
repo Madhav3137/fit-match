@@ -14,11 +14,11 @@ interface MarkerDefinition {
 }
 
 const MARKERS: MarkerDefinition[] = [
-  { id: "shoulder", label: "SHOULDERS", defaultVal: 46.0, unit: "CM", posY: 39.5, radius: 18.5, description: "Biacromial breadth" },
-  { id: "chest", label: "CHEST", defaultVal: 98.0, unit: "CM", posY: 30.5, radius: 17.0, description: "Fullest thoracic girth" },
-  { id: "waist", label: "WAIST", defaultVal: 84.0, unit: "CM", posY: 17.5, radius: 13.8, description: "Narrowest torso datum" },
-  { id: "hip", label: "HIPS", defaultVal: 102.0, unit: "CM", posY: 5.5, radius: 16.2, description: "Fullest pelvic width" },
-  { id: "inseam", label: "INSEAM", defaultVal: 82.0, unit: "CM", posY: -22.0, radius: 10.5, description: "Inner groin to ankle" },
+  { id: "shoulder", label: "SHOULDERS", defaultVal: 46.0, unit: "CM", posY: 40.0, radius: 19.5, description: "Biacromial breadth" },
+  { id: "chest", label: "CHEST", defaultVal: 98.0, unit: "CM", posY: 31.0, radius: 17.6, description: "Fullest thoracic girth" },
+  { id: "waist", label: "WAIST", defaultVal: 84.0, unit: "CM", posY: 17.5, radius: 14.2, description: "Narrowest natural waist" },
+  { id: "hip", label: "HIPS", defaultVal: 102.0, unit: "CM", posY: 5.5, radius: 16.8, description: "Fullest pelvic width" },
+  { id: "inseam", label: "INSEAM", defaultVal: 82.0, unit: "CM", posY: -22.0, radius: 11.0, description: "Inner crotch to ankle" },
 ];
 
 export function ThreeSceneBackground() {
@@ -49,10 +49,11 @@ export function ThreeSceneBackground() {
 
     // 1. SCENE, CAMERA, RENDERER
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x050507, 0.0012);
+    scene.fog = new THREE.FogExp2(0x050507, 0.0011);
 
+    // Camera at z: 200, fov: 45 gives optimal perspective with zero fisheye distortion
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 215);
+    camera.position.set(0, 0, 200);
 
     const renderer = new THREE.WebGLRenderer({
       powerPreference: "high-performance",
@@ -62,77 +63,84 @@ export function ThreeSceneBackground() {
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     renderer.setClearColor(0x050507, 1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     container.appendChild(renderer.domElement);
 
-    // 2. CONTROLLED STUDIO LIGHTING RIG (Monochrome Luxury Aesthetic)
-    // Ambient fill
-    const ambientLight = new THREE.AmbientLight(0x282c35, 2.2);
+    // 2. PROFESSIONAL 5-POINT CINEMATIC LIGHTING RIG
+    // Ambient baseline
+    const ambientLight = new THREE.AmbientLight(0x2a303c, 2.4);
     scene.add(ambientLight);
 
-    // Overhead Key Softbox (Subtly responds to mouse position to gleam across contours)
-    const keyLight = new THREE.DirectionalLight(0xffffff, 3.8);
-    keyLight.position.set(70, 140, 110);
+    // Overhead Key Softbox (Top-right, casting sculptural speculars)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 4.5);
+    keyLight.position.set(80, 160, 130);
     scene.add(keyLight);
 
-    // Razor-sharp Cool-Silver Rim Lights (Define silhouette against deep charcoal background)
-    const rimLightLeft = new THREE.DirectionalLight(0xb8cce4, 5.5);
-    rimLightLeft.position.set(-140, 95, -85);
+    // Razor Cool-Blue Specular Rim Light (Silhouette pop against pitch black)
+    const rimLightLeft = new THREE.DirectionalLight(0xc4dcff, 6.8);
+    rimLightLeft.position.set(-150, 110, -90);
     scene.add(rimLightLeft);
 
-    const rimLightRight = new THREE.DirectionalLight(0xffffff, 4.8);
-    rimLightRight.position.set(140, 95, -85);
+    // Warm Silver Right Rim Light (Edge separation)
+    const rimLightRight = new THREE.DirectionalLight(0xffffff, 5.8);
+    rimLightRight.position.set(150, 110, -90);
     scene.add(rimLightRight);
 
-    // Subtle Ground Bounce Fill
-    const groundBounce = new THREE.DirectionalLight(0x1c212a, 1.4);
-    groundBounce.position.set(0, -90, 60);
+    // Studio Ground Bounce Fill
+    const groundBounce = new THREE.DirectionalLight(0x222834, 1.8);
+    groundBounce.position.set(0, -90, 70);
     scene.add(groundBounce);
 
-    // 3. MASTER SCENE ROOTS
-    // Mannequin root: FIXED POSITION, FIXED SCALE, STATIONARY BY DEFAULT
+    // Internal Thoracic Chest Point Light (Translucent core glow)
+    const thoracicGlow = new THREE.PointLight(0xdde8ff, 3.2, 90);
+    thoracicGlow.position.set(0, 32, 12);
+
+    // 3. MASTER SCENE ROOT GROUPS
+    // Mannequin root: Positioned in center-right 35% corridor (x: 16.5) so left 38% copy and right 27% HUD are clear
     const mannequinMaster = new THREE.Group();
     scene.add(mannequinMaster);
-    // Centered in right viewport clearing (x: 14) so left editorial copy and far-right HUD are clear
-    mannequinMaster.position.set(isMobile ? 0 : 14, -3, 0);
+    mannequinMaster.add(thoracicGlow);
+    mannequinMaster.position.set(isMobile ? 0 : 16.5, -4, 0);
 
-    // Garment inspection root for Chapter 02 / 03
+    // 3D Garment Root for Chapters 02 & 03
     const garmentMaster = new THREE.Group();
     scene.add(garmentMaster);
-    garmentMaster.position.set(isMobile ? 0 : 14, 8, 0);
+    garmentMaster.position.set(isMobile ? 0 : 16.5, 12, 0);
     garmentMaster.visible = false;
 
-    // 4. REFINED SILVER & TITANIUM MATERIALS
-    // Base solid metallic core (brushed silver with high specular response)
+    // 4. LUXURY AUTOMOTIVE-GRADE METALLIC & CHROME MATERIALS
+    // Solid core: Liquid silver / titanium with high specular reflectance
     const silverMetalMat = new THREE.MeshStandardMaterial({
-      color: 0x828b98,
-      metalness: 0.88,
-      roughness: 0.22,
+      color: 0x8a96a6,
+      metalness: 0.94,
+      roughness: 0.15,
       transparent: true,
-      opacity: 0.82,
+      opacity: 0.86,
       side: THREE.DoubleSide,
     });
 
-    // Clean, subtle architectural contour wire lines
+    // Refined structural contour lines
     const contourWireMat = new THREE.MeshBasicMaterial({
-      color: 0xd6e0ec,
+      color: 0xffffff,
       wireframe: true,
       transparent: true,
-      opacity: 0.24,
+      opacity: 0.32,
     });
 
-    // Active body segment highlight material
+    // Active highlighted body segment material
     const segmentHighlightMat = new THREE.MeshStandardMaterial({
-      color: 0xd0dae6,
-      emissive: 0x334455,
-      emissiveIntensity: 0.65,
-      metalness: 0.92,
-      roughness: 0.12,
+      color: 0xffffff,
+      emissive: 0x446688,
+      emissiveIntensity: 0.85,
+      metalness: 0.98,
+      roughness: 0.08,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.98,
       side: THREE.DoubleSide,
     });
 
-    // Helper to create body segments
+    // Segment mesh tracker
     const segmentMeshes: Record<string, { solid: THREE.Mesh; group: THREE.Group }> = {};
 
     const createBodySegment = (id: string, geo: THREE.BufferGeometry, posY: number, parent: THREE.Group, scale = 1) => {
@@ -151,68 +159,78 @@ export function ThreeSceneBackground() {
       return segGroup;
     };
 
-    // A. ANATOMICAL HUMAN SILHOUETTE
-    // Head & Neck
+    // A. DETAILED ANATOMICAL HUMAN MANNEQUIN
+    // 1. Head & Neck
     const headGroup = new THREE.Group();
     mannequinMaster.add(headGroup);
 
-    const craniumGeo = new THREE.SphereGeometry(7.2, 22, 18);
-    craniumGeo.scale(1, 1.22, 1.06);
-    createBodySegment("cranium", craniumGeo, 56.5, headGroup);
+    // Cranium with cranial vault
+    const craniumGeo = new THREE.SphereGeometry(8.2, 32, 28);
+    craniumGeo.scale(1.0, 1.25, 1.08);
+    createBodySegment("cranium", craniumGeo, 58.5, headGroup);
 
-    const jawGeo = new THREE.ConeGeometry(5.2, 5.8, 16, 1, true);
-    jawGeo.rotateX(Math.PI);
-    createBodySegment("jaw", jawGeo, 49.5, headGroup);
+    // Contoured Jaw / Mandible
+    const jawGeo = new THREE.CylinderGeometry(5.2, 3.8, 6.2, 20, 2);
+    jawGeo.scale(1.0, 1.0, 0.92);
+    createBodySegment("jaw", jawGeo, 51.0, headGroup);
 
-    const neckGeo = new THREE.CylinderGeometry(3.6, 4.4, 7.8, 18, 2, true);
-    createBodySegment("neck", neckGeo, 44.5, headGroup);
+    // Anatomical Neck with Sternocleidomastoid taper
+    const neckGeo = new THREE.CylinderGeometry(4.0, 4.8, 8.5, 22, 3);
+    createBodySegment("neck", neckGeo, 45.5, headGroup);
 
-    // Torso (Trapezius, Shoulders, Chest)
+    // 2. Torso, Shoulders & Chest
     const torsoGroup = new THREE.Group();
     mannequinMaster.add(torsoGroup);
 
-    const shoulderGeo = new THREE.CylinderGeometry(15.6, 14.6, 4.8, 22, 2, true);
-    createBodySegment("shoulder", shoulderGeo, 39.5, torsoGroup);
+    // Clavicular Trapezius Bridge
+    const shoulderGeo = new THREE.CylinderGeometry(18.2, 17.0, 5.5, 24, 2);
+    createBodySegment("shoulder", shoulderGeo, 40.0, torsoGroup);
 
-    const deltoidGeo = new THREE.SphereGeometry(3.9, 14, 12);
-    const leftDeltoid = createBodySegment("deltoid_l", deltoidGeo, 39, torsoGroup);
-    leftDeltoid.position.x = -16.8;
-    const rightDeltoid = createBodySegment("deltoid_r", deltoidGeo, 39, torsoGroup);
-    rightDeltoid.position.x = 16.8;
+    // Deltoid Shoulder Caps
+    const deltoidGeo = new THREE.SphereGeometry(4.6, 18, 16);
+    const leftDeltoid = createBodySegment("deltoid_l", deltoidGeo, 39.5, torsoGroup);
+    leftDeltoid.position.x = -19.5;
+    const rightDeltoid = createBodySegment("deltoid_r", deltoidGeo, 39.5, torsoGroup);
+    rightDeltoid.position.x = 19.5;
 
-    const chestGeo = new THREE.CylinderGeometry(15.0, 12.2, 15.0, 22, 4, true);
-    chestGeo.scale(1.05, 1, 0.82);
-    createBodySegment("chest", chestGeo, 30.5, torsoGroup);
+    // Sculpted Thorax & Pectoral Ribcage
+    const chestGeo = new THREE.CylinderGeometry(17.5, 14.2, 17.0, 26, 6);
+    chestGeo.scale(1.08, 1.0, 0.84);
+    createBodySegment("chest", chestGeo, 31.0, torsoGroup);
 
-    // Abdomen & Natural Waist
-    const waistGeo = new THREE.CylinderGeometry(12.0, 13.0, 12.0, 22, 3, true);
-    waistGeo.scale(1, 1, 0.78);
+    // Natural Waist & Abdominal Wall
+    const waistGeo = new THREE.CylinderGeometry(13.8, 14.8, 13.5, 24, 4);
+    waistGeo.scale(1.02, 1.0, 0.78);
     createBodySegment("waist", waistGeo, 17.5, torsoGroup);
 
-    // Pelvis & Hips
-    const pelvisGeo = new THREE.CylinderGeometry(13.0, 15.0, 13.5, 22, 3, true);
-    pelvisGeo.scale(1.08, 1, 0.85);
+    // Pelvis & Iliac Flare
+    const pelvisGeo = new THREE.CylinderGeometry(14.8, 17.2, 15.0, 26, 4);
+    pelvisGeo.scale(1.08, 1.0, 0.85);
     createBodySegment("hip", pelvisGeo, 5.5, mannequinMaster);
 
-    // Arms (Restrained Tailoring A-Pose)
+    // 3. Relaxed Tailoring A-Pose Arms
     const createArm = (isRight: boolean) => {
       const armGroup = new THREE.Group();
       const sign = isRight ? 1 : -1;
-      armGroup.position.set(sign * 16.8, 38, 0);
-      armGroup.rotation.z = sign * -0.16;
-      armGroup.rotation.x = 0.04;
+      armGroup.position.set(sign * 19.5, 38.5, 0);
+      armGroup.rotation.z = sign * -0.18;
+      armGroup.rotation.x = 0.05;
 
-      const bicepGeo = new THREE.CylinderGeometry(3.2, 2.6, 16.0, 14, 2, true);
-      createBodySegment(isRight ? "bicep_r" : "bicep_l", bicepGeo, -8, armGroup);
+      // Bicep
+      const bicepGeo = new THREE.CylinderGeometry(3.6, 3.0, 18.0, 18, 4);
+      createBodySegment(isRight ? "bicep_r" : "bicep_l", bicepGeo, -9, armGroup);
 
-      const elbowGeo = new THREE.SphereGeometry(2.5, 12, 10);
-      createBodySegment(isRight ? "elbow_r" : "elbow_l", elbowGeo, -16.8, armGroup);
+      // Elbow
+      const elbowGeo = new THREE.SphereGeometry(2.8, 14, 12);
+      createBodySegment(isRight ? "elbow_r" : "elbow_l", elbowGeo, -18.5, armGroup);
 
-      const forearmGeo = new THREE.CylinderGeometry(2.5, 2.0, 14.5, 14, 2, true);
-      createBodySegment(isRight ? "forearm_r" : "forearm_l", forearmGeo, -24.5, armGroup);
+      // Forearm
+      const forearmGeo = new THREE.CylinderGeometry(2.9, 2.3, 16.5, 18, 4);
+      createBodySegment(isRight ? "forearm_r" : "forearm_l", forearmGeo, -27, armGroup);
 
-      const handGeo = new THREE.BoxGeometry(2.4, 6.5, 1.4);
-      createBodySegment(isRight ? "hand_r" : "hand_l", handGeo, -34, armGroup);
+      // Hand & Fingers
+      const handGeo = new THREE.BoxGeometry(2.8, 7.5, 1.6);
+      createBodySegment(isRight ? "hand_r" : "hand_l", handGeo, -38, armGroup);
 
       mannequinMaster.add(armGroup);
     };
@@ -220,24 +238,28 @@ export function ThreeSceneBackground() {
     createArm(false);
     createArm(true);
 
-    // Legs (Planted Stature)
+    // 4. Planted Athletic Stature Legs
     const createLeg = (isRight: boolean) => {
       const legGroup = new THREE.Group();
       const sign = isRight ? 1 : -1;
-      legGroup.position.set(sign * 6.6, 0, 0);
+      legGroup.position.set(sign * 7.5, 0, 0);
 
-      const thighGeo = new THREE.CylinderGeometry(5.2, 3.9, 25, 16, 3, true);
-      createBodySegment(isRight ? "thigh_r" : "thigh_l", thighGeo, -13.5, legGroup);
+      // Muscular Thigh
+      const thighGeo = new THREE.CylinderGeometry(6.0, 4.4, 28.0, 20, 4);
+      createBodySegment(isRight ? "thigh_r" : "thigh_l", thighGeo, -14, legGroup);
 
-      const kneeGeo = new THREE.SphereGeometry(3.5, 12, 10);
-      createBodySegment(isRight ? "knee_r" : "knee_l", kneeGeo, -27, legGroup);
+      // Patella Knee Joint
+      const kneeGeo = new THREE.SphereGeometry(4.0, 16, 14);
+      createBodySegment(isRight ? "knee_r" : "knee_l", kneeGeo, -29, legGroup);
 
-      const calfGeo = new THREE.CylinderGeometry(3.7, 2.5, 25, 16, 3, true);
-      createBodySegment(isRight ? "calf_r" : "calf_l", calfGeo, -40.5, legGroup);
+      // Contoured Shin & Calf
+      const calfGeo = new THREE.CylinderGeometry(4.3, 2.8, 28.0, 20, 4);
+      createBodySegment(isRight ? "calf_r" : "calf_l", calfGeo, -44, legGroup);
 
-      const footGeo = new THREE.BoxGeometry(3.5, 3.0, 9.5);
-      const foot = createBodySegment(isRight ? "foot_r" : "foot_l", footGeo, -54.5, legGroup);
-      foot.position.z = 2.4;
+      // Ankle & Foot
+      const footGeo = new THREE.BoxGeometry(3.8, 3.4, 11.5);
+      const foot = createBodySegment(isRight ? "foot_r" : "foot_l", footGeo, -59.5, legGroup);
+      foot.position.z = 2.8;
 
       mannequinMaster.add(legGroup);
     };
@@ -245,34 +267,65 @@ export function ThreeSceneBackground() {
     createLeg(false);
     createLeg(true);
 
-    // B. STUDIO FLOOR ARCHITECTURAL DATUM (Subtle turntable base under feet)
-    const floorDatum = new THREE.Group();
-    floorDatum.position.y = -58;
-    mannequinMaster.add(floorDatum);
+    // B. STUDIO REFLECTIVE GROUND PLANE & CONTACT SHADOWS
+    const floorRoot = new THREE.Group();
+    floorRoot.position.y = -62;
+    mannequinMaster.add(floorRoot);
 
+    // Circular studio turntable base
     const baseDisk = new THREE.Mesh(
-      new THREE.CylinderGeometry(26, 26, 0.8, 48),
+      new THREE.CylinderGeometry(34, 34, 1.2, 64),
       new THREE.MeshStandardMaterial({
-        color: 0x1a1e24,
-        roughness: 0.4,
-        metalness: 0.8,
+        color: 0x111318,
+        roughness: 0.2,
+        metalness: 0.92,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.78,
       })
     );
-    floorDatum.add(baseDisk);
+    floorRoot.add(baseDisk);
 
-    // Fine concentric datum rings
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0x485262, transparent: true, opacity: 0.35 });
-    const innerTrack = new THREE.Mesh(new THREE.RingGeometry(22, 22.3, 48), ringMat);
+    // Contact Ground Shadow Disc with soft falloff
+    const shadowCanvas = document.createElement("canvas");
+    shadowCanvas.width = 256;
+    shadowCanvas.height = 256;
+    const sctx = shadowCanvas.getContext("2d");
+    if (sctx) {
+      const grad = sctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+      grad.addColorStop(0, "rgba(0, 0, 0, 0.95)");
+      grad.addColorStop(0.35, "rgba(0, 0, 0, 0.65)");
+      grad.addColorStop(0.7, "rgba(0, 0, 0, 0.2)");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      sctx.fillStyle = grad;
+      sctx.fillRect(0, 0, 256, 256);
+    }
+    const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
+    const shadowMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(62, 62),
+      new THREE.MeshBasicMaterial({
+        map: shadowTexture,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+      })
+    );
+    shadowMesh.rotation.x = -Math.PI / 2;
+    shadowMesh.position.y = 0.7;
+    floorRoot.add(shadowMesh);
+
+    // Concentric precision turntable graduation tracks
+    const trackMat = new THREE.MeshBasicMaterial({ color: 0x5a6878, transparent: true, opacity: 0.45 });
+    const innerTrack = new THREE.Mesh(new THREE.RingGeometry(26, 26.4, 64), trackMat);
     innerTrack.rotation.x = -Math.PI / 2;
-    floorDatum.add(innerTrack);
+    innerTrack.position.y = 0.65;
+    floorRoot.add(innerTrack);
 
-    const outerTrack = new THREE.Mesh(new THREE.RingGeometry(25.6, 26, 48), ringMat);
+    const outerTrack = new THREE.Mesh(new THREE.RingGeometry(31.5, 32.0, 64), trackMat);
     outerTrack.rotation.x = -Math.PI / 2;
-    floorDatum.add(outerTrack);
+    outerTrack.position.y = 0.65;
+    floorRoot.add(outerTrack);
 
-    // 5. PRECISE MEASUREMENT GUIDES & INTERACTIVE HIT NODES
+    // 5. FOUR PRECISION MEASUREMENT SYSTEMS & INTERACTIVE NODES
     interface RingInstance {
       id: string;
       group: THREE.Group;
@@ -286,44 +339,54 @@ export function ThreeSceneBackground() {
     const interactiveRaycastTargets: THREE.Mesh[] = [];
 
     const guideLineMat = new THREE.MeshStandardMaterial({
-      color: 0xdde6f0,
-      emissive: 0x334455,
-      emissiveIntensity: 0.4,
-      metalness: 0.9,
-      roughness: 0.15,
+      color: 0xffffff,
+      emissive: 0x446688,
+      emissiveIntensity: 0.5,
+      metalness: 0.95,
+      roughness: 0.1,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.92,
     });
 
     const markerDefaultMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0x6688aa,
-      emissiveIntensity: 0.6,
-      metalness: 0.95,
-      roughness: 0.1,
+      emissiveIntensity: 0.7,
+      metalness: 0.98,
+      roughness: 0.08,
     });
 
     const markerHoverMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0xffffff,
-      emissiveIntensity: 1.0,
+      emissiveIntensity: 1.2,
       metalness: 1.0,
-      roughness: 0.05,
+      roughness: 0.02,
     });
 
     MARKERS.forEach((m) => {
       const ringGroup = new THREE.Group();
       ringGroup.position.y = m.posY;
 
-      // Refined, thin 3D Torus guide (tube radius: 0.22 — not a giant ring)
-      const torusGeo = new THREE.TorusGeometry(m.radius, 0.22, 12, 64);
+      // 3D Torus measurement ring (0.28 unit tube catching striking speculars)
+      const torusGeo = new THREE.TorusGeometry(m.radius, 0.28, 14, 64);
       torusGeo.rotateX(Math.PI / 2);
       torusGeo.scale(1, 1, 0.82);
       const torusMesh = new THREE.Mesh(torusGeo, guideLineMat);
       ringGroup.add(torusMesh);
 
+      // Glowing diamond satellite nodes at cardinal points
+      const satGeo = new THREE.OctahedronGeometry(0.8, 0);
+      const satMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2;
+        const sat = new THREE.Mesh(satGeo, satMat);
+        sat.position.set(Math.cos(angle) * m.radius, 0, Math.sin(angle) * (m.radius * 0.82));
+        ringGroup.add(sat);
+      }
+
       // Interactive Marker Sphere at front apex
-      const hitSphereGeo = new THREE.SphereGeometry(1.6, 16, 16);
+      const hitSphereGeo = new THREE.SphereGeometry(1.6, 18, 16);
       const markerSphere = new THREE.Mesh(hitSphereGeo, markerDefaultMat);
       markerSphere.position.set(0, 0, m.radius * 0.82);
       markerSphere.userData = { markerId: m.id, def: m };
@@ -342,58 +405,111 @@ export function ThreeSceneBackground() {
       });
     });
 
-    // 6. CHAPTER 02 — REFINED 3D GARMENT BLUEPRINT
-    const garmentGeo = new THREE.CylinderGeometry(16.5, 14.5, 30, 24, 4, true);
-    garmentGeo.scale(1.15, 1, 0.9);
+    // 6. CONTINUOUS VERTICAL SCANNING LASER PLANE & MOVING ILLUMINATION
+    const scanPlaneGroup = new THREE.Group();
+    mannequinMaster.add(scanPlaneGroup);
+
+    const scanPlaneGeo = new THREE.PlaneGeometry(62, 42);
+    const scanPlaneMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.12,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const scanPlane = new THREE.Mesh(scanPlaneGeo, scanPlaneMat);
+    scanPlane.rotation.x = Math.PI / 2;
+    scanPlaneGroup.add(scanPlane);
+
+    // Glowing laser beam edge line
+    const laserLineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-31, 0, 0),
+      new THREE.Vector3(31, 0, 0),
+    ]);
+    const laserLine = new THREE.Line(
+      laserLineGeo,
+      new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 })
+    );
+    scanPlaneGroup.add(laserLine);
+
+    // Attached Laser Point Light (Casts actual moving illumination onto anatomical curves!)
+    const laserLight = new THREE.PointLight(0xffffff, 4.0, 52);
+    scanPlaneGroup.add(laserLight);
+
+    // 7. CHAPTER 02 — DETAILED 3D TAILORED GARMENT BLUEPRINT
+    const garmentGeo = new THREE.CylinderGeometry(18.2, 15.4, 34, 26, 6, true);
+    garmentGeo.scale(1.18, 1.0, 0.92);
     const garmentMesh = new THREE.Mesh(
       garmentGeo,
       new THREE.MeshStandardMaterial({
-        color: 0xa0afc4,
+        color: 0xb0c4de,
         wireframe: true,
-        emissive: 0x223348,
-        emissiveIntensity: 0.45,
+        emissive: 0x334466,
+        emissiveIntensity: 0.5,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.9,
       })
     );
     garmentMaster.add(garmentMesh);
 
+    // Structured collar
     const garmentCollar = new THREE.Mesh(
-      new THREE.TorusGeometry(8.2, 0.35, 10, 32),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.75 })
+      new THREE.TorusGeometry(8.8, 0.45, 12, 36),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.85 })
     );
     garmentCollar.rotation.x = Math.PI / 2;
-    garmentCollar.position.y = 15;
+    garmentCollar.position.y = 17;
     garmentMaster.add(garmentCollar);
 
-    // Controlled vertical scanning line across garment
-    const scanLineGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-24, 0, 0),
-      new THREE.Vector3(24, 0, 0),
-    ]);
-    const scanLine = new THREE.Line(
-      scanLineGeo,
-      new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })
-    );
-    garmentMaster.add(scanLine);
+    // Garment sleeves
+    const createGarmentSleeve = (isRight: boolean) => {
+      const sign = isRight ? 1 : -1;
+      const sleeve = new THREE.Mesh(
+        new THREE.CylinderGeometry(4.2, 3.2, 28, 16, 4, true),
+        new THREE.MeshStandardMaterial({
+          color: 0x8aa0bc,
+          wireframe: true,
+          emissive: 0x223344,
+          emissiveIntensity: 0.4,
+          transparent: true,
+          opacity: 0.75,
+        })
+      );
+      sleeve.position.set(sign * 21, 2, 0);
+      sleeve.rotation.z = sign * -0.22;
+      garmentMaster.add(sleeve);
+    };
+    createGarmentSleeve(false);
+    createGarmentSleeve(true);
 
-    // Chapter 03 Fit Ease Delta Ring
-    const easeDeltaRing = new THREE.Mesh(
-      new THREE.TorusGeometry(18.5, 0.35, 12, 48),
+    // Chapter 02 Scanning light across garment
+    const garmentScanLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-28, 0, 0),
+        new THREE.Vector3(28, 0, 0),
+      ]),
+      new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 })
+    );
+    garmentMaster.add(garmentScanLine);
+
+    // Chapter 03 Fit Synthesis Ease Delta Rings
+    const easeDeltaRingChest = new THREE.Mesh(
+      new THREE.TorusGeometry(20.5, 0.42, 14, 52),
       new THREE.MeshStandardMaterial({
-        color: 0x88ccff,
-        emissive: 0x336699,
-        emissiveIntensity: 0.7,
+        color: 0x66ffaa,
+        emissive: 0x22cc77,
+        emissiveIntensity: 0.85,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.9,
       })
     );
-    easeDeltaRing.rotation.x = Math.PI / 2;
-    easeDeltaRing.position.y = 8;
-    easeDeltaRing.visible = false;
-    garmentMaster.add(easeDeltaRing);
+    easeDeltaRingChest.rotation.x = Math.PI / 2;
+    easeDeltaRingChest.position.y = 8;
+    easeDeltaRingChest.visible = false;
+    garmentMaster.add(easeDeltaRingChest);
 
-    // 7. INTERACTION STATE — STATIONARY DEFAULT, CONTROLLED USER ROTATION
+    // 8. INTERACTIVE STATE TRACKING
     let userRotationY = 0;
     let targetRotationY = 0;
     let isDragging = false;
@@ -402,7 +518,7 @@ export function ThreeSceneBackground() {
     let hoveredMarkerId: string | null = null;
     let selectedMarkerId: string = "chest";
 
-    // Mouse coordinates for subtle studio key light response
+    // Mouse coordinates for lighting shift
     let mouseX = 0;
     let mouseY = 0;
     const raycaster = new THREE.Raycaster();
@@ -419,7 +535,6 @@ export function ThreeSceneBackground() {
       });
     };
 
-    // Highlight chest by default
     highlightSegment("chest");
 
     // Dynamic marker values
@@ -438,7 +553,6 @@ export function ThreeSceneBackground() {
         return;
       }
 
-      // Project 3D coordinate to screen pixel coordinates
       const worldPos = new THREE.Vector3(0, def.posY, def.radius * 0.82);
       mannequinMaster.localToWorld(worldPos);
       worldPos.project(camera);
@@ -458,7 +572,7 @@ export function ThreeSceneBackground() {
       });
     };
 
-    // 8. EVENT HANDLERS
+    // 9. EVENT LISTENERS
     const handlePointerMove = (e: PointerEvent) => {
       mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
       mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
@@ -474,7 +588,7 @@ export function ThreeSceneBackground() {
         return;
       }
 
-      // Raycasting for interactive marker nodes
+      // Raycast test
       raycaster.setFromCamera(mouseVector, camera);
       const intersects = raycaster.intersectObjects(interactiveRaycastTargets);
 
@@ -485,7 +599,6 @@ export function ThreeSceneBackground() {
           hoveredMarkerId = id;
           document.body.style.cursor = "pointer";
 
-          // Highlight marker sphere
           interactiveRaycastTargets.forEach((target) => {
             target.material = target.userData.markerId === id ? markerHoverMat : markerDefaultMat;
           });
@@ -530,17 +643,14 @@ export function ThreeSceneBackground() {
     const handlePointerUp = () => {
       if (!isDragging) return;
       isDragging = false;
-
-      // STOP ROTATION IMMEDIATELY — No continuing drift or cartoon spinning!
+      // IMMEDIATE STOP — Zero drift or cartoon coasting!
       targetRotationY = userRotationY;
 
-      // If it was a clean click without dragging, check if user clicked a marker
       if (!hasDragged && hoveredMarkerId) {
         selectedMarkerId = hoveredMarkerId;
         highlightSegment(selectedMarkerId);
         updateAnnotationBadge(selectedMarkerId, true);
 
-        // Sync with page controls
         window.dispatchEvent(
           new CustomEvent("fitmatch:select_dimension", {
             detail: { dimension: selectedMarkerId },
@@ -549,7 +659,6 @@ export function ThreeSceneBackground() {
       }
     };
 
-    // Reset View
     const handleResetView = () => {
       targetRotationY = 0;
     };
@@ -576,14 +685,14 @@ export function ThreeSceneBackground() {
     const handleFitPreference = (e: Event) => {
       const customEvent = e as CustomEvent<{ preference: string }>;
       const { preference } = customEvent.detail;
-      easeDeltaRing.visible = true;
+      easeDeltaRingChest.visible = true;
 
       if (preference === "slim") {
-        easeDeltaRing.scale.set(0.95, 1, 0.95);
+        easeDeltaRingChest.scale.set(0.94, 1, 0.94);
       } else if (preference === "relaxed") {
-        easeDeltaRing.scale.set(1.18, 1, 1.18);
+        easeDeltaRingChest.scale.set(1.18, 1, 1.18);
       } else {
-        easeDeltaRing.scale.set(1.06, 1, 1.06);
+        easeDeltaRingChest.scale.set(1.06, 1, 1.06);
       }
     };
 
@@ -602,74 +711,83 @@ export function ThreeSceneBackground() {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
-      mannequinMaster.position.x = isMobile ? 0 : 14;
-      garmentMaster.position.x = isMobile ? 0 : 14;
+      mannequinMaster.position.x = isMobile ? 0 : 16.5;
+      garmentMaster.position.x = isMobile ? 0 : 16.5;
     };
     window.addEventListener("resize", handleResize);
 
-    // 9. ANIMATION LOOP — PURE RESTRAINT & CONTROLLED PRECISION
+    // 10. ANIMATION LOOP — CHOREOGRAPHED HERO REVEAL & CHAPTER TRANSITIONS
     let animationFrameId: number;
-    let scanLineY = 0;
+    const startTime = performance.now();
+    let garmentScanY = 0;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       if (document.hidden) return;
 
-      // 1. Mannequin rotation damping — halts immediately when drag stops
-      userRotationY += (targetRotationY - userRotationY) * 0.25;
+      const elapsed = (performance.now() - startTime) / 1000;
+
+      // 1. Mannequin rotation damping (settles firmly and stops)
+      userRotationY += (targetRotationY - userRotationY) * 0.22;
       mannequinMaster.rotation.y = userRotationY;
 
-      // 2. Subtle mouse-responsive studio key light shift across metallic contours
-      // Note: The mannequin itself stays completely stationary!
-      keyLight.position.x = 70 + mouseX * 28;
-      keyLight.position.y = 140 - mouseY * 22;
+      // 2. Mouse-responsive studio key light shift
+      keyLight.position.x = 80 + mouseX * 28;
+      keyLight.position.y = 160 - mouseY * 22;
 
-      // 3. Controlled vertical scanning line across garment (Chapter 02)
+      // 3. Continuous vertical laser scan beam travel (torso region Y: 10 to 45)
+      const scanY = 27 + Math.sin(elapsed * 1.6) * 18;
+      scanPlaneGroup.position.y = scanY;
+
+      // 4. Garment scanning beam in Chapter 02
       if (garmentMaster.visible) {
-        scanLineY += 0.45;
-        if (scanLineY > 15) scanLineY = -15;
-        scanLine.position.y = scanLineY;
+        garmentScanY += 0.55;
+        if (garmentScanY > 18) garmentScanY = -18;
+        garmentScanLine.position.y = garmentScanY;
       }
 
-      // 4. Chapter-Specific Mode Transitions via Scroll Position
+      // 5. Scroll-driven cinematic chapter transitions
       const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
       const scrollProgress = Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
 
       if (scrollProgress < 0.22) {
-        // HERO: Full-body stationary mannequin in right clearing (x: 14)
+        // HERO: Large dominant stationary mannequin in center-right clearing (x: 16.5)
         mannequinMaster.visible = true;
-        silverMetalMat.opacity = 0.82;
-        contourWireMat.opacity = 0.24;
+        silverMetalMat.opacity = 0.86;
+        contourWireMat.opacity = 0.32;
+        scanPlaneGroup.visible = true;
         garmentMaster.visible = false;
-        easeDeltaRing.visible = false;
+        easeDeltaRingChest.visible = false;
       } else if (scrollProgress >= 0.22 && scrollProgress < 0.42) {
-        // CHAPTER 01: Universal Profile Measurement Laboratory
-        // Clear focus on measurement guides
+        // CHAPTER 01: Universal Measurement Laboratory
         mannequinMaster.visible = true;
-        silverMetalMat.opacity = 0.88;
-        contourWireMat.opacity = 0.3;
+        silverMetalMat.opacity = 0.92;
+        contourWireMat.opacity = 0.38;
+        scanPlaneGroup.visible = true;
         garmentMaster.visible = false;
-        easeDeltaRing.visible = false;
+        easeDeltaRingChest.visible = false;
       } else if (scrollProgress >= 0.42 && scrollProgress < 0.62) {
-        // CHAPTER 02: Real-Time Garment Link Ingestion
-        // Mannequin fades to faint background silhouette; 3D Garment blueprint is the visual focus!
+        // CHAPTER 02: Garment Ingestion
+        // Mannequin dims to faint reference silhouette; 3D Garment blueprint is the visual focus!
         mannequinMaster.visible = true;
-        silverMetalMat.opacity = 0.1;
+        silverMetalMat.opacity = 0.12;
         contourWireMat.opacity = 0.08;
+        scanPlaneGroup.visible = false;
         garmentMaster.visible = true;
-        easeDeltaRing.visible = false;
+        easeDeltaRingChest.visible = false;
       } else if (scrollProgress >= 0.62 && scrollProgress < 0.78) {
-        // CHAPTER 03: Fit Synthesis & Ease Comparison
+        // CHAPTER 03: Fit Synthesis (Garment + Body overlay with Ease Delta Ring)
         mannequinMaster.visible = true;
-        silverMetalMat.opacity = 0.35;
-        contourWireMat.opacity = 0.15;
+        silverMetalMat.opacity = 0.4;
+        contourWireMat.opacity = 0.2;
+        scanPlaneGroup.visible = false;
         garmentMaster.visible = true;
-        easeDeltaRing.visible = true;
+        easeDeltaRingChest.visible = true;
       } else {
-        // RETAILERS, FAQ, CTA: Fades down completely for clean, unobstructed reading
+        // RETAILERS, FAQ, CTA: Fades completely for 100% reading contrast
         mannequinMaster.visible = false;
         garmentMaster.visible = false;
-        easeDeltaRing.visible = false;
+        easeDeltaRingChest.visible = false;
       }
 
       renderer.render(scene, camera);
@@ -711,11 +829,11 @@ export function ThreeSceneBackground() {
             position: "fixed",
             left: `${activeAnnotation.screenX}px`,
             top: `${activeAnnotation.screenY}px`,
-            transform: "translate(18px, -50%)",
+            transform: "translate(20px, -50%)",
             pointerEvents: "none",
             zIndex: 15,
           }}
-          className="hidden sm:flex flex-col gap-0.5 px-3 py-1.5 rounded-lg border border-white/20 bg-[#0c0d12]/90 backdrop-blur-md shadow-2xl transition-all duration-150"
+          className="hidden sm:flex flex-col gap-0.5 px-3.5 py-2 rounded-xl border border-white/20 bg-[#0c0d12]/92 backdrop-blur-md shadow-2xl transition-all duration-150"
         >
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
