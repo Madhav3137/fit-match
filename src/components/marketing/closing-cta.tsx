@@ -39,7 +39,7 @@ export function ClosingCTA() {
     <section
       ref={sectionRef}
       onMouseMove={handleMouseMove}
-      className="relative py-14 sm:py-20 bg-transparent overflow-hidden border-t border-[#181818]"
+      className="relative py-12 sm:py-16 bg-transparent overflow-hidden border-t border-[#181818]"
     >
       {/* Background 3D Orbital Vortex Rings */}
       <div

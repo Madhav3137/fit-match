@@ -8,16 +8,17 @@ import { Button } from "../ui/button";
 import { MaskedHeading } from "../motion/masked-text";
 import { Magnetic } from "../motion/magnetic-button";
 import { AnimatedCounter } from "../motion/animated-counter";
-import { ArrowRight, ChevronDown, Compass, Scan, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, Compass, Activity } from "lucide-react";
 import { fadeInUp, TRANSITION_EASE } from "@/lib/motion/variants";
 
 export function HeroSection() {
   return (
     <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-24 overflow-hidden bg-transparent">
       <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          {/* Left Column: Editorial Headline & Actions */}
-          <div className="lg:col-span-7 space-y-8 relative z-20">
+        {/* Three-Part Strategic Layout: Left Copy (5 cols) | Center 3D Clearance (4 cols) | Far-Right Compact HUD (3 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
+          {/* Part 1: Left Column — Editorial Typography & Actions */}
+          <div className="lg:col-span-6 xl:col-span-5 space-y-8 relative z-20">
             {/* Technical Sub-Header Tag */}
             <motion.div
               initial={{ opacity: 0, x: -15 }}
@@ -43,7 +44,7 @@ export function HeroSection() {
                   delay={0.1}
                   wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-medium tracking-tight text-white uppercase leading-[1.08]"
+                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[3.8rem] xl:text-[4.6rem] font-medium tracking-tight text-white uppercase leading-[1.08]"
                 >
                   YOUR SIZE.
                 </MaskedHeading>
@@ -54,7 +55,7 @@ export function HeroSection() {
                   delay={0.25}
                   wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.08]"
+                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[3.8rem] xl:text-[4.6rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.08]"
                 >
                   EVERY BRAND.
                 </MaskedHeading>
@@ -67,7 +68,7 @@ export function HeroSection() {
               initial="hidden"
               animate="visible"
               transition={{ delay: 0.4 }}
-              className="text-base sm:text-lg text-[#999999] max-w-xl font-normal leading-relaxed text-balance"
+              className="text-base sm:text-lg text-[#999999] max-w-lg font-normal leading-relaxed text-balance"
             >
               One reusable body profile. Paste any product link to receive brand- and
               garment-aware size recommendations based on real sizing data.
@@ -136,49 +137,55 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Right Column: Open Architectural Telemetry Window into the 3D Mannequin */}
-          <div className="lg:col-span-5 relative flex flex-col items-center justify-center min-h-[460px] sm:min-h-[520px] pointer-events-none">
-            {/* Ambient Illumination Vignette */}
-            <div
-              aria-hidden="true"
-              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,transparent_70%)] blur-3xl -z-10"
-            />
+          {/* Part 2: Center/Right 3D Spatial Clearing (Columns 7-9) */}
+          {/* Completely transparent and unobstructed, allowing the large 3D mannequin to dominate */}
+          <div className="hidden lg:block lg:col-span-2 xl:col-span-3 pointer-events-none" aria-hidden="true" />
 
-            {/* Precision HUD Reticle Frame Framing the Massive Background Mannequin */}
+          {/* Part 3: Far-Right Column (Columns 10-12) — Compact Telemetry & Sensing Panel */}
+          {/* Docked to the far right flank so it NEVER obscures the mannequin's head, torso or rings */}
+          <div className="lg:col-span-4 xl:col-span-4 flex justify-end relative z-20 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
-              className="relative w-full max-w-[420px] p-6 rounded-3xl border border-white/10 bg-white/[0.015] backdrop-blur-[2px] shadow-2xl flex flex-col justify-between h-[460px] sm:h-[500px]"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1.0, delay: 0.45, ease: TRANSITION_EASE }}
+              className="w-full max-w-[300px] p-5 rounded-2xl border border-white/10 bg-[#0c0c10]/75 backdrop-blur-md shadow-2xl flex flex-col justify-between space-y-4 pointer-events-auto"
             >
-              {/* Top HUD Status */}
-              <div className="flex items-center justify-between text-[10px] font-mono text-[#888] pb-3 border-b border-white/10">
+              {/* Top Status */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 text-[10px] font-mono">
                 <div className="flex items-center gap-2">
-                  <Scan className="w-3.5 h-3.5 text-white animate-pulse" />
-                  <span className="text-white font-medium uppercase tracking-wider">3D SENSING RIG</span>
+                  <Activity className="w-3.5 h-3.5 text-white animate-pulse" />
+                  <span className="text-white font-semibold uppercase tracking-wider">3D TELEMETRY</span>
                 </div>
-                <span className="text-[#aaa] tracking-wider uppercase">TURNTABLE: ACTIVE</span>
+                <span className="text-emerald-400 font-bold">CALIBRATED</span>
               </div>
 
-              {/* Center Open Focal Chamber - Transparent View Direct to Massive 3D Model */}
-              <div className="relative my-auto flex flex-col items-center justify-center space-y-3 select-none">
-                <div className="w-24 h-24 rounded-full border border-dashed border-white/20 flex items-center justify-center animate-[spin_40s_linear_infinite]">
-                  <div className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center">
-                    <Compass className="w-6 h-6 text-white/70" />
-                  </div>
+              {/* Real-Time Anthropometric Coordinates Feed */}
+              <div className="space-y-2.5 text-[11px] font-mono">
+                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+                  <span className="text-[#888]">SHOULDERS</span>
+                  <span className="text-white font-bold">46.0 CM</span>
                 </div>
-                <div className="text-[10px] font-mono text-[#888] tracking-widest uppercase bg-black/60 px-3 py-1 rounded-full border border-white/10">
-                  REAL-TIME CALIBRATION // 360°
+                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+                  <span className="text-[#888]">CHEST RING</span>
+                  <span className="text-white font-bold">98.0 CM</span>
+                </div>
+                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+                  <span className="text-[#888]">NATURAL WAIST</span>
+                  <span className="text-white font-bold">84.0 CM</span>
+                </div>
+                <div className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] border border-white/5">
+                  <span className="text-[#888]">PELVIC SEAT</span>
+                  <span className="text-white font-bold">102.0 CM</span>
                 </div>
               </div>
 
-              {/* Bottom HUD Dimension Readouts */}
+              {/* 360° Drag Cue & Laser Status */}
               <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-[#777]">
                 <div className="flex items-center gap-1.5 text-white">
-                  <Sparkles className="w-3 h-3 text-white" />
-                  <span>LASER SCANNER ACTIVE</span>
+                  <Compass className="w-3 h-3 text-neutral-300 animate-[spin_15s_linear_infinite]" />
+                  <span>DRAG TO ROTATE 360°</span>
                 </div>
-                <span className="text-[#aaa]">TOLERANCE ±1.2MM</span>
+                <span className="text-[#999]">TOLERANCE ±1.2MM</span>
               </div>
             </motion.div>
           </div>
@@ -189,7 +196,7 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="flex justify-center pt-8 text-neutral-600 hover:text-neutral-400 transition-colors"
+          className="flex justify-center pt-10 text-neutral-600 hover:text-neutral-400 transition-colors"
         >
           <Link href="#how-it-works" className="flex flex-col items-center gap-1 group">
             <span className="text-[10px] font-mono tracking-technical uppercase text-[#555] group-hover:text-[#999]">

@@ -3,9 +3,9 @@ import { Container } from "./container";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-[#222226] bg-[#050507] text-[#929292] py-12 relative z-20">
+    <footer className="border-t border-[#222226] bg-[#050507] text-[#929292] py-10 relative z-20">
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-10 border-b border-[#1c1c1c]">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8 border-b border-[#1c1c1c]">
           {/* Brand Col */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2">

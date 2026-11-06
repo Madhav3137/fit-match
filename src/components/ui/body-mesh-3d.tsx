@@ -62,17 +62,17 @@ export function BodyMesh3D({
 
     // 2. PROCEDURAL 3D WIREFRAME ANATOMICAL SILHOUETTE
     const wireMat = new THREE.MeshBasicMaterial({
-      color: 0x888888,
+      color: 0xffffff,
       wireframe: true,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.75,
     });
 
     const activeMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       wireframe: true,
       transparent: true,
-      opacity: 0.85,
+      opacity: 1.0,
     });
 
     // Cranium / Head
@@ -123,8 +123,8 @@ export function BodyMesh3D({
     bodyGroup.add(armRight);
 
     // 3. ANATOMICAL 3D MEASUREMENT CALIPER RINGS
-    const createRing = (radius: number, yPos: number, opacity = 0.5) => {
-      const geo = new THREE.TorusGeometry(radius, 0.45, 12, 64);
+    const createRing = (radius: number, yPos: number, opacity = 0.85) => {
+      const geo = new THREE.TorusGeometry(radius, 0.65, 16, 64);
       const mat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
@@ -137,10 +137,10 @@ export function BodyMesh3D({
       return mesh;
     };
 
-    const shoulderRing = createRing(25, 48, 0.4);
-    const chestRing = createRing(21, 30, 0.6);
-    const waistRing = createRing(17, 10, 0.5);
-    const hipRing = createRing(20, -10, 0.5);
+    const shoulderRing = createRing(25, 48, 0.75);
+    const chestRing = createRing(21, 30, 0.95);
+    const waistRing = createRing(17, 10, 0.85);
+    const hipRing = createRing(20, -10, 0.85);
 
     // 4. VERTICAL 3D SCANNING LASER PLANE
     const laserGeo = new THREE.PlaneGeometry(60, 60);
