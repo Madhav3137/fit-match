@@ -46,6 +46,13 @@ export function Chapter01Profile() {
 
   const updateVal = (key: DimensionKey, val: number) => {
     setMeasurements((prev) => ({ ...prev, [key]: val }));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("fitmatch:dimension_change", {
+          detail: { dimension: key, value: val },
+        })
+      );
+    }
   };
 
   const toDisplay = (cmVal: number) => {

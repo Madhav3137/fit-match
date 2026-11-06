@@ -30,6 +30,17 @@ interface DimensionEase {
 export function Chapter03Synthesis() {
   const [preference, setPreference] = React.useState<FitPreference>("regular");
 
+  const handleSelectPreference = (pref: FitPreference) => {
+    setPreference(pref);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("fitmatch:fit_preference", {
+          detail: { preference: pref },
+        })
+      );
+    }
+  };
+
   // Dynamic calculations based on fit preference
   const preferenceData = React.useMemo(() => {
     switch (preference) {
@@ -181,7 +192,7 @@ export function Chapter03Synthesis() {
                     <button
                       key={pref}
                       type="button"
-                      onClick={() => setPreference(pref)}
+                      onClick={() => handleSelectPreference(pref)}
                       className={`relative py-3 rounded-xl text-xs font-mono uppercase transition-all duration-300 font-medium ${
                         isActive ? "text-black font-semibold" : "text-[#777] hover:text-white"
                       }`}

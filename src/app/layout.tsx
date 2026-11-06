@@ -45,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${bodoniModa.variable} ${manrope.variable} font-body`}>
-      <body className="min-h-screen bg-[#080808] text-[#f5f5f5] antialiased selection:bg-neutral-800 selection:text-white relative">
+      <body className="min-h-screen bg-[#050507] text-[#f5f5f5] antialiased selection:bg-neutral-800 selection:text-white relative">
         <SmoothScroll>
           <CinematicIntro />
           <ThreeSceneBackground />
