@@ -373,3 +373,4 @@ export function BodyMesh3D({
     </div>
   );
 }
+

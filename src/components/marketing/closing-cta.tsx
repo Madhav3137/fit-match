@@ -39,7 +39,7 @@ export function ClosingCTA() {
     <section
       ref={sectionRef}
       onMouseMove={handleMouseMove}
-      className="relative py-24 sm:py-32 bg-transparent overflow-hidden border-t border-[#1a1a1a]"
+      className="relative py-20 sm:py-28 bg-transparent overflow-hidden border-t border-[#181818]"
     >
       {/* Background 3D Orbital Vortex Rings */}
       <div
@@ -84,7 +84,7 @@ export function ClosingCTA() {
           >
             <Sparkles className="w-3 h-3 text-white" />
             <span className="text-[10px] font-mono tracking-technical text-[#888] uppercase">
-              CHAPTER 06 // SYNTHESIS & FIT COMPLETION
+              UNIVERSAL ENGINE // INITIATION
             </span>
           </motion.div>
 

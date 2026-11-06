@@ -176,12 +176,12 @@ export function HeroSection() {
               transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
               className="relative w-full max-w-[430px] border border-[#2a2a2a] rounded-3xl bg-[#0a0a0a]/90 backdrop-blur-md p-4 sm:p-6 shadow-2xl transition-colors hover:border-neutral-500 overflow-hidden"
             >
-              {/* Subtle moving corner reticles */}
-              <div aria-hidden="true" className="absolute top-3 left-3 text-[9px] font-mono text-[#555] select-none">
-                +0.00 LAT // 3D
+              {/* Subtle top indicator */}
+              <div aria-hidden="true" className="absolute top-3 left-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
+                3D CALIBRATION RIG
               </div>
-              <div aria-hidden="true" className="absolute top-3 right-3 text-[9px] font-mono text-[#555] select-none">
-                AXIS // 360°
+              <div aria-hidden="true" className="absolute top-3 right-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
+                DRAG TO ROTATE
               </div>
 
               {/* The Genuine 3D Wireframe Calibration Instrument */}

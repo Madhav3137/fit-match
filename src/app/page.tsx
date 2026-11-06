@@ -1,7 +1,8 @@
 import { HeroSection } from "@/components/marketing/hero-section";
 import { RetailerStrip } from "@/components/marketing/retailer-strip";
-import { StepFlowPinned } from "@/components/marketing/step-flow-pinned";
-import { ProductPreviewDemo } from "@/components/marketing/product-preview-demo";
+import { Chapter01Profile } from "@/components/marketing/chapter-01-profile";
+import { Chapter02Scanner } from "@/components/marketing/chapter-02-scanner";
+import { Chapter03Synthesis } from "@/components/marketing/chapter-03-synthesis";
 import { FAQSection } from "@/components/marketing/faq-section";
 import { ClosingCTA } from "@/components/marketing/closing-cta";
 import { ScrollDivider } from "@/components/motion/scroll-divider";
@@ -19,20 +20,25 @@ export default function HomePage() {
 
       <ScrollDivider />
 
-      {/* 3. Full-Screen Pinned Storytelling Operational Flow */}
-      <StepFlowPinned />
+      {/* 3. Chapter 01: Universal Body Profile Lab & 3D Interactive Mannequin */}
+      <Chapter01Profile />
 
       <ScrollDivider />
 
-      {/* 4. Live Sizing Laboratory Calibration Terminal */}
-      <ProductPreviewDemo />
+      {/* 4. Chapter 02: Garment Link Ingestion & Laser Silhouette Scanner */}
+      <Chapter02Scanner />
 
       <ScrollDivider />
 
-      {/* 5. Technical Knowledge Base & FAQ */}
+      {/* 5. Chapter 03: Fit Synthesis, Ease Mapping & Recommendation Reveal */}
+      <Chapter03Synthesis />
+
+      <ScrollDivider />
+
+      {/* 6. Technical Knowledge Base & FAQ */}
       <FAQSection />
 
-      {/* 6. Grand Finale Closing Chapter (Transitions directly into Footer) */}
+      {/* 7. Grand Finale Closing Chapter (Transitions directly into Footer) */}
       <ClosingCTA />
     </div>
   );
