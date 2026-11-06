@@ -6,7 +6,8 @@ import { motion } from "framer-motion";
 import { Container } from "../layout/container";
 import { Button } from "../ui/button";
 import { MaskedHeading } from "../motion/masked-text";
-import { ArrowRight, Compass, Sliders, Shield, RotateCcw } from "lucide-react";
+import { BodyMesh3D } from "../ui/body-mesh-3d";
+import { ArrowRight, Compass, Sliders, Shield } from "lucide-react";
 import { TRANSITION_EASE } from "@/lib/motion/variants";
 
 type DimensionKey = "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam";
@@ -43,26 +44,8 @@ export function Chapter01Profile() {
     inseam: 82,
   });
 
-  React.useEffect(() => {
-    const handleSelectDim = (e: Event) => {
-      const customEvent = e as CustomEvent<{ dimension: DimensionKey }>;
-      if (customEvent.detail?.dimension) {
-        setActiveDim(customEvent.detail.dimension);
-      }
-    };
-    window.addEventListener("fitmatch:select_dimension", handleSelectDim);
-    return () => window.removeEventListener("fitmatch:select_dimension", handleSelectDim);
-  }, []);
-
   const updateVal = (key: DimensionKey, val: number) => {
     setMeasurements((prev) => ({ ...prev, [key]: val }));
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("fitmatch:dimension_change", {
-          detail: { dimension: key, value: val },
-        })
-      );
-    }
   };
 
   const toDisplay = (cmVal: number) => {
@@ -138,8 +121,8 @@ export function Chapter01Profile() {
               </div>
             </div>
 
-            {/* 6 Anatomical Calibrators */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 py-6">
+            {/* Sliders Grid */}
+            <div className="space-y-4 py-6">
               {DIMENSIONS.map((dim) => {
                 const isActive = activeDim === dim.key;
                 const currentVal = measurements[dim.key];
@@ -209,76 +192,36 @@ export function Chapter01Profile() {
             </div>
           </div>
 
-          {/* Right Column: Architectural 3D Observation Aperture */}
-          <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 rounded-3xl border border-white/10 bg-[#0c0d12]/30 backdrop-blur-[2px] shadow-2xl relative overflow-hidden min-h-[460px]">
+          {/* Right Column: High-Presence 3D Mannequin Instrument */}
+          <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 rounded-3xl border border-[#222222] bg-[#0c0c0c] shadow-2xl relative overflow-hidden">
             {/* Top Calibrator Readout */}
-            <div className="w-full flex items-center justify-between pb-4 border-b border-white/10 text-[10px] font-mono text-[#888]">
+            <div className="w-full flex items-center justify-between pb-4 border-b border-[#1c1c1c] text-[10px] font-mono text-[#777]">
               <div className="flex items-center gap-2">
                 <Compass className="w-3.5 h-3.5 text-white" />
-                <span className="uppercase text-white font-medium">MEASUREMENT RIG // VIEWPORT</span>
+                <span className="uppercase text-white font-medium">3D SPATIAL RIG</span>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    window.dispatchEvent(new CustomEvent("fitmatch:reset_view"));
-                  }
-                }}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 transition-colors"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>RESET VIEW</span>
-              </button>
+              <span className="uppercase text-[#888]">DRAG 360° TURNTABLE</span>
             </div>
 
-            {/* Central Spatial Aperture Frame */}
-            <div className="relative my-auto py-8 flex flex-col items-center justify-center pointer-events-none">
-              {/* Corner aperture crosshairs */}
-              <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-white/40" />
-              <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-white/40" />
-              <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-white/40" />
-              <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-white/40" />
-
-              {/* Active Datum Badge */}
-              <div className="px-5 py-3 rounded-2xl bg-[#0c0d12]/90 border border-white/20 text-center space-y-1 shadow-2xl pointer-events-auto">
-                <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-[#888] uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>ACTIVE COORDINATE // {activeDim}</span>
-                </div>
-                <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-wider">
-                  {toDisplay(measurements[activeDim])} {unit.toUpperCase()}
-                </div>
-                <div className="text-[10px] font-mono text-[#777]">
-                  LASER SCANNING TOLERANCE: ±0.8MM
-                </div>
-              </div>
+            {/* 3D Mannequin Rig */}
+            <div className="relative my-auto py-2">
+              <BodyMesh3D
+                interactive={true}
+                activeDimension={activeDim}
+                onSelectDimension={(dim) => setActiveDim(dim)}
+                currentValues={measurements}
+                unit={unit}
+                className="w-full min-h-[380px] sm:min-h-[420px]"
+              />
             </div>
 
-            {/* Bottom HUD Coordinate Tag with Quick Selection Chips */}
-            <div className="w-full pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono">
-              <div className="flex items-center gap-1.5">
-                {(["shoulder", "chest", "waist", "hip", "inseam"] as DimensionKey[]).map((dim) => (
-                  <button
-                    key={dim}
-                    type="button"
-                    onClick={() => {
-                      setActiveDim(dim);
-                      if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: dim } }));
-                      }
-                    }}
-                    className={`px-2.5 py-1 rounded transition-colors uppercase font-medium ${
-                      activeDim === dim
-                        ? "bg-white text-black font-bold"
-                        : "bg-white/5 text-[#888] hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    {dim}
-                  </button>
-                ))}
-              </div>
-              <span className="text-emerald-400 font-semibold uppercase">
-                CALIBRATED
+            {/* Bottom HUD Coordinate Tag */}
+            <div className="w-full pt-4 border-t border-[#1c1c1c] flex items-center justify-between text-[10px] font-mono">
+              <span className="text-[#666]">
+                ACTIVE NODE: <span className="text-white uppercase font-bold">{activeDim}</span>
+              </span>
+              <span className="text-white font-semibold">
+                {toDisplay(measurements[activeDim])} {unit} CALIBRATED
               </span>
             </div>
           </div>

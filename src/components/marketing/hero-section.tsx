@@ -2,23 +2,44 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Container } from "../layout/container";
 import { Button } from "../ui/button";
+import { BodyMesh3D } from "../ui/body-mesh-3d";
 import { MaskedHeading } from "../motion/masked-text";
 import { Magnetic } from "../motion/magnetic-button";
 import { AnimatedCounter } from "../motion/animated-counter";
-import { ArrowRight, ChevronDown, Compass, Activity, RotateCcw } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { fadeInUp, TRANSITION_EASE } from "@/lib/motion/variants";
 
 export function HeroSection() {
+  // 3D Parallax Tilt for the Card Frame
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 120, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 120, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["6deg", "-6deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set((e.clientX - rect.left) / rect.width - 0.5);
+    y.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  const handleCardMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
   return (
-    <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-24 overflow-hidden bg-transparent">
+    <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden bg-transparent">
       <Container>
-        {/* Strategic 3-Part Proportional Layout: Left 38% | Center 35% | Right 27% */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-4 relative">
-          {/* Part 1: Left 38% — Editorial Typography & CTAs */}
-          <div className="w-full lg:w-[38%] space-y-8 relative z-20 shrink-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* Left Column: Editorial Headline & Actions */}
+          <div className="lg:col-span-7 space-y-8">
             {/* Technical Sub-Header Tag */}
             <motion.div
               initial={{ opacity: 0, x: -15 }}
@@ -44,7 +65,7 @@ export function HeroSection() {
                   delay={0.1}
                   wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[3.8rem] xl:text-[4.6rem] font-medium tracking-tight text-white uppercase leading-[1.08]"
+                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-medium tracking-tight text-white uppercase leading-[1.08]"
                 >
                   YOUR SIZE.
                 </MaskedHeading>
@@ -55,7 +76,7 @@ export function HeroSection() {
                   delay={0.25}
                   wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[3.8rem] xl:text-[4.6rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.08]"
+                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.08]"
                 >
                   EVERY BRAND.
                 </MaskedHeading>
@@ -68,7 +89,7 @@ export function HeroSection() {
               initial="hidden"
               animate="visible"
               transition={{ delay: 0.4 }}
-              className="text-base sm:text-lg text-[#999999] max-w-lg font-normal leading-relaxed text-balance"
+              className="text-base sm:text-lg text-[#999999] max-w-xl font-normal leading-relaxed text-balance"
             >
               One reusable body profile. Paste any product link to receive brand- and
               garment-aware size recommendations based on real sizing data.
@@ -137,111 +158,34 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Part 2: Center 35% — 3D Spatial Centerpiece Clearing */}
-          {/* Dedicated open viewing corridor for the large, dominant 3D anatomical mannequin */}
-          <div className="hidden lg:block lg:w-[35%] pointer-events-none self-stretch min-h-[480px]" aria-hidden="true" />
+          {/* Right Column: 3D Holographic Human Calibration Instrument */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+            {/* Ambient Illumination Orb behind the 3D model */}
+            <div
+              aria-hidden="true"
+              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,transparent_70%)] blur-3xl pointer-events-none -z-10"
+            />
 
-          {/* Part 3: Right 27% — Anthropometric Telemetry & Calibration Panel */}
-          {/* Vertically aligned with the mannequin's torso */}
-          <div className="w-full lg:w-[27%] flex justify-end relative z-20 pointer-events-none shrink-0">
+            {/* Holographic Container with 3D Tilt Frame */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1.0, delay: 0.45, ease: TRANSITION_EASE }}
-              className="w-full max-w-[280px] p-5 rounded-2xl border border-white/10 bg-[#0c0c10]/80 backdrop-blur-md shadow-2xl flex flex-col justify-between space-y-4 pointer-events-auto"
+              style={{ rotateX, rotateY, transformPerspective: 1000 }}
+              onMouseMove={handleCardMouseMove}
+              onMouseLeave={handleCardMouseLeave}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
+              className="relative w-full max-w-[430px] border border-[#2a2a2a] rounded-3xl bg-[#0a0a0a]/90 backdrop-blur-md p-4 sm:p-6 shadow-2xl transition-colors hover:border-neutral-500 overflow-hidden"
             >
-              {/* Top Status */}
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 text-[10px] font-mono">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-3.5 h-3.5 text-white animate-pulse" />
-                  <span className="text-white font-semibold uppercase tracking-wider">3D TELEMETRY</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new CustomEvent("fitmatch:reset_view"));
-                    }
-                  }}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 transition-colors"
-                >
-                  <RotateCcw className="w-2.5 h-2.5" />
-                  <span>RESET</span>
-                </button>
+              {/* Subtle top indicator */}
+              <div aria-hidden="true" className="absolute top-3 left-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
+                3D CALIBRATION RIG
+              </div>
+              <div aria-hidden="true" className="absolute top-3 right-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
+                DRAG TO ROTATE
               </div>
 
-              {/* Real-Time Anthropometric Coordinates Feed */}
-              <div className="space-y-2 text-[11px] font-mono">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "shoulder" } }));
-                    }
-                  }}
-                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
-                >
-                  <span className="text-[#888]">SHOULDERS</span>
-                  <span className="text-white font-bold">46.0 CM</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "chest" } }));
-                    }
-                  }}
-                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
-                >
-                  <span className="text-[#888]">CHEST RING</span>
-                  <span className="text-white font-bold">98.0 CM</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "waist" } }));
-                    }
-                  }}
-                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
-                >
-                  <span className="text-[#888]">NATURAL WAIST</span>
-                  <span className="text-white font-bold">84.0 CM</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "hip" } }));
-                    }
-                  }}
-                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
-                >
-                  <span className="text-[#888]">PELVIC SEAT</span>
-                  <span className="text-white font-bold">102.0 CM</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new CustomEvent("fitmatch:select_dimension", { detail: { dimension: "inseam" } }));
-                    }
-                  }}
-                  className="w-full flex items-center justify-between py-1 px-2 rounded bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 text-left transition-colors cursor-pointer"
-                >
-                  <span className="text-[#888]">INNER INSEAM</span>
-                  <span className="text-white font-bold">82.0 CM</span>
-                </button>
-              </div>
-
-              {/* 360° Drag Cue & Laser Status */}
-              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-[#777]">
-                <div className="flex items-center gap-1.5 text-white">
-                  <Compass className="w-3 h-3 text-neutral-300 animate-[spin_15s_linear_infinite]" />
-                  <span>DRAG TO ROTATE 360°</span>
-                </div>
-                <span className="text-[#999]">TOLERANCE ±1.2MM</span>
-              </div>
+              {/* The Genuine 3D Wireframe Calibration Instrument */}
+              <BodyMesh3D interactive={true} />
             </motion.div>
           </div>
         </div>
