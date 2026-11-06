@@ -2,44 +2,22 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Container } from "../layout/container";
 import { Button } from "../ui/button";
-import { BodyMesh3D } from "../ui/body-mesh-3d";
 import { MaskedHeading } from "../motion/masked-text";
 import { Magnetic } from "../motion/magnetic-button";
 import { AnimatedCounter } from "../motion/animated-counter";
-import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, Compass, Scan, Sparkles } from "lucide-react";
 import { fadeInUp, TRANSITION_EASE } from "@/lib/motion/variants";
 
 export function HeroSection() {
-  // 3D Parallax Tilt for the Card Frame
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 120, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 120, damping: 20 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["6deg", "-6deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
-
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    x.set((e.clientX - rect.left) / rect.width - 0.5);
-    y.set((e.clientY - rect.top) / rect.height - 0.5);
-  };
-
-  const handleCardMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   return (
-    <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden bg-transparent">
+    <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-24 overflow-hidden bg-transparent">
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Column: Editorial Headline & Actions */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-7 space-y-8 relative z-20">
             {/* Technical Sub-Header Tag */}
             <motion.div
               initial={{ opacity: 0, x: -15 }}
@@ -158,34 +136,50 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Right Column: 3D Holographic Human Calibration Instrument */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
-            {/* Ambient Illumination Orb behind the 3D model */}
+          {/* Right Column: Open Architectural Telemetry Window into the 3D Mannequin */}
+          <div className="lg:col-span-5 relative flex flex-col items-center justify-center min-h-[460px] sm:min-h-[520px] pointer-events-none">
+            {/* Ambient Illumination Vignette */}
             <div
               aria-hidden="true"
-              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,transparent_70%)] blur-3xl pointer-events-none -z-10"
+              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,transparent_70%)] blur-3xl -z-10"
             />
 
-            {/* Holographic Container with 3D Tilt Frame */}
+            {/* Precision HUD Reticle Frame Framing the Massive Background Mannequin */}
             <motion.div
-              style={{ rotateX, rotateY, transformPerspective: 1000 }}
-              onMouseMove={handleCardMouseMove}
-              onMouseLeave={handleCardMouseLeave}
-              initial={{ opacity: 0, scale: 0.94 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
-              className="relative w-full max-w-[430px] border border-[#2a2a2a] rounded-3xl bg-[#0a0a0a]/90 backdrop-blur-md p-4 sm:p-6 shadow-2xl transition-colors hover:border-neutral-500 overflow-hidden"
+              className="relative w-full max-w-[420px] p-6 rounded-3xl border border-white/10 bg-white/[0.015] backdrop-blur-[2px] shadow-2xl flex flex-col justify-between h-[460px] sm:h-[500px]"
             >
-              {/* Subtle top indicator */}
-              <div aria-hidden="true" className="absolute top-3 left-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
-                3D CALIBRATION RIG
-              </div>
-              <div aria-hidden="true" className="absolute top-3 right-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
-                DRAG TO ROTATE
+              {/* Top HUD Status */}
+              <div className="flex items-center justify-between text-[10px] font-mono text-[#888] pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <Scan className="w-3.5 h-3.5 text-white animate-pulse" />
+                  <span className="text-white font-medium uppercase tracking-wider">3D SENSING RIG</span>
+                </div>
+                <span className="text-[#aaa] tracking-wider uppercase">TURNTABLE: ACTIVE</span>
               </div>
 
-              {/* The Genuine 3D Wireframe Calibration Instrument */}
-              <BodyMesh3D interactive={true} />
+              {/* Center Open Focal Chamber - Transparent View Direct to Massive 3D Model */}
+              <div className="relative my-auto flex flex-col items-center justify-center space-y-3 select-none">
+                <div className="w-24 h-24 rounded-full border border-dashed border-white/20 flex items-center justify-center animate-[spin_40s_linear_infinite]">
+                  <div className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center">
+                    <Compass className="w-6 h-6 text-white/70" />
+                  </div>
+                </div>
+                <div className="text-[10px] font-mono text-[#888] tracking-widest uppercase bg-black/60 px-3 py-1 rounded-full border border-white/10">
+                  REAL-TIME CALIBRATION // 360°
+                </div>
+              </div>
+
+              {/* Bottom HUD Dimension Readouts */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-[#777]">
+                <div className="flex items-center gap-1.5 text-white">
+                  <Sparkles className="w-3 h-3 text-white" />
+                  <span>LASER SCANNER ACTIVE</span>
+                </div>
+                <span className="text-[#aaa]">TOLERANCE ±1.2MM</span>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -195,7 +189,7 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="flex justify-center pt-10 text-neutral-600 hover:text-neutral-400 transition-colors"
+          className="flex justify-center pt-8 text-neutral-600 hover:text-neutral-400 transition-colors"
         >
           <Link href="#how-it-works" className="flex flex-col items-center gap-1 group">
             <span className="text-[10px] font-mono tracking-technical uppercase text-[#555] group-hover:text-[#999]">

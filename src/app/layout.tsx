@@ -53,7 +53,7 @@ export default function RootLayout({
           <SpotlightCanvas />
           <LuxuryCursor />
           <SiteHeader />
-          <main className="min-h-screen flex flex-col relative z-10">{children}</main>
+          <main className="flex flex-col relative z-10 w-full">{children}</main>
           <SiteFooter />
         </SmoothScroll>
       </body>
