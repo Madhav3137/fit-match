@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { TRANSITION_EASE } from "@/lib/motion/variants";
 
 interface MeasurementDiagramProps {
@@ -46,13 +46,29 @@ export function MeasurementDiagram({
         <defs>
           {/* Technical caliper millimeter grid */}
           <pattern id="caliper-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#161616" strokeWidth="0.5" />
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#181818" strokeWidth="0.5" />
           </pattern>
+
           {/* Subtle glow filter for active calipers */}
           <filter id="active-glow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="2.5" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
+
+          {/* Precision laser scanner gradient */}
+          <linearGradient id="scanner-laser" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+            <stop offset="25%" stopColor="#ffffff" stopOpacity="0.4" />
+            <stop offset="50%" stopColor="#ffffff" stopOpacity="0.9" />
+            <stop offset="75%" stopColor="#ffffff" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </linearGradient>
+
+          {/* Scanning beam glow */}
+          <linearGradient id="scanner-beam" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </linearGradient>
         </defs>
 
         <rect x="0" y="0" width="350" height="560" fill="url(#caliper-grid)" opacity="0.8" />
@@ -65,7 +81,25 @@ export function MeasurementDiagram({
           <line x1="330" y1="20" x2="330" y2="540" stroke="#262626" strokeWidth="1" strokeDasharray="3 3" />
         </g>
 
-        {/* 1. Human Body Silhouette with SVG stroke path-length reveal */}
+        {/* ======================================================= */}
+        {/* SUBTLE SCANNING LASER LINE (Moves continuously vertically)*/}
+        {/* ======================================================= */}
+        <g pointerEvents="none">
+          <motion.line
+            x1="40"
+            y1="0"
+            x2="310"
+            y2="0"
+            stroke="url(#scanner-laser)"
+            strokeWidth="1.5"
+            animate={{ y: [45, 510, 45] }}
+            transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </g>
+
+        {/* ======================================================= */}
+        {/* 1. Human Body Silhouette with SVG stroke path reveal    */}
+        {/* ======================================================= */}
         <g id="body-silhouette">
           {/* Head & Cranium */}
           <motion.ellipse
@@ -124,7 +158,9 @@ export function MeasurementDiagram({
           />
         </g>
 
-        {/* 2. HEIGHT Caliper */}
+        {/* ======================================================= */}
+        {/* 2. HEIGHT Caliper                                      */}
+        {/* ======================================================= */}
         <g
           className="cursor-pointer group"
           onMouseEnter={() => interactive && setHoveredDim("height")}
@@ -147,6 +183,17 @@ export function MeasurementDiagram({
           {/* Top and Bottom Ticks */}
           <line x1="38" y1="50" x2="52" y2="50" stroke={isDimActive("height") ? "#fff" : "#444"} strokeWidth="1.2" />
           <line x1="38" y1="490" x2="52" y2="490" stroke={isDimActive("height") ? "#fff" : "#444"} strokeWidth="1.2" />
+
+          {/* Animated anchor radar pulse */}
+          <motion.circle
+            cx="45"
+            cy="50"
+            r="4"
+            stroke="#ffffff"
+            strokeWidth="0.8"
+            animate={{ scale: [1, 1.8, 1], opacity: [0.8, 0, 0.8] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          />
           
           <text
             x="34"
@@ -163,7 +210,9 @@ export function MeasurementDiagram({
           </text>
         </g>
 
-        {/* 3. SHOULDER Caliper */}
+        {/* ======================================================= */}
+        {/* 3. SHOULDER Caliper                                    */}
+        {/* ======================================================= */}
         <g
           className="cursor-pointer group"
           onMouseEnter={() => interactive && setHoveredDim("shoulder")}
@@ -186,6 +235,25 @@ export function MeasurementDiagram({
           <circle cx="122" cy="140" r="3" fill={isDimActive("shoulder") ? "#fff" : "#666"} />
           <circle cx="228" cy="140" r="3" fill={isDimActive("shoulder") ? "#fff" : "#666"} />
 
+          <motion.circle
+            cx="122"
+            cy="140"
+            r="6"
+            stroke="#ffffff"
+            strokeWidth="0.6"
+            animate={{ scale: [1, 1.8, 1], opacity: [0.6, 0, 0.6] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.circle
+            cx="228"
+            cy="140"
+            r="6"
+            stroke="#ffffff"
+            strokeWidth="0.6"
+            animate={{ scale: [1, 1.8, 1], opacity: [0.6, 0, 0.6] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          />
+
           {/* Guide Line Extending Outward */}
           <motion.line
             x1="228"
@@ -195,6 +263,8 @@ export function MeasurementDiagram({
             stroke={isDimActive("shoulder") ? "#fff" : "#282828"}
             strokeWidth="0.8"
             strokeDasharray="2 2"
+            animate={{ strokeDashoffset: [0, -12] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           />
           <text
             x="292"
@@ -209,7 +279,9 @@ export function MeasurementDiagram({
           </text>
         </g>
 
-        {/* 4. CHEST / BUST Caliper */}
+        {/* ======================================================= */}
+        {/* 4. CHEST / BUST Caliper                                */}
+        {/* ======================================================= */}
         <g
           className="cursor-pointer group"
           onMouseEnter={() => interactive && setHoveredDim("chest")}
@@ -231,7 +303,17 @@ export function MeasurementDiagram({
             transition={{ duration: 0.9, delay: 0.7 }}
           />
           {/* Guide Line Extending Outward */}
-          <line x1="220" y1="178" x2="285" y2="178" stroke={isDimActive("chest") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
+          <motion.line
+            x1="220"
+            y1="178"
+            x2="285"
+            y2="178"
+            stroke={isDimActive("chest") ? "#fff" : "#282828"}
+            strokeWidth="0.8"
+            strokeDasharray="2 2"
+            animate={{ strokeDashoffset: [0, -12] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
           <text
             x="292"
             y="181"
@@ -245,7 +327,9 @@ export function MeasurementDiagram({
           </text>
         </g>
 
-        {/* 5. WAIST Caliper */}
+        {/* ======================================================= */}
+        {/* 5. WAIST Caliper                                       */}
+        {/* ======================================================= */}
         <g
           className="cursor-pointer group"
           onMouseEnter={() => interactive && setHoveredDim("waist")}
@@ -267,7 +351,17 @@ export function MeasurementDiagram({
             transition={{ duration: 0.9, delay: 0.8 }}
           />
           {/* Guide Line Extending Outward */}
-          <line x1="211" y1="242" x2="285" y2="242" stroke={isDimActive("waist") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
+          <motion.line
+            x1="211"
+            y1="242"
+            x2="285"
+            y2="242"
+            stroke={isDimActive("waist") ? "#fff" : "#282828"}
+            strokeWidth="0.8"
+            strokeDasharray="2 2"
+            animate={{ strokeDashoffset: [0, -12] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
           <text
             x="292"
             y="245"
@@ -281,7 +375,9 @@ export function MeasurementDiagram({
           </text>
         </g>
 
-        {/* 6. HIPS Caliper */}
+        {/* ======================================================= */}
+        {/* 6. HIPS Caliper                                        */}
+        {/* ======================================================= */}
         <g
           className="cursor-pointer group"
           onMouseEnter={() => interactive && setHoveredDim("hip")}
@@ -303,7 +399,17 @@ export function MeasurementDiagram({
             transition={{ duration: 0.9, delay: 0.9 }}
           />
           {/* Guide Line Extending Outward */}
-          <line x1="218" y1="292" x2="285" y2="292" stroke={isDimActive("hip") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
+          <motion.line
+            x1="218"
+            y1="292"
+            x2="285"
+            y2="292"
+            stroke={isDimActive("hip") ? "#fff" : "#282828"}
+            strokeWidth="0.8"
+            strokeDasharray="2 2"
+            animate={{ strokeDashoffset: [0, -12] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
           <text
             x="292"
             y="295"
@@ -317,7 +423,9 @@ export function MeasurementDiagram({
           </text>
         </g>
 
-        {/* 7. INSEAM Caliper */}
+        {/* ======================================================= */}
+        {/* 7. INSEAM Caliper                                      */}
+        {/* ======================================================= */}
         <g
           className="cursor-pointer group"
           onMouseEnter={() => interactive && setHoveredDim("inseam")}
@@ -338,7 +446,17 @@ export function MeasurementDiagram({
             transition={{ duration: 1.0, delay: 1.0 }}
           />
           <line x1="168" y1="485" x2="182" y2="485" stroke={isDimActive("inseam") ? "#fff" : "#555"} strokeWidth="1.2" />
-          <line x1="175" y1="418" x2="285" y2="418" stroke={isDimActive("inseam") ? "#fff" : "#282828"} strokeWidth="0.8" strokeDasharray="2 2" />
+          <motion.line
+            x1="175"
+            y1="418"
+            x2="285"
+            y2="418"
+            stroke={isDimActive("inseam") ? "#fff" : "#282828"}
+            strokeWidth="0.8"
+            strokeDasharray="2 2"
+            animate={{ strokeDashoffset: [0, -12] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
           <text
             x="292"
             y="421"

@@ -7,12 +7,13 @@ import { Container } from "./container";
 import { Button } from "../ui/button";
 import { Magnetic } from "../motion/magnetic-button";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = React.useState(false);
   const [hoveredNav, setHoveredNav] = React.useState<string | null>(null);
+  const { scrollYProgress } = useScroll();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -94,6 +95,12 @@ export function SiteHeader() {
           </div>
         </div>
       </Container>
+
+      {/* High-Precision Scroll Progress Indicator */}
+      <motion.div
+        style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
+        className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-neutral-600 via-white to-neutral-400 z-50 pointer-events-none"
+      />
     </header>
   );
 }

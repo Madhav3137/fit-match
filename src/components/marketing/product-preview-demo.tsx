@@ -10,15 +10,17 @@ import { MaskedHeading } from "../motion/masked-text";
 
 export function ProductPreviewDemo() {
   const [chestInput, setChestInput] = React.useState<number>(98);
-  const [waistInput, setWaistInput] = React.useState<number>(82);
+  const [waistInput, setWaistInput] = React.useState<number>(84);
   const [preference, setPreference] = React.useState<"slim" | "regular" | "relaxed">("regular");
 
-  // Real size chart for reference demonstration: Heavyweight Minimal Tee
+  // Real calculation based on range penalties
   const calculation = React.useMemo(() => {
     const sizes = [
+      { label: "XS", chestMin: 82, chestMax: 87, waistMin: 68, waistMax: 73 },
       { label: "S", chestMin: 88, chestMax: 94, waistMin: 74, waistMax: 80 },
       { label: "M", chestMin: 95, chestMax: 101, waistMin: 81, waistMax: 87 },
       { label: "L", chestMin: 102, chestMax: 108, waistMin: 88, waistMax: 94 },
+      { label: "XL", chestMin: 109, chestMax: 116, waistMin: 95, waistMax: 102 },
     ];
 
     const scored = sizes.map((s) => {
@@ -51,8 +53,8 @@ export function ProductPreviewDemo() {
       confidence = "medium";
 
     let reasons = [
-      `Size ${best.label} aligns with your ${chestInput}cm chest (range: ${best.chestMin}-${best.chestMax}cm).`,
-      `Waist fit provides comfortable ease for your ${waistInput}cm circumference.`,
+      `Size ${best.label} aligns with your ${chestInput}cm chest (range: ${best.chestMin}–${best.chestMax}cm).`,
+      `Waist fit provides comfortable ease for your ${waistInput}cm circumference (range: ${best.waistMin}–${best.waistMax}cm).`,
     ];
 
     let tradeoff = `Size ${runnerUp.label} offers alternative fit (${runnerUp.totalPenalty > best.totalPenalty ? "more room" : "closer silhouette"}).`;
@@ -86,7 +88,7 @@ export function ProductPreviewDemo() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Controls Column */}
-          <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl border border-[#242424] bg-[#101010] space-y-6">
+          <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl border border-[#242424] bg-[#101010]/90 backdrop-blur-md space-y-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-[#202020]">
               <span className="text-xs font-mono uppercase text-white font-semibold">
                 Simulated User Profile
@@ -98,20 +100,27 @@ export function ProductPreviewDemo() {
             <div className="space-y-2.5">
               <div className="flex justify-between text-xs font-mono">
                 <span className="text-[#999]">CHEST CIRCUMFERENCE</span>
-                <span className="text-white font-bold text-sm">{chestInput} cm</span>
+                <motion.span
+                  key={chestInput}
+                  initial={{ opacity: 0.5, y: -2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-white font-bold text-sm"
+                >
+                  {chestInput} cm
+                </motion.span>
               </div>
               <input
                 type="range"
-                min="84"
-                max="112"
+                min="82"
+                max="114"
                 value={chestInput}
                 onChange={(e) => setChestInput(Number(e.target.value))}
                 className="w-full accent-white bg-neutral-800 cursor-pointer h-2 rounded-lg"
               />
               <div className="flex justify-between text-[10px] font-mono text-[#555]">
-                <span>84 cm</span>
+                <span>82 cm</span>
                 <span>98 cm (Avg)</span>
-                <span>112 cm</span>
+                <span>114 cm</span>
               </div>
             </div>
 
@@ -119,20 +128,27 @@ export function ProductPreviewDemo() {
             <div className="space-y-2.5">
               <div className="flex justify-between text-xs font-mono">
                 <span className="text-[#999]">WAIST CIRCUMFERENCE</span>
-                <span className="text-white font-bold text-sm">{waistInput} cm</span>
+                <motion.span
+                  key={waistInput}
+                  initial={{ opacity: 0.5, y: -2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-white font-bold text-sm"
+                >
+                  {waistInput} cm
+                </motion.span>
               </div>
               <input
                 type="range"
-                min="70"
-                max="100"
+                min="68"
+                max="102"
                 value={waistInput}
                 onChange={(e) => setWaistInput(Number(e.target.value))}
                 className="w-full accent-white bg-neutral-800 cursor-pointer h-2 rounded-lg"
               />
               <div className="flex justify-between text-[10px] font-mono text-[#555]">
-                <span>70 cm</span>
+                <span>68 cm</span>
                 <span>85 cm (Avg)</span>
-                <span>100 cm</span>
+                <span>102 cm</span>
               </div>
             </div>
 
@@ -171,8 +187,15 @@ export function ProductPreviewDemo() {
             </div>
           </div>
 
-          {/* Result Output Column */}
-          <div className="lg:col-span-7 p-8 sm:p-10 rounded-3xl border border-[#303030] bg-[#121212] space-y-6 relative overflow-hidden">
+          {/* Result Output Column: Laboratory Display */}
+          <div className="lg:col-span-7 p-8 sm:p-10 rounded-3xl border border-[#303030] bg-[#121212]/90 backdrop-blur-md space-y-6 relative overflow-hidden shadow-2xl">
+            {/* Subtle Sweeping Scanning Laser Line across laboratory card */}
+            <motion.div
+              animate={{ y: ["-50%", "350%"] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"
+            />
+
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-[#222]">
               <div className="flex items-center gap-2">
@@ -215,13 +238,14 @@ export function ProductPreviewDemo() {
               </div>
             </div>
 
-            {/* Animated Comparison Bars */}
+            {/* Animated Laboratory Comparison Bars */}
             <div className="space-y-4 pt-4 border-t border-[#202020]">
-              <span className="text-[10px] font-mono tracking-technical text-[#888] uppercase block">
-                METRIC RANGE ALIGNMENT (CM)
-              </span>
+              <div className="flex items-center justify-between text-[10px] font-mono tracking-technical text-[#888] uppercase">
+                <span>METRIC RANGE ALIGNMENT (CM)</span>
+                <span className="text-white/60">TARGET RANGE VS. USER</span>
+              </div>
 
-              {/* Chest bar */}
+              {/* Chest bar with range position indicator */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-[#999]">Chest ({chestInput} cm)</span>
@@ -229,18 +253,18 @@ export function ProductPreviewDemo() {
                     Range: {calculation.activeBounds.chestMin}–{calculation.activeBounds.chestMax} cm
                   </span>
                 </div>
-                <div className="h-2.5 w-full bg-[#1e1e1e] rounded-full overflow-hidden relative">
+                <div className="h-3 w-full bg-[#1c1c1c] rounded-full overflow-hidden relative border border-[#2a2a2a]">
                   <motion.div
                     animate={{
-                      width: `${Math.min(100, Math.max(15, ((chestInput - 80) / 35) * 100))}%`,
+                      width: `${Math.min(100, Math.max(10, ((chestInput - 80) / 36) * 100))}%`,
                     }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="h-full bg-white rounded-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className="h-full bg-gradient-to-r from-neutral-400 to-white rounded-full"
                   />
                 </div>
               </div>
 
-              {/* Waist bar */}
+              {/* Waist bar with range position indicator */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-[#999]">Waist ({waistInput} cm)</span>
@@ -248,13 +272,13 @@ export function ProductPreviewDemo() {
                     Range: {calculation.activeBounds.waistMin}–{calculation.activeBounds.waistMax} cm
                   </span>
                 </div>
-                <div className="h-2.5 w-full bg-[#1e1e1e] rounded-full overflow-hidden relative">
+                <div className="h-3 w-full bg-[#1c1c1c] rounded-full overflow-hidden relative border border-[#2a2a2a]">
                   <motion.div
                     animate={{
-                      width: `${Math.min(100, Math.max(15, ((waistInput - 65) / 40) * 100))}%`,
+                      width: `${Math.min(100, Math.max(10, ((waistInput - 65) / 38) * 100))}%`,
                     }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="h-full bg-neutral-300 rounded-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className="h-full bg-gradient-to-r from-neutral-500 to-neutral-200 rounded-full"
                   />
                 </div>
               </div>
@@ -271,7 +295,7 @@ export function ProductPreviewDemo() {
                   <span>{r}</span>
                 </div>
               ))}
-              <div className="text-xs text-[#888] italic pt-1">
+              <div className="text-xs text-[#888] italic pt-1 font-mono">
                 {calculation.tradeoff}
               </div>
             </div>

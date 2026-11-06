@@ -61,13 +61,14 @@ export function HeroSection() {
               </span>
             </motion.div>
 
-            {/* Split Headline with Mask Reveals — Refined to prevent single-word breaks */}
+            {/* Split Headline with Character-by-Character Mask Reveals */}
             <div className="space-y-1">
               <div className="overflow-hidden">
                 <MaskedHeading
                   as="h1"
                   delay={0.1}
                   wrap={false}
+                  mode="characters"
                   className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-8xl font-medium tracking-[-0.02em] text-white uppercase leading-[1.05]"
                 >
                   YOUR SIZE.
@@ -78,6 +79,7 @@ export function HeroSection() {
                   as="h1"
                   delay={0.25}
                   wrap={false}
+                  mode="characters"
                   className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-8xl font-normal tracking-[-0.02em] text-[#888888] uppercase leading-[1.05]"
                 >
                   EVERY BRAND.
@@ -162,10 +164,30 @@ export function HeroSection() {
 
           {/* Right Column: Measurement Line-Art Visual with Ambient Depth & 3D Parallax */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+            {/* Subtle rotating orbital caliper graphic behind illustration */}
+            <motion.div
+              aria-hidden="true"
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+              className="absolute w-[500px] h-[500px] pointer-events-none opacity-[0.14] -z-10 select-none"
+            >
+              <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                <circle cx="250" cy="250" r="240" stroke="#ffffff" strokeWidth="1" strokeDasharray="6 10" />
+                <circle cx="250" cy="250" r="210" stroke="#ffffff" strokeWidth="0.75" strokeDasharray="2 6" />
+                <circle cx="250" cy="250" r="160" stroke="#ffffff" strokeWidth="0.5" />
+                <line x1="250" y1="0" x2="250" y2="500" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="3 6" />
+                <line x1="0" y1="250" x2="500" y2="250" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="3 6" />
+                <circle cx="250" cy="10" r="3" fill="#ffffff" />
+                <circle cx="250" cy="490" r="3" fill="#ffffff" />
+                <circle cx="10" cy="250" r="3" fill="#ffffff" />
+                <circle cx="490" cy="250" r="3" fill="#ffffff" />
+              </svg>
+            </motion.div>
+
             {/* Subtle background depth spotlight */}
             <div
               aria-hidden="true"
-              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0%,transparent_70%)] blur-2xl pointer-events-none -z-10"
+              className="absolute -inset-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,transparent_70%)] blur-2xl pointer-events-none -z-10"
             />
 
             {/* Technical Marking Crosshairs & Calibration Reticles */}

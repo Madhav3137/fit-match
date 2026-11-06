@@ -79,7 +79,7 @@ export function LuxuryCursor() {
         }}
       />
 
-      {/* Atmospheric outer fine ring with spring follow */}
+      {/* Atmospheric outer fine ring with spring follow and clean RGBA interpolation */}
       <motion.div
         className="fixed top-0 left-0 rounded-full pointer-events-none z-[9998] border border-white/40"
         style={{
@@ -91,12 +91,15 @@ export function LuxuryCursor() {
         animate={{
           width: isHovered ? 48 : isClicking ? 20 : 32,
           height: isHovered ? 48 : isClicking ? 20 : 32,
-          backgroundColor: isHovered ? "rgba(255, 255, 255, 0.08)" : "transparent",
-          borderColor: isHovered ? "rgba(255, 255, 255, 0.8)" : "rgba(255, 255, 255, 0.35)",
+          backgroundColor: isHovered
+            ? "rgba(255, 255, 255, 0.08)"
+            : "rgba(255, 255, 255, 0)",
+          borderColor: isHovered
+            ? "rgba(255, 255, 255, 0.85)"
+            : "rgba(255, 255, 255, 0.35)",
         }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       />
     </>
   );
 }
-

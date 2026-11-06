@@ -9,6 +9,7 @@ interface MaskedHeadingProps {
   delay?: number;
   as?: "h1" | "h2" | "h3" | "h4" | "p" | "span";
   wrap?: boolean;
+  mode?: "words" | "characters";
 }
 
 export function MaskedHeading({
@@ -17,6 +18,7 @@ export function MaskedHeading({
   delay = 0,
   as: Component = "h2",
   wrap = true,
+  mode = "words",
 }: MaskedHeadingProps) {
   const words = children.split(" ");
 
@@ -25,7 +27,7 @@ export function MaskedHeading({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.06,
+        staggerChildren: mode === "characters" ? 0.022 : 0.06,
         delayChildren: delay,
       },
     },
@@ -56,18 +58,35 @@ export function MaskedHeading({
         variants={container}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-80px" }}
+        viewport={{ once: true, margin: "-60px" }}
         className={`inline-flex ${
           wrap ? "flex-wrap" : "flex-nowrap whitespace-nowrap"
         } gap-x-[0.28em]`}
       >
-        {words.map((word, idx) => (
-          <span key={idx} className="overflow-hidden inline-block py-1">
-            <motion.span variants={child} className="inline-block">
-              {word}
-            </motion.span>
-          </span>
-        ))}
+        {mode === "characters"
+          ? words.map((word, wordIdx) => (
+              <span
+                key={wordIdx}
+                className="inline-flex overflow-hidden py-1 whitespace-nowrap"
+              >
+                {word.split("").map((char, charIdx) => (
+                  <motion.span
+                    key={charIdx}
+                    variants={child}
+                    className="inline-block"
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+              </span>
+            ))
+          : words.map((word, idx) => (
+              <span key={idx} className="overflow-hidden inline-block py-1">
+                <motion.span variants={child} className="inline-block">
+                  {word}
+                </motion.span>
+              </span>
+            ))}
       </motion.span>
     </Component>
   );
