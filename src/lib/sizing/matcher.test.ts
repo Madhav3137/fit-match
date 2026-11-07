@@ -53,6 +53,15 @@ describe("Size Recommendation Engine (05_SIZE_MATCHING_ENGINE.md)", () => {
       expect(weights.waist + weights.hip).toBeCloseTo(1.0, 5);
       expect(weights.waist).toBeGreaterThan(weights.hip);
     });
+
+    it("renormalizes trouser weights accurately when outseam is present", () => {
+      const weights = renormalizeWeights("trousers", ["waist", "hip", "outseam"]);
+      // Base trousers: waist 0.40, hip 0.35, outseam 0.25 -> total 1.0
+      expect(weights.waist).toBeCloseTo(0.40, 2);
+      expect(weights.hip).toBeCloseTo(0.35, 2);
+      expect(weights.outseam).toBeCloseTo(0.25, 2);
+      expect(weights.waist + weights.hip + weights.outseam).toBeCloseTo(1.0, 5);
+    });
   });
 
   describe("End-to-End Size Matching", () => {
@@ -166,6 +175,110 @@ describe("Size Recommendation Engine (05_SIZE_MATCHING_ENGINE.md)", () => {
 
       const result = matchSize(profile, manualChart);
       expect(result.confidence).toBe("medium");
+    });
+
+    it("explains when neither inseam nor outseam is available for trousers and caps confidence", () => {
+      const trouserChart: SizeChartData = {
+        type: "body_ranges",
+        unit: "cm",
+        category: "trousers",
+        sizes: [
+          { label: "30", bodyRanges: { waist: { min: 75, max: 78 }, hip: { min: 90, max: 94 } }, source: "brand_chart" },
+          { label: "32", bodyRanges: { waist: { min: 80, max: 83 }, hip: { min: 95, max: 99 } }, source: "brand_chart" },
+        ],
+        provenance: { sourceType: "brand" },
+      };
+
+      const profileWithoutLegs: BodyProfile = {
+        heightCm: 175,
+        waistCm: 81,
+        hipCm: 96,
+        fitPreference: "regular",
+        // no inseamCm, no outseamCm
+      };
+
+      const result = matchSize(profileWithoutLegs, trouserChart);
+      expect(result.status).toBe("recommended");
+      expect(result.confidence).toBe("medium"); // Capped from high because leg length is unknown
+      expect(result.reasons.some((r) => r.includes("Neither Inseam nor Outseam was provided in your profile"))).toBe(true);
+      // Ensure fitBreakdown does NOT fabricate an outseam or inseam
+      expect(result.fitBreakdown.some((b) => b.dimension === "inseam" || b.dimension === "outseam")).toBe(false);
+    });
+
+    it("matches trousers with outseam and explains when chart has outseam bounds", () => {
+      const trouserChartWithOutseam: SizeChartData = {
+        type: "body_ranges",
+        unit: "cm",
+        category: "trousers",
+        sizes: [
+          {
+            label: "30",
+            bodyRanges: {
+              waist: { min: 75, max: 78 },
+              hip: { min: 90, max: 94 },
+              outseam: { min: 101, max: 104 },
+            },
+            source: "brand_chart",
+          },
+          {
+            label: "32",
+            bodyRanges: {
+              waist: { min: 80, max: 83 },
+              hip: { min: 95, max: 99 },
+              outseam: { min: 105, max: 108 },
+            },
+            source: "brand_chart",
+          },
+        ],
+        provenance: { sourceType: "brand" },
+      };
+
+      const profileWithOutseam: BodyProfile = {
+        heightCm: 178,
+        waistCm: 82,
+        hipCm: 97,
+        outseamCm: 106,
+        fitPreference: "regular",
+      };
+
+      const result = matchSize(profileWithOutseam, trouserChartWithOutseam);
+      expect(result.status).toBe("recommended");
+      expect(result.recommendedSize).toBe("32");
+      expect(result.confidence).toBe("high");
+      expect(result.fitBreakdown.some((b) => b.dimension === "outseam" && b.status === "ideal")).toBe(true);
+    });
+
+    it("never computes a fabricated outseam when profile only has inseam", () => {
+      const trouserChartWithOutseam: SizeChartData = {
+        type: "body_ranges",
+        unit: "cm",
+        category: "trousers",
+        sizes: [
+          {
+            label: "32",
+            bodyRanges: {
+              waist: { min: 80, max: 83 },
+              hip: { min: 95, max: 99 },
+              outseam: { min: 105, max: 108 },
+            },
+            source: "brand_chart",
+          },
+        ],
+        provenance: { sourceType: "brand" },
+      };
+
+      const profileWithInseamOnly: BodyProfile = {
+        heightCm: 178,
+        waistCm: 82,
+        hipCm: 97,
+        inseamCm: 82, // No outseam provided
+        fitPreference: "regular",
+      };
+
+      const result = matchSize(profileWithInseamOnly, trouserChartWithOutseam);
+      // Sizing engine must NOT fabricate outseam = 82 + 24 = 106
+      expect(result.fitBreakdown.some((b) => b.dimension === "outseam")).toBe(false);
+      expect(result.reasons.some((r) => r.includes("Garment size chart specifies Outseam bounds, but Outseam measurement is unavailable in your profile"))).toBe(true);
     });
   });
 });

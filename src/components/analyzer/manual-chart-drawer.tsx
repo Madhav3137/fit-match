@@ -16,6 +16,8 @@ interface ManualSizeRow {
   hipMax?: number;
   inseamMin?: number;
   inseamMax?: number;
+  outseamMin?: number;
+  outseamMax?: number;
 }
 
 interface ManualChartDrawerProps {
@@ -35,10 +37,10 @@ const DEFAULT_TOP_SIZES: ManualSizeRow[] = [
 ];
 
 const DEFAULT_TROUSER_SIZES: ManualSizeRow[] = [
-  { label: "30", waistMin: 75, waistMax: 78, hipMin: 90, hipMax: 94, inseamMin: 78, inseamMax: 81 },
-  { label: "32", waistMin: 80, waistMax: 83, hipMin: 95, hipMax: 99, inseamMin: 80, inseamMax: 83 },
-  { label: "34", waistMin: 85, waistMax: 88, hipMin: 100, hipMax: 104, inseamMin: 81, inseamMax: 84 },
-  { label: "36", waistMin: 90, waistMax: 93, hipMin: 105, hipMax: 109, inseamMin: 82, inseamMax: 85 },
+  { label: "30", waistMin: 75, waistMax: 78, hipMin: 90, hipMax: 94, inseamMin: 78, inseamMax: 81, outseamMin: 102, outseamMax: 105 },
+  { label: "32", waistMin: 80, waistMax: 83, hipMin: 95, hipMax: 99, inseamMin: 80, inseamMax: 83, outseamMin: 104, outseamMax: 107 },
+  { label: "34", waistMin: 85, waistMax: 88, hipMin: 100, hipMax: 104, inseamMin: 81, inseamMax: 84, outseamMin: 105, outseamMax: 108 },
+  { label: "36", waistMin: 90, waistMax: 93, hipMin: 105, hipMax: 109, inseamMin: 82, inseamMax: 85, outseamMin: 106, outseamMax: 109 },
 ];
 
 export function ManualChartDrawer({
@@ -84,6 +86,41 @@ export function ManualChartDrawer({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate min/max ranges
+    for (const s of sizes) {
+      const pairs = [
+        { name: "Chest", min: s.chestMin, max: s.chestMax },
+        { name: "Waist", min: s.waistMin, max: s.waistMax },
+        { name: "Hips", min: s.hipMin, max: s.hipMax },
+        { name: "Inseam", min: s.inseamMin, max: s.inseamMax },
+        { name: "Outseam", min: s.outseamMin, max: s.outseamMax },
+      ];
+
+      let hasRange = false;
+      for (const p of pairs) {
+        const hasMin = p.min !== undefined && p.min !== null && !isNaN(p.min) && p.min > 0;
+        const hasMax = p.max !== undefined && p.max !== null && !isNaN(p.max) && p.max > 0;
+
+        if (hasMin !== hasMax) {
+          alert(`Incomplete ${p.name} range for size "${s.label}". Please provide both minimum and maximum bounds.`);
+          return;
+        }
+        if (hasMin && hasMax) {
+          if (p.min! > p.max!) {
+            alert(`Reversed ${p.name} range for size "${s.label}": minimum (${p.min}) cannot exceed maximum (${p.max}).`);
+            return;
+          }
+          hasRange = true;
+        }
+      }
+
+      if (!hasRange) {
+        alert(`Size "${s.label}" must include at least one valid measurement range.`);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -196,6 +233,7 @@ export function ManualChartDrawer({
                       <th className="p-3">Waist Range (Min - Max)</th>
                       <th className="p-3">Hips Range (Min - Max)</th>
                       <th className="p-3">Inseam [Inner Leg: Crotch to Hem] (Min - Max)</th>
+                      <th className="p-3">Outseam [Waistband to Hem] (Min - Max)</th>
                     </>
                   )}
                   <th className="p-3 w-10"></th>
@@ -324,6 +362,27 @@ export function ManualChartDrawer({
                             />
                           </div>
                         </td>
+
+                        {/* Trouser Outseam */}
+                        <td className="p-2.5">
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="number"
+                              value={row.outseamMin || ""}
+                              placeholder="Min"
+                              onChange={(e) => updateRow(idx, "outseamMin", Number(e.target.value))}
+                              className="w-14 bg-[#181818] border border-[#303030] rounded px-1.5 py-1 text-white text-center focus:border-white focus:outline-none"
+                            />
+                            <span className="text-[#555]">-</span>
+                            <input
+                              type="number"
+                              value={row.outseamMax || ""}
+                              placeholder="Max"
+                              onChange={(e) => updateRow(idx, "outseamMax", Number(e.target.value))}
+                              className="w-14 bg-[#181818] border border-[#303030] rounded px-1.5 py-1 text-white text-center focus:border-white focus:outline-none"
+                            />
+                          </div>
+                        </td>
                       </>
                     )}
 
@@ -346,7 +405,7 @@ export function ManualChartDrawer({
 
           {isTrouser && (
             <p className="text-[11px] font-mono text-[#888] pt-1">
-              NOTE: Enter true <span className="text-white font-medium">Inseam</span> (crotch seam to bottom hem). Do not enter total waistband-to-hem outseam length.
+              NOTE: Enter true <span className="text-white font-medium">Inseam</span> (crotch seam to bottom hem) and <span className="text-white font-medium">Outseam</span> (waistband to bottom hem). Both are evaluated independently.
             </p>
           )}
         </div>

@@ -12,6 +12,7 @@ export const PLAUSIBLE_RANGES_CM = {
 
 export const MeasurementProfileSchema = z.object({
   id: z.string().optional(),
+  updatedAt: z.string().optional(),
   unit: z.enum(["cm", "in"]).default("cm"),
   heightCm: z
     .number({ message: "Height is required and must be a number" })

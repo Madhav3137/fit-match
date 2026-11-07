@@ -56,21 +56,14 @@ export function Chapter01Profile() {
         waist: stored.waistCm || 84,
         hip: stored.hipCm || 102,
         inseam: stored.inseamCm || 82,
-        outseam: stored.outseamCm || (stored.inseamCm ? stored.inseamCm + 24 : 106),
+        outseam: stored.outseamCm || 106,
       });
       if (stored.unit) setUnit(stored.unit);
     }
   }, []);
 
   const updateVal = (key: DimensionKey, val: number) => {
-    setMeasurements((prev) => {
-      const next = { ...prev, [key]: val };
-      // If user adjusts inseam and outseam hasn't been manually detached, keep them anatomically aligned
-      if (key === "inseam" && prev.outseam === prev.inseam + 24) {
-        next.outseam = val + 24;
-      }
-      return next;
-    });
+    setMeasurements((prev) => ({ ...prev, [key]: val }));
   };
 
   const toDisplay = (cmVal: number) => {

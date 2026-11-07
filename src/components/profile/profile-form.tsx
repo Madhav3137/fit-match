@@ -28,7 +28,7 @@ import { Check, Trash2, ArrowRight, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TRANSITION_EASE } from "@/lib/motion/variants";
 
-type DimensionKey = "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam";
+type DimensionKey = "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam";
 
 export function ProfileForm() {
   const router = useRouter();
@@ -46,6 +46,7 @@ export function ProfileForm() {
   const [hip, setHip] = React.useState<string>("");
   const [shoulder, setShoulder] = React.useState<string>("");
   const [inseam, setInseam] = React.useState<string>("");
+  const [outseam, setOutseam] = React.useState<string>("");
   const [fitPreference, setFitPreference] = React.useState<"slim" | "regular" | "relaxed">("regular");
   const [consent, setConsent] = React.useState<boolean>(true);
 
@@ -55,6 +56,9 @@ export function ProfileForm() {
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
   const [hasExistingProfile, setHasExistingProfile] = React.useState<boolean>(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState<boolean>(false);
+
+  // Canonical measurements in cm to prevent rounding drift on repeated unit toggling
+  const canonicalCmRef = React.useRef<Partial<Record<DimensionKey, number | null>>>({});
 
   // Load existing profile from storage on mount
   React.useEffect(() => {
@@ -66,35 +70,67 @@ export function ProfileForm() {
       setUnit(existing.unit || "cm");
 
       const currUnit = existing.unit || "cm";
-      if (existing.heightCm) setHeight(String(displayFromCm(existing.heightCm, currUnit)));
-      if (existing.chestCm) setChest(String(displayFromCm(existing.chestCm, currUnit)));
-      if (existing.waistCm) setWaist(String(displayFromCm(existing.waistCm, currUnit)));
-      if (existing.hipCm) setHip(String(displayFromCm(existing.hipCm, currUnit)));
-      if (existing.shoulderCm) setShoulder(String(displayFromCm(existing.shoulderCm, currUnit)));
-      if (existing.inseamCm) setInseam(String(displayFromCm(existing.inseamCm, currUnit)));
+      if (existing.heightCm) {
+        canonicalCmRef.current.height = existing.heightCm;
+        setHeight(String(displayFromCm(existing.heightCm, currUnit)));
+      }
+      if (existing.chestCm) {
+        canonicalCmRef.current.chest = existing.chestCm;
+        setChest(String(displayFromCm(existing.chestCm, currUnit)));
+      }
+      if (existing.waistCm) {
+        canonicalCmRef.current.waist = existing.waistCm;
+        setWaist(String(displayFromCm(existing.waistCm, currUnit)));
+      }
+      if (existing.hipCm) {
+        canonicalCmRef.current.hip = existing.hipCm;
+        setHip(String(displayFromCm(existing.hipCm, currUnit)));
+      }
+      if (existing.shoulderCm) {
+        canonicalCmRef.current.shoulder = existing.shoulderCm;
+        setShoulder(String(displayFromCm(existing.shoulderCm, currUnit)));
+      }
+      if (existing.inseamCm) {
+        canonicalCmRef.current.inseam = existing.inseamCm;
+        setInseam(String(displayFromCm(existing.inseamCm, currUnit)));
+      }
+      if (existing.outseamCm) {
+        canonicalCmRef.current.outseam = existing.outseamCm;
+        setOutseam(String(displayFromCm(existing.outseamCm, currUnit)));
+      }
     }
   }, []);
 
-  // Bidirectional unit toggle converter
+  const handleInputChange = (dim: DimensionKey, val: string, setter: (v: string) => void) => {
+    setter(val);
+    if (!val || isNaN(Number(val))) {
+      canonicalCmRef.current[dim] = null;
+    } else {
+      canonicalCmRef.current[dim] = unit === "cm" ? Number(val) : normalizeToCm(Number(val), "in");
+    }
+  };
+
+  // Bidirectional unit toggle converter with canonical preservation (prevents drift)
   const handleUnitChange = (nextUnit: MeasurementUnit) => {
     if (nextUnit === unit) return;
 
-    const convertVal = (valStr: string) => {
-      if (!valStr || isNaN(Number(valStr))) return "";
-      const num = Number(valStr);
-      if (nextUnit === "in") {
-        return String(cmToInches(num));
-      } else {
-        return String(inchesToCm(num));
+    const getDisplayForDim = (dim: DimensionKey, currentDisplayStr: string) => {
+      const canonical = canonicalCmRef.current[dim];
+      if (canonical !== undefined && canonical !== null && !isNaN(canonical) && canonical > 0) {
+        return String(displayFromCm(canonical, nextUnit));
       }
+      if (!currentDisplayStr || isNaN(Number(currentDisplayStr))) return "";
+      const num = Number(currentDisplayStr);
+      return nextUnit === "in" ? String(cmToInches(num)) : String(inchesToCm(num));
     };
 
-    setHeight(convertVal(height));
-    setChest(convertVal(chest));
-    setWaist(convertVal(waist));
-    setHip(convertVal(hip));
-    setShoulder(convertVal(shoulder));
-    setInseam(convertVal(inseam));
+    setHeight((prev) => getDisplayForDim("height", prev));
+    setChest((prev) => getDisplayForDim("chest", prev));
+    setWaist((prev) => getDisplayForDim("waist", prev));
+    setHip((prev) => getDisplayForDim("hip", prev));
+    setShoulder((prev) => getDisplayForDim("shoulder", prev));
+    setInseam((prev) => getDisplayForDim("inseam", prev));
+    setOutseam((prev) => getDisplayForDim("outseam", prev));
     setUnit(nextUnit);
     setErrors({});
   };
@@ -127,6 +163,7 @@ export function ProfileForm() {
       hipCm: hip ? norm(hip) : null,
       shoulderCm: shoulder ? norm(shoulder) : null,
       inseamCm: inseam ? norm(inseam) : null,
+      outseamCm: outseam ? norm(outseam) : null,
       fitPreference,
       consentToStore: consent,
     };
@@ -172,6 +209,7 @@ export function ProfileForm() {
 
   const handleDelete = async () => {
     deleteStoredProfile();
+    canonicalCmRef.current = {};
     try {
       await fetch("/api/profile", { method: "DELETE" });
     } catch (e) {
@@ -183,6 +221,7 @@ export function ProfileForm() {
     setHip("");
     setShoulder("");
     setInseam("");
+    setOutseam("");
     setHasExistingProfile(false);
     setShowDeleteConfirm(false);
   };
@@ -219,6 +258,7 @@ export function ProfileForm() {
               hip,
               shoulder,
               inseam,
+              outseam,
             }}
             unit={unit}
           />
@@ -287,7 +327,7 @@ export function ProfileForm() {
                 onFocusDimension={() => setActiveDimension("height")}
                 onBlurDimension={() => setActiveDimension(null)}
                 onChange={(val) => {
-                  setHeight(val);
+                  handleInputChange("height", val, setHeight);
                   setErrors((prev) => ({ ...prev, heightCm: "" }));
                 }}
               />
@@ -306,7 +346,7 @@ export function ProfileForm() {
                 onFocusDimension={() => setActiveDimension("chest")}
                 onBlurDimension={() => setActiveDimension(null)}
                 onChange={(val) => {
-                  setChest(val);
+                  handleInputChange("chest", val, setChest);
                   setErrors((prev) => ({ ...prev, chestCm: "" }));
                 }}
               />
@@ -325,7 +365,7 @@ export function ProfileForm() {
                 onFocusDimension={() => setActiveDimension("waist")}
                 onBlurDimension={() => setActiveDimension(null)}
                 onChange={(val) => {
-                  setWaist(val);
+                  handleInputChange("waist", val, setWaist);
                   setErrors((prev) => ({ ...prev, waistCm: "" }));
                 }}
               />
@@ -343,7 +383,7 @@ export function ProfileForm() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Shoulders */}
               <MeasurementInput
                 id="shoulder"
@@ -357,7 +397,7 @@ export function ProfileForm() {
                 onFocusDimension={() => setActiveDimension("shoulder")}
                 onBlurDimension={() => setActiveDimension(null)}
                 onChange={(val) => {
-                  setShoulder(val);
+                  handleInputChange("shoulder", val, setShoulder);
                   setErrors((prev) => ({ ...prev, shoulderCm: "" }));
                 }}
               />
@@ -375,7 +415,7 @@ export function ProfileForm() {
                 onFocusDimension={() => setActiveDimension("hip")}
                 onBlurDimension={() => setActiveDimension(null)}
                 onChange={(val) => {
-                  setHip(val);
+                  handleInputChange("hip", val, setHip);
                   setErrors((prev) => ({ ...prev, hipCm: "" }));
                 }}
               />
@@ -393,8 +433,26 @@ export function ProfileForm() {
                 onFocusDimension={() => setActiveDimension("inseam")}
                 onBlurDimension={() => setActiveDimension(null)}
                 onChange={(val) => {
-                  setInseam(val);
+                  handleInputChange("inseam", val, setInseam);
                   setErrors((prev) => ({ ...prev, inseamCm: "" }));
+                }}
+              />
+
+              {/* Outseam */}
+              <MeasurementInput
+                id="outseam"
+                label="Outseam"
+                unit={unit}
+                value={outseam}
+                error={errors.outseamCm}
+                tip="Measure vertically along the outer side of the leg from the top of the waistband down to the bottom hem."
+                guideMin={getGuideBounds("outseam").min}
+                guideMax={getGuideBounds("outseam").max}
+                onFocusDimension={() => setActiveDimension("outseam")}
+                onBlurDimension={() => setActiveDimension(null)}
+                onChange={(val) => {
+                  handleInputChange("outseam", val, setOutseam);
+                  setErrors((prev) => ({ ...prev, outseamCm: "" }));
                 }}
               />
             </div>

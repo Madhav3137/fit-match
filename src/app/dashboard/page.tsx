@@ -130,6 +130,13 @@ export default function DashboardPage() {
                         {formatMeasurement(profile.inseamCm || undefined, "cm")}
                       </span>
                     </div>
+
+                    <div className="p-3 rounded-xl border border-[#222] bg-[#141414]">
+                      <span className="text-[10px] text-[#666] uppercase block">Outseam</span>
+                      <span className="text-white font-semibold">
+                        {formatMeasurement(profile.outseamCm || undefined, "cm")}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="p-3 rounded-xl border border-[#222] bg-[#141414] flex items-center justify-between text-xs font-mono">

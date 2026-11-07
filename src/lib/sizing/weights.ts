@@ -33,6 +33,7 @@ export const CATEGORY_BASE_WEIGHTS: Record<GarmentCategory, Partial<Record<Dimen
     waist: 0.40,
     hip: 0.35,
     inseam: 0.25,
+    outseam: 0.25,
   },
   outerwear: {
     chest: 0.40,

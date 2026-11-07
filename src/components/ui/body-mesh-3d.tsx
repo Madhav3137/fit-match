@@ -608,10 +608,22 @@ export function BodyMesh3D({
     };
   }, [interactive, activeZone]);
 
-  const inseamVal = currentValues?.inseam ? String(currentValues.inseam) : "82";
-  const outseamVal = currentValues?.outseam
-    ? String(currentValues.outseam)
-    : String(Number(inseamVal) + 24);
+  const formatVal = (val?: number | string, fallbackDemo?: string) => {
+    if (val !== undefined && val !== null && val !== "" && !isNaN(Number(val))) {
+      return `${val} ${unit}`;
+    }
+    if (!currentValues && fallbackDemo) {
+      return `${fallbackDemo} ${unit}`;
+    }
+    return "—";
+  };
+
+  const shoulderDisplay = formatVal(currentValues?.shoulder, "46");
+  const chestDisplay = formatVal(currentValues?.chest, "98");
+  const waistDisplay = formatVal(currentValues?.waist, "84");
+  const hipDisplay = formatVal(currentValues?.hip, "102");
+  const inseamDisplay = formatVal(currentValues?.inseam, "82");
+  const outseamDisplay = formatVal(currentValues?.outseam, "106");
 
   return (
     <div className={`relative flex items-center justify-center select-none ${className}`}>
@@ -659,7 +671,7 @@ export function BodyMesh3D({
           >
             <span className="text-[9px] uppercase tracking-wider font-semibold">01 // SHOULDERS</span>
             <span className="font-bold text-white text-[11px] font-mono">
-              {currentValues?.shoulder ? `${currentValues.shoulder} ${unit}` : "46 cm"}
+              {shoulderDisplay}
             </span>
           </div>
 
@@ -677,7 +689,7 @@ export function BodyMesh3D({
           >
             <span className="text-[9px] uppercase tracking-wider font-semibold">03 // WAIST</span>
             <span className="font-bold text-white text-[11px] font-mono">
-              {currentValues?.waist ? `${currentValues.waist} ${unit}` : "84 cm"}
+              {waistDisplay}
             </span>
           </div>
 
@@ -696,7 +708,7 @@ export function BodyMesh3D({
             <div className="flex items-center justify-between gap-2">
               <span className="text-[9px] uppercase tracking-wider font-semibold text-cyan-200">05 // INSEAM</span>
               <span className="font-bold text-white text-[11px] font-mono">
-                {inseamVal} {unit}
+                {inseamDisplay}
               </span>
             </div>
             <span className="text-[7.5px] text-cyan-400/80 font-mono tracking-tight">
@@ -722,7 +734,7 @@ export function BodyMesh3D({
           >
             <span className="text-[9px] uppercase tracking-wider font-semibold">02 // CHEST</span>
             <span className="font-bold text-white text-[11px] font-mono">
-              {currentValues?.chest ? `${currentValues.chest} ${unit}` : "98 cm"}
+              {chestDisplay}
             </span>
           </div>
 
@@ -740,7 +752,7 @@ export function BodyMesh3D({
           >
             <span className="text-[9px] uppercase tracking-wider font-semibold">04 // HIPS</span>
             <span className="font-bold text-white text-[11px] font-mono">
-              {currentValues?.hip ? `${currentValues.hip} ${unit}` : "102 cm"}
+              {hipDisplay}
             </span>
           </div>
 
@@ -759,7 +771,7 @@ export function BodyMesh3D({
             <div className="flex items-center justify-between gap-2">
               <span className="text-[9px] uppercase tracking-wider font-semibold text-amber-200">06 // OUTSEAM</span>
               <span className="font-bold text-white text-[11px] font-mono">
-                {outseamVal} {unit}
+                {outseamDisplay}
               </span>
             </div>
             <span className="text-[7.5px] text-amber-300/80 font-mono tracking-tight">

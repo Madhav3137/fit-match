@@ -64,6 +64,32 @@ describe("MeasurementProfileSchema", () => {
     };
     const resWaist = MeasurementProfileSchema.safeParse(implausibleWaist);
     expect(resWaist.success).toBe(false);
+
+    const implausibleOutseamLow = {
+      ...validProfile,
+      outseamCm: 50, // Below 75 cm min
+    };
+    const resOutseamLow = MeasurementProfileSchema.safeParse(implausibleOutseamLow);
+    expect(resOutseamLow.success).toBe(false);
+
+    const implausibleOutseamHigh = {
+      ...validProfile,
+      outseamCm: 160, // Above 135 cm max
+    };
+    const resOutseamHigh = MeasurementProfileSchema.safeParse(implausibleOutseamHigh);
+    expect(resOutseamHigh.success).toBe(false);
+  });
+
+  it("validates a profile with a valid outseam measurement", () => {
+    const profileWithOutseam = {
+      ...validProfile,
+      outseamCm: 106,
+    };
+    const res = MeasurementProfileSchema.safeParse(profileWithOutseam);
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.data.outseamCm).toBe(106);
+    }
   });
 
   it("requires consentToStore to be explicitly true", () => {

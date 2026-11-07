@@ -46,7 +46,7 @@ export function HeroSection() {
         waist: stored.waistCm || 84,
         hip: stored.hipCm || 102,
         inseam: stored.inseamCm || 82,
-        outseam: stored.outseamCm || (stored.inseamCm ? stored.inseamCm + 24 : 106),
+        outseam: stored.outseamCm || 106,
       });
       if (stored.unit) setUnit(stored.unit);
     }

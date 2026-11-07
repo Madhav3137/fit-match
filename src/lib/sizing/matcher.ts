@@ -136,7 +136,7 @@ export function matchSize(
     checkDim("hip", profile.hipCm);
     checkDim("shoulder", profile.shoulderCm);
     checkDim("inseam", profile.inseamCm);
-    checkDim("outseam", profile.outseamCm || (profile.inseamCm ? profile.inseamCm + 24 : null));
+    checkDim("outseam", profile.outseamCm);
 
     if (activeDims.length === 0) continue;
 
@@ -255,6 +255,20 @@ export function matchSize(
     confidence = "medium";
   }
 
+  // Trouser leg length evaluation check
+  const evaluatedInseam = best.breakdowns.some((b) => b.dimension === "inseam");
+  const evaluatedOutseam = best.breakdowns.some((b) => b.dimension === "outseam");
+  const chartHasInseam = sizes.some((s) => s.bodyRanges?.inseam);
+  const chartHasOutseam = sizes.some((s) => s.bodyRanges?.outseam);
+  const profileHasInseam = profile.inseamCm !== undefined && profile.inseamCm !== null && profile.inseamCm > 0;
+  const profileHasOutseam = profile.outseamCm !== undefined && profile.outseamCm !== null && profile.outseamCm > 0;
+
+  if (category === "trousers" && !evaluatedInseam && !evaluatedOutseam) {
+    if (confidence === "high") {
+      confidence = "medium";
+    }
+  }
+
   // 6. Formulate Structured Reasons
   const reasons: string[] = [];
   const idealDims = best.breakdowns.filter((b) => b.status === "ideal");
@@ -275,6 +289,41 @@ export function matchSize(
     reasons.push(
       `Allows extra room/drape through ${looseDims.map((d) => d.label.toLowerCase()).join(", ")}.`
     );
+  }
+
+  // Trouser length transparency explanation
+  if (category === "trousers") {
+    if (!evaluatedInseam && !evaluatedOutseam) {
+      if (!profileHasInseam && !profileHasOutseam) {
+        reasons.push(
+          "Neither Inseam nor Outseam was provided in your profile. Trouser recommendation is evaluated on waist and hip coordinates alone; verify trouser length before ordering."
+        );
+      } else if (profileHasInseam && !chartHasInseam && !chartHasOutseam) {
+        reasons.push(
+          "Your profile includes Inseam, but this retailer size chart does not publish inseam or outseam specifications."
+        );
+      } else if (profileHasOutseam && !chartHasInseam && !chartHasOutseam) {
+        reasons.push(
+          "Your profile includes Outseam, but this retailer size chart does not publish inseam or outseam specifications."
+        );
+      } else if (chartHasInseam && !profileHasInseam) {
+        reasons.push(
+          "Garment size chart specifies Inseam bounds, but Inseam measurement is unavailable in your profile."
+        );
+      } else if (chartHasOutseam && !profileHasOutseam) {
+        reasons.push(
+          "Garment size chart specifies Outseam bounds, but Outseam measurement is unavailable in your profile."
+        );
+      }
+    } else if (evaluatedInseam && !evaluatedOutseam && chartHasOutseam && !profileHasOutseam) {
+      reasons.push(
+        "Garment specifies outseam bounds, but outseam is unavailable in your profile (matched on verified inseam)."
+      );
+    } else if (evaluatedOutseam && !evaluatedInseam && chartHasInseam && !profileHasInseam) {
+      reasons.push(
+        "Garment specifies inseam bounds, but inseam is unavailable in your profile (matched on verified outseam)."
+      );
+    }
   }
 
   if (preference !== "regular") {

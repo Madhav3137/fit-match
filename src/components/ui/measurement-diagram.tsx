@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { TRANSITION_EASE } from "@/lib/motion/variants";
 
 interface MeasurementDiagramProps {
-  activeDimension?: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | null;
+  activeDimension?: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam" | null;
   className?: string;
   interactive?: boolean;
-  onSelectDimension?: (dim: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam") => void;
+  onSelectDimension?: (dim: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam") => void;
   currentValues?: {
     height?: number | string;
     chest?: number | string;
@@ -16,6 +16,7 @@ interface MeasurementDiagramProps {
     hip?: number | string;
     shoulder?: number | string;
     inseam?: number | string;
+    outseam?: number | string;
   };
   unit?: string;
 }
@@ -434,9 +435,9 @@ export function MeasurementDiagram({
         >
           <motion.line
             x1="175"
-            y1="348"
+            y1="350"
             x2="175"
-            y2="485"
+            y2="490"
             stroke={isDimActive("inseam") ? "#ffffff" : "#3d3d3d"}
             strokeWidth={isDimActive("inseam") ? "1.8" : "1"}
             strokeDasharray={isDimActive("inseam") ? "none" : "3 2"}
@@ -445,7 +446,7 @@ export function MeasurementDiagram({
             animate={{ pathLength: 1 }}
             transition={{ duration: 1.0, delay: 1.0 }}
           />
-          <line x1="168" y1="485" x2="182" y2="485" stroke={isDimActive("inseam") ? "#fff" : "#555"} strokeWidth="1.2" />
+          <line x1="168" y1="490" x2="182" y2="490" stroke={isDimActive("inseam") ? "#fff" : "#555"} strokeWidth="1.2" />
           <motion.line
             x1="175"
             y1="418"
@@ -467,6 +468,52 @@ export function MeasurementDiagram({
             className="transition-colors duration-200"
           >
             INSEAM (CROTCH TO HEM) {currentValues?.inseam ? `[${currentValues.inseam}]` : ""}
+          </text>
+        </g>
+
+        {/* ======================================================= */}
+        {/* 8. OUTSEAM Caliper                                     */}
+        {/* ======================================================= */}
+        <g
+          className="cursor-pointer group"
+          onMouseEnter={() => interactive && setHoveredDim("outseam")}
+          onMouseLeave={() => interactive && setHoveredDim(null)}
+          onClick={() => interactive && onSelectDimension?.("outseam")}
+        >
+          <motion.path
+            d="M 212 245 C 208 305, 195 360, 189 490"
+            fill="none"
+            stroke={isDimActive("outseam") ? "#ffffff" : "#3d3d3d"}
+            strokeWidth={isDimActive("outseam") ? "1.8" : "1"}
+            strokeDasharray={isDimActive("outseam") ? "none" : "3 2"}
+            filter={isDimActive("outseam") ? "url(#active-glow)" : undefined}
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 1.0, delay: 1.1 }}
+          />
+          <line x1="206" y1="245" x2="218" y2="245" stroke={isDimActive("outseam") ? "#fff" : "#555"} strokeWidth="1.2" />
+          <line x1="183" y1="490" x2="195" y2="490" stroke={isDimActive("outseam") ? "#fff" : "#555"} strokeWidth="1.2" />
+          <motion.line
+            x1="192"
+            y1="458"
+            x2="285"
+            y2="458"
+            stroke={isDimActive("outseam") ? "#fff" : "#282828"}
+            strokeWidth="0.8"
+            strokeDasharray="2 2"
+            animate={{ strokeDashoffset: [0, -12] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
+          <text
+            x="292"
+            y="461"
+            fill={isDimActive("outseam") ? "#ffffff" : "#888888"}
+            fontSize="8"
+            fontFamily="monospace"
+            letterSpacing="0.14em"
+            className="transition-colors duration-200"
+          >
+            OUTSEAM (WAIST TO HEM) {currentValues?.outseam ? `[${currentValues.outseam}]` : ""}
           </text>
         </g>
 
