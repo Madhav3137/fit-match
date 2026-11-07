@@ -10,9 +10,13 @@ import {
   DimensionKey,
   DIMENSION_SCALES,
   DIMENSION_LABELS,
-  CATEGORY_BASE_WEIGHTS,
   renormalizeWeights,
 } from "./weights";
+import {
+  evaluateGarmentMeasure,
+  normalizeGarmentMeasure,
+} from "./ease";
+import { validateAndNormalizeSizeChart } from "../retailers/chart-validator";
 
 const MAX_PENALTY_CAP = 3.0;
 
@@ -51,31 +55,38 @@ export function calculateRangePenalty(
 
 /**
  * Pure, deterministic size recommendation engine.
+ * Distinguishes between body range matching and garment measurement ease matching.
  */
 export function matchSize(
   profile: BodyProfile,
-  chart: SizeChartData,
+  inputChart: SizeChartData,
   fitPreferenceOverride?: FitPreference
 ): RecommendationResult {
   const disclaimer =
     "FITMATCH sizing guidance is an algorithmic estimate based on published retailer charts and physical dimensions. It does not constitute a legal or contractual fit guarantee.";
 
   const preference = fitPreferenceOverride || profile.fitPreference || "regular";
-  const category = chart.category || "top";
-  const sizes = chart.sizes;
 
-  if (!sizes || sizes.length === 0) {
+  // Validate and normalize chart dimensions to cm
+  const validation = validateAndNormalizeSizeChart(inputChart);
+  if (!validation.isValid || !validation.normalizedChart) {
     return {
       status: "insufficient_data",
       alternatives: [],
       confidence: "low",
-      reasons: ["The size chart contains no size rows or dimensional definitions."],
+      reasons: validation.errors.length > 0
+        ? validation.errors
+        : ["The size chart contains invalid or unparseable dimensional definitions."],
       missingMeasurements: [],
-      chartSource: chart.provenance?.sourceType || "unknown",
+      chartSource: inputChart?.provenance?.sourceType || "unknown",
       disclaimer,
       fitBreakdown: [],
     };
   }
+
+  const chart = validation.normalizedChart;
+  const category = chart.category || "top";
+  const sizes = chart.sizes;
 
   // 1. Identify category required dimensions
   const missingMeasurements: string[] = [];
@@ -86,6 +97,10 @@ export function matchSize(
   } else if (category === "trousers") {
     if (!profile.waistCm) {
       missingMeasurements.push("waist");
+    }
+  } else if (category === "dress") {
+    if (!profile.chestCm && !profile.waistCm && !profile.hipCm) {
+      missingMeasurements.push("chest", "waist");
     }
   }
 
@@ -112,89 +127,158 @@ export function matchSize(
     evaluatedDimensionsCount: number;
   }> = [];
 
+  const isGarmentMeasureChart = chart.type === "garment_measures";
+
   for (const sizeRow of sizes) {
-    const ranges = sizeRow.bodyRanges;
-    if (!ranges) continue;
-
-    // Collect available dimensions for this size and user
     const activeDims: DimensionKey[] = [];
-    const dimValues: Partial<Record<DimensionKey, { userVal: number; min: number; max: number }>> = {};
-
-    const checkDim = (key: DimensionKey, userVal?: number | null) => {
-      if (userVal !== undefined && userVal !== null && userVal > 0) {
-        const range = ranges[key];
-        if (range && range.min !== undefined && range.max !== undefined && range.max >= range.min) {
-          activeDims.push(key);
-          dimValues[key] = { userVal, min: range.min, max: range.max };
-        }
-      }
-    };
-
-    checkDim("height", profile.heightCm);
-    checkDim("chest", profile.chestCm);
-    checkDim("waist", profile.waistCm);
-    checkDim("hip", profile.hipCm);
-    checkDim("shoulder", profile.shoulderCm);
-    checkDim("inseam", profile.inseamCm);
-    checkDim("outseam", profile.outseamCm);
-
-    if (activeDims.length === 0) continue;
-
-    const weights = renormalizeWeights(category, activeDims);
-    let sizePenalty = 0;
     const sizeBreakdowns: FitBreakdownItem[] = [];
 
-    for (const dim of activeDims) {
-      const data = dimValues[dim]!;
-      const scale = DIMENSION_SCALES[dim];
-      const weight = weights[dim] || 0;
+    if (!isGarmentMeasureChart) {
+      // === BODY RANGES MATCHING ===
+      const ranges = sizeRow.bodyRanges;
+      if (!ranges) continue;
 
-      const { penalty, deltaCm, status } = calculateRangePenalty(
-        data.userVal,
-        data.min,
-        data.max,
-        scale
-      );
+      const dimValues: Partial<Record<DimensionKey, { userVal: number; min: number; max: number }>> = {};
 
-      // Fit preference calibration
-      let adjustedPenalty = penalty;
-      if (preference === "slim") {
-        if (status === "snug") adjustedPenalty += 0.12; // Disfavor tight squeeze in slim
-        if (status === "loose") adjustedPenalty += 0.08; // Disfavor excess bagginess
-      } else if (preference === "relaxed") {
-        if (status === "snug") adjustedPenalty += 0.25; // Strongly penalize tightness in relaxed
-        if (status === "loose") adjustedPenalty = Math.max(0, adjustedPenalty - 0.05); // Forgive extra room
+      const checkDim = (key: DimensionKey, userVal?: number | null) => {
+        if (userVal !== undefined && userVal !== null && userVal > 0) {
+          const range = ranges[key];
+          if (range && range.min !== undefined && range.max !== undefined && range.max >= range.min) {
+            activeDims.push(key);
+            dimValues[key] = { userVal, min: range.min, max: range.max };
+          }
+        }
+      };
+
+      checkDim("height", profile.heightCm);
+      checkDim("chest", profile.chestCm);
+      checkDim("waist", profile.waistCm);
+      checkDim("hip", profile.hipCm);
+      checkDim("shoulder", profile.shoulderCm);
+      checkDim("inseam", profile.inseamCm);
+      checkDim("outseam", profile.outseamCm);
+
+      if (activeDims.length === 0) continue;
+
+      const weights = renormalizeWeights(category, activeDims);
+      let sizePenalty = 0;
+
+      for (const dim of activeDims) {
+        const data = dimValues[dim]!;
+        const scale = DIMENSION_SCALES[dim];
+        const weight = weights[dim] || 0;
+
+        const { penalty, deltaCm, status } = calculateRangePenalty(
+          data.userVal,
+          data.min,
+          data.max,
+          scale
+        );
+
+        // Fit preference calibration for body ranges
+        let adjustedPenalty = penalty;
+        if (preference === "slim") {
+          if (status === "snug") adjustedPenalty += 0.12;
+          if (status === "loose") adjustedPenalty += 0.08;
+        } else if (preference === "relaxed") {
+          if (status === "snug") adjustedPenalty += 0.25;
+          if (status === "loose") adjustedPenalty = Math.max(0, adjustedPenalty - 0.05);
+        }
+
+        sizePenalty += adjustedPenalty * weight;
+
+        let explanation = "";
+        if (status === "ideal") {
+          explanation = `Your ${data.userVal}cm ${DIMENSION_LABELS[dim].toLowerCase()} falls comfortably within the ${data.min}–${data.max}cm range.`;
+        } else if (status === "snug") {
+          explanation = `Your ${data.userVal}cm ${DIMENSION_LABELS[dim].toLowerCase()} exceeds size bounds by ${deltaCm}cm.`;
+        } else {
+          explanation = `Your ${data.userVal}cm ${DIMENSION_LABELS[dim].toLowerCase()} is ${Math.abs(deltaCm)}cm below lower boundary.`;
+        }
+
+        sizeBreakdowns.push({
+          dimension: dim,
+          label: DIMENSION_LABELS[dim],
+          userValueCm: data.userVal,
+          rangeMinCm: data.min,
+          rangeMaxCm: data.max,
+          status,
+          deltaCm,
+          explanation,
+        });
       }
 
-      sizePenalty += adjustedPenalty * weight;
+      candidateScores.push({
+        size: sizeRow,
+        totalPenalty: Math.round(sizePenalty * 1000) / 1000,
+        breakdowns: sizeBreakdowns,
+        evaluatedDimensionsCount: activeDims.length,
+      });
+    } else {
+      // === GARMENT MEASUREMENTS WITH EASE ALLOWANCE MATCHING ===
+      const measures = sizeRow.garmentMeasures;
+      if (!measures) continue;
 
-      let explanation = "";
-      if (status === "ideal") {
-        explanation = `Your ${data.userVal}cm ${DIMENSION_LABELS[dim].toLowerCase()} falls comfortably within the ${data.min}–${data.max}cm range.`;
-      } else if (status === "snug") {
-        explanation = `Your ${data.userVal}cm ${DIMENSION_LABELS[dim].toLowerCase()} exceeds size bounds by ${deltaCm}cm.`;
-      } else {
-        explanation = `Your ${data.userVal}cm ${DIMENSION_LABELS[dim].toLowerCase()} is ${Math.abs(deltaCm)}cm below lower boundary.`;
+      const dimMeasures: Partial<Record<DimensionKey, { userVal: number; garmentVal: number; wasHalf: boolean }>> = {};
+
+      const checkGarmentDim = (key: Exclude<DimensionKey, "height">, userVal?: number | null) => {
+        if (userVal !== undefined && userVal !== null && userVal > 0) {
+          const rawGarmentVal = measures[key];
+          if (rawGarmentVal !== undefined && rawGarmentVal !== null && rawGarmentVal > 0) {
+            const { valueCm, isHalfMeasure } = normalizeGarmentMeasure(rawGarmentVal, key, userVal);
+            activeDims.push(key);
+            dimMeasures[key] = { userVal, garmentVal: valueCm, wasHalf: isHalfMeasure };
+          }
+        }
+      };
+
+      checkGarmentDim("chest", profile.chestCm);
+      checkGarmentDim("waist", profile.waistCm);
+      checkGarmentDim("hip", profile.hipCm);
+      checkGarmentDim("shoulder", profile.shoulderCm);
+      checkGarmentDim("inseam", profile.inseamCm);
+      checkGarmentDim("outseam", profile.outseamCm);
+
+      if (activeDims.length === 0) continue;
+
+      const weights = renormalizeWeights(category, activeDims);
+      let sizePenalty = 0;
+
+      for (const dim of activeDims) {
+        const item = dimMeasures[dim]!;
+        const weight = weights[dim] || 0;
+
+        const evaluation = evaluateGarmentMeasure(
+          item.userVal,
+          item.garmentVal,
+          dim,
+          category,
+          preference
+        );
+
+        sizePenalty += evaluation.penalty * weight;
+
+        const extraNote = item.wasHalf ? " (flat width doubled to circumference)" : "";
+
+        sizeBreakdowns.push({
+          dimension: dim,
+          label: DIMENSION_LABELS[dim],
+          userValueCm: item.userVal,
+          rangeMinCm: item.garmentVal,
+          rangeMaxCm: item.garmentVal,
+          status: evaluation.status,
+          deltaCm: evaluation.deltaCm,
+          explanation: evaluation.explanation + extraNote,
+        });
       }
 
-      sizeBreakdowns.push({
-        dimension: dim,
-        label: DIMENSION_LABELS[dim],
-        userValueCm: data.userVal,
-        rangeMinCm: data.min,
-        rangeMaxCm: data.max,
-        status,
-        deltaCm,
-        explanation,
+      candidateScores.push({
+        size: sizeRow,
+        totalPenalty: Math.round(sizePenalty * 1000) / 1000,
+        breakdowns: sizeBreakdowns,
+        evaluatedDimensionsCount: activeDims.length,
       });
     }
-
-    candidateScores.push({
-      size: sizeRow,
-      totalPenalty: Math.round(sizePenalty * 1000) / 1000,
-      breakdowns: sizeBreakdowns,
-      evaluatedDimensionsCount: activeDims.length,
-    });
   }
 
   if (candidateScores.length === 0) {
@@ -202,7 +286,7 @@ export function matchSize(
       status: "insufficient_data",
       alternatives: [],
       confidence: "low",
-      reasons: ["No sizes in the chart contained dimensional ranges matching your profile."],
+      reasons: ["No sizes in the chart contained dimensional specifications matching your profile."],
       missingMeasurements: [],
       chartSource: chart.provenance?.sourceType || "unknown",
       disclaimer,
@@ -223,7 +307,7 @@ export function matchSize(
       recommendedSize: undefined,
       alternatives: candidateScores.slice(0, 2).map((c) => ({
         size: c.size.label,
-        tradeoff: `Closest available candidate, but penalty score (${c.totalPenalty}) indicates significant dimensional mismatch.`,
+        tradeoff: `Closest candidate, but penalty score (${c.totalPenalty}) indicates significant dimensional mismatch.`,
         scoreDifference: c.totalPenalty,
       })),
       confidence: "low",
@@ -238,28 +322,36 @@ export function matchSize(
     };
   }
 
-  // 5. Confidence Band Derivation
+  // 5. Honest Confidence Band Derivation
   let confidence: "high" | "medium" | "low" = "high";
   const secondBest = runnerUps[0];
   const scoreDelta = secondBest ? secondBest.totalPenalty - best.totalPenalty : 1.0;
 
-  if (chart.provenance?.sourceType === "manual") {
+  // Manual or estimate provenance cap
+  if (chart.provenance?.sourceType === "manual" || chart.provenance?.isEstimate) {
     confidence = "medium";
   }
 
+  // Coverage checks
   if (best.evaluatedDimensionsCount < 2) {
     confidence = "low";
   } else if (scoreDelta < 0.08) {
-    confidence = "low"; // Close tie
+    confidence = "low"; // Close tie / ambiguous fit
   } else if (best.totalPenalty > 0.45) {
-    confidence = "medium";
+    if (confidence === "high") confidence = "medium";
+    else confidence = "low";
   }
 
   // Trouser leg length evaluation check
   const evaluatedInseam = best.breakdowns.some((b) => b.dimension === "inseam");
   const evaluatedOutseam = best.breakdowns.some((b) => b.dimension === "outseam");
-  const chartHasInseam = sizes.some((s) => s.bodyRanges?.inseam);
-  const chartHasOutseam = sizes.some((s) => s.bodyRanges?.outseam);
+  const chartHasInseam = isGarmentMeasureChart
+    ? sizes.some((s) => s.garmentMeasures?.inseam)
+    : sizes.some((s) => s.bodyRanges?.inseam);
+  const chartHasOutseam = isGarmentMeasureChart
+    ? sizes.some((s) => s.garmentMeasures?.outseam)
+    : sizes.some((s) => s.bodyRanges?.outseam);
+
   const profileHasInseam = profile.inseamCm !== undefined && profile.inseamCm !== null && profile.inseamCm > 0;
   const profileHasOutseam = profile.outseamCm !== undefined && profile.outseamCm !== null && profile.outseamCm > 0;
 
@@ -288,6 +380,13 @@ export function matchSize(
   if (looseDims.length > 0) {
     reasons.push(
       `Allows extra room/drape through ${looseDims.map((d) => d.label.toLowerCase()).join(", ")}.`
+    );
+  }
+
+  // Garment measure ease transparency
+  if (isGarmentMeasureChart) {
+    reasons.push(
+      `Evaluated against garment finished dimensions using ${category}-specific ease allowances.`
     );
   }
 
@@ -366,4 +465,3 @@ export function matchSize(
     overallScore: best.totalPenalty,
   };
 }
-

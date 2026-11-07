@@ -280,6 +280,130 @@ describe("Size Recommendation Engine (05_SIZE_MATCHING_ENGINE.md)", () => {
       expect(result.fitBreakdown.some((b) => b.dimension === "outseam")).toBe(false);
       expect(result.reasons.some((r) => r.includes("Garment size chart specifies Outseam bounds, but Outseam measurement is unavailable in your profile"))).toBe(true);
     });
+
+    it("evaluates garment measurement charts using ease allowance rather than raw body circumference", () => {
+      const garmentTopChart: SizeChartData = {
+        type: "garment_measures",
+        unit: "cm",
+        category: "top",
+        sizes: [
+          {
+            label: "S",
+            garmentMeasures: { chest: 100, waist: 88 },
+            source: "product_chart",
+          },
+          {
+            label: "M",
+            garmentMeasures: { chest: 108, waist: 94 },
+            source: "product_chart",
+          },
+          {
+            label: "L",
+            garmentMeasures: { chest: 116, waist: 102 },
+            source: "product_chart",
+          },
+        ],
+        provenance: {
+          sourceType: "product",
+          verifiedAt: "2026-11-01T00:00:00Z",
+        },
+      };
+
+      const userProfile: BodyProfile = {
+        heightCm: 180,
+        chestCm: 100, // Body chest is 100cm!
+        waistCm: 87,
+        fitPreference: "regular",
+      };
+
+      // In a raw circumference comparison, 100cm body would erroneously match Size S (100cm garment, 0 ease, skin-tight).
+      // With ease allowance model, Size M (108cm chest, +8cm ease) must be recommended for regular fit!
+      const result = matchSize(userProfile, garmentTopChart);
+      expect(result.status).toBe("recommended");
+      expect(result.recommendedSize).toBe("M");
+      expect(result.reasons.some((r) => r.includes("ease allowances"))).toBe(true);
+
+      const chestBreakdown = result.fitBreakdown.find((b) => b.dimension === "chest");
+      expect(chestBreakdown?.status).toBe("ideal");
+      expect(chestBreakdown?.explanation).toContain("provides 8cm ease");
+    });
+
+    it("applies fit preference shifts correctly in garment measurement charts", () => {
+      const garmentTopChart: SizeChartData = {
+        type: "garment_measures",
+        unit: "cm",
+        category: "top",
+        sizes: [
+          { label: "S", garmentMeasures: { chest: 104, waist: 90 }, source: "product_chart" },
+          { label: "M", garmentMeasures: { chest: 112, waist: 98 }, source: "product_chart" },
+          { label: "L", garmentMeasures: { chest: 120, waist: 106 }, source: "product_chart" },
+        ],
+        provenance: { sourceType: "product" },
+      };
+
+      const profile: BodyProfile = {
+        heightCm: 180,
+        chestCm: 100,
+        waistCm: 86,
+        fitPreference: "slim", // prefers closer cut (+5cm ease target)
+      };
+
+      const slimResult = matchSize(profile, garmentTopChart, "slim");
+      expect(slimResult.recommendedSize).toBe("S");
+
+      // For relaxed preference (+15cm ease target), L should be favored over S
+      const relaxedResult = matchSize(profile, garmentTopChart, "relaxed");
+      expect(relaxedResult.recommendedSize).toBe("M");
+    });
+
+    it("downgrades confidence to 'low' when there is a close tie between candidate sizes", () => {
+      const tiedChart: SizeChartData = {
+        type: "body_ranges",
+        unit: "cm",
+        category: "top",
+        sizes: [
+          { label: "1", bodyRanges: { chest: { min: 95, max: 100 }, waist: { min: 80, max: 85 } }, source: "product_chart" },
+          { label: "2", bodyRanges: { chest: { min: 96, max: 101 }, waist: { min: 81, max: 86 } }, source: "product_chart" },
+        ],
+        provenance: { sourceType: "product" },
+      };
+
+      const profile: BodyProfile = {
+        heightCm: 180,
+        chestCm: 98,
+        waistCm: 83,
+        fitPreference: "regular",
+      };
+
+      const result = matchSize(profile, tiedChart);
+      // Both sizes fit with 0 penalty (delta = 0 < 0.08)
+      expect(result.confidence).toBe("low");
+    });
+
+    it("returns alternative sizes with trade-off explanations", () => {
+      const sampleTeeChart: SizeChartData = {
+        type: "body_ranges",
+        unit: "cm",
+        category: "top",
+        sizes: [
+          { label: "S", bodyRanges: { chest: { min: 88, max: 94 }, waist: { min: 74, max: 80 } }, source: "product_chart" },
+          { label: "M", bodyRanges: { chest: { min: 95, max: 101 }, waist: { min: 81, max: 87 } }, source: "product_chart" },
+          { label: "L", bodyRanges: { chest: { min: 102, max: 108 }, waist: { min: 88, max: 94 } }, source: "product_chart" },
+        ],
+        provenance: { sourceType: "product" },
+      };
+
+      const profile: BodyProfile = {
+        heightCm: 180,
+        chestCm: 96,
+        waistCm: 82,
+        fitPreference: "regular",
+      };
+
+      const result = matchSize(profile, sampleTeeChart);
+      expect(result.alternatives.length).toBeGreaterThan(0);
+      expect(result.alternatives[0].tradeoff).toBeTruthy();
+    });
   });
 });
 

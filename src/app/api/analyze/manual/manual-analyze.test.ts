@@ -107,5 +107,86 @@ describe("Manual Chart API Validation (POST /api/analyze/manual)", () => {
     expect(body.recommendation).toBeDefined();
     expect(body.recommendation.recommendedSize).toBe("48");
   });
+
+  it("accepts garment_measures chartType and evaluates using ease models", async () => {
+    const garmentPayload = {
+      productTitle: "Relaxed Fit Tee",
+      brand: "Acme",
+      category: "top",
+      chartType: "garment_measures",
+      sizes: [
+        { label: "S", chest: 100, waist: 90 },
+        { label: "M", chest: 108, waist: 96 },
+        { label: "L", chest: 116, waist: 102 },
+      ],
+      profileData: {
+        heightCm: 180,
+        chestCm: 100, // 100cm body matches 108cm (+8cm ease)
+        waistCm: 88,
+        fitPreference: "regular",
+      },
+    };
+
+    const res = await POST(createRequest(garmentPayload));
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.chart.chart.type).toBe("garment_measures");
+    expect(body.recommendation.recommendedSize).toBe("M");
+    expect(body.recommendation.reasons.some((r: string) => r.includes("ease allowances"))).toBe(true);
+  });
+
+  it("converts inches to centimeters when unit is 'in'", async () => {
+    const inchPayload = {
+      productTitle: "Oxford Shirt",
+      brand: "Gitman",
+      category: "top",
+      chartType: "body_ranges",
+      unit: "in",
+      sizes: [
+        {
+          label: "M",
+          chestMin: 38, // 38in = 96.5cm
+          chestMax: 40, // 40in = 101.6cm
+          waistMin: 32, // 32in = 81.3cm
+          waistMax: 34, // 34in = 86.4cm
+        },
+      ],
+      profileData: {
+        heightCm: 180,
+        chestCm: 99,
+        waistCm: 83,
+        fitPreference: "regular",
+      },
+    };
+
+    const res = await POST(createRequest(inchPayload));
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.chart.chart.unit).toBe("cm");
+    const mSize = body.chart.chart.sizes[0];
+    expect(mSize.bodyRanges.chest.min).toBe(96.5);
+    expect(mSize.bodyRanges.chest.max).toBe(101.6);
+    expect(body.recommendation.recommendedSize).toBe("M");
+  });
+
+  it("rejects garment_measures with non-positive values", async () => {
+    const invalidGarmentPayload = {
+      productTitle: "Shirt",
+      brand: "Acme",
+      category: "top",
+      chartType: "garment_measures",
+      sizes: [
+        { label: "M", chest: -5 },
+      ],
+    };
+
+    const res = await POST(createRequest(invalidGarmentPayload));
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.error.code).toBe("INVALID_CHART_DATA");
+  });
 });
 
