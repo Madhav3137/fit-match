@@ -3,6 +3,59 @@
 import * as React from "react";
 import * as THREE from "three";
 
+interface ScrollKeyframe {
+  p: number; // Normalized scroll progress [0..1]
+  cameraZ: number;
+  sculptureScale: number;
+  fabricScale: number;
+  orbitalScale: number;
+  arcOpacity: number;
+  scanOpacity: number;
+}
+
+const SCROLL_KEYFRAMES: ScrollKeyframe[] = [
+  // 0.00: Hero (Framing deep-space backdrop behind headline and hero card)
+  { p: 0.00, cameraZ: 310, sculptureScale: 1.00, fabricScale: 1.00, orbitalScale: 1.00, arcOpacity: 0.35, scanOpacity: 0.25 },
+  // 0.26: Chapter 01 Profile (Camera glides subtly closer, tailoring caliper arcs illuminate)
+  { p: 0.26, cameraZ: 292, sculptureScale: 1.07, fabricScale: 1.05, orbitalScale: 1.05, arcOpacity: 0.65, scanOpacity: 0.40 },
+  // 0.48: Chapter 02 Scanner (Silk ribbons billow into focus with active optical scanning beam)
+  { p: 0.48, cameraZ: 296, sculptureScale: 1.11, fabricScale: 1.16, orbitalScale: 1.09, arcOpacity: 0.50, scanOpacity: 0.80 },
+  // 0.68: Chapter 03 Synthesis (Harmonic alignment of sculptural knot & fluid fabric)
+  { p: 0.68, cameraZ: 304, sculptureScale: 1.10, fabricScale: 1.11, orbitalScale: 1.08, arcOpacity: 0.55, scanOpacity: 0.50 },
+  // 0.85: FAQ Section (Gradual, subtle atmospheric perspective with zero sudden resizing)
+  { p: 0.85, cameraZ: 318, sculptureScale: 1.04, fabricScale: 1.02, orbitalScale: 1.03, arcOpacity: 0.35, scanOpacity: 0.30 },
+  // 1.00: Closing CTA & Footer (Graceful deep-space resolve)
+  { p: 1.00, cameraZ: 328, sculptureScale: 0.98, fabricScale: 0.96, orbitalScale: 0.98, arcOpacity: 0.25, scanOpacity: 0.20 },
+];
+
+function getInterpolatedKeyframe(p: number): ScrollKeyframe {
+  const clamped = Math.min(Math.max(p, 0), 1);
+  let i = 0;
+  while (i < SCROLL_KEYFRAMES.length - 1 && SCROLL_KEYFRAMES[i + 1].p < clamped) {
+    i++;
+  }
+  if (i >= SCROLL_KEYFRAMES.length - 1) return SCROLL_KEYFRAMES[SCROLL_KEYFRAMES.length - 1];
+
+  const k1 = SCROLL_KEYFRAMES[i];
+  const k2 = SCROLL_KEYFRAMES[i + 1];
+  const range = k2.p - k1.p;
+  const localT = range > 0 ? (clamped - k1.p) / range : 0;
+  // Cubic smoothstep easing: continuous 1st derivative (zero jumps or abrupt jerks)
+  const easeT = localT * localT * (3 - 2 * localT);
+
+  const lerp = (a: number, b: number) => a + (b - a) * easeT;
+
+  return {
+    p: clamped,
+    cameraZ: lerp(k1.cameraZ, k2.cameraZ),
+    sculptureScale: lerp(k1.sculptureScale, k2.sculptureScale),
+    fabricScale: lerp(k1.fabricScale, k2.fabricScale),
+    orbitalScale: lerp(k1.orbitalScale, k2.orbitalScale),
+    arcOpacity: lerp(k1.arcOpacity, k2.arcOpacity),
+    scanOpacity: lerp(k1.scanOpacity, k2.scanOpacity),
+  };
+}
+
 export function ThreeSceneBackground() {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -138,28 +191,86 @@ export function ThreeSceneBackground() {
     const cageMesh = new THREE.Mesh(cageGeo, cageMat);
     sculptureGroup.add(cageMesh);
 
-    // Concentric Caliper Orbit Rings
-    const orbitRing1Geo = new THREE.TorusGeometry(86, 0.55, 16, 120);
-    const orbitRing1Mat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.95,
-      roughness: 0.18,
-      envMapIntensity: 1.25,
+    // B. PREMIUM 3D ORBITAL RINGS SYSTEM (Elegant multi-plane silver/chrome ellipses with orbital nodes)
+    const orbitalSystemGroup = new THREE.Group();
+    orbitalSystemGroup.position.set(isMobile ? 0 : 38, 8, -35);
+    environmentMaster.add(orbitalSystemGroup);
+
+    const orbitalRingMat = new THREE.MeshStandardMaterial({
+      color: 0xdde9f8,
+      metalness: 0.98,
+      roughness: 0.10,
+      envMapIntensity: 1.85,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.72,
     });
-    const orbitRing1 = new THREE.Mesh(orbitRing1Geo, orbitRing1Mat);
-    orbitRing1.rotation.x = Math.PI * 0.28;
-    orbitRing1.rotation.y = Math.PI * 0.15;
-    sculptureGroup.add(orbitRing1);
 
-    const orbitRing2Geo = new THREE.TorusGeometry(104, 0.42, 16, 120);
-    const orbitRing2 = new THREE.Mesh(orbitRing2Geo, orbitRing1Mat);
-    orbitRing2.rotation.x = -Math.PI * 0.22;
-    orbitRing2.rotation.y = Math.PI * 0.32;
-    sculptureGroup.add(orbitRing2);
+    const orbitalNodeMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0x334866,
+      emissiveIntensity: 0.75,
+      metalness: 0.99,
+      roughness: 0.06,
+      envMapIntensity: 2.0,
+    });
 
-    // B. FLOATING METALLIC RIBBONS & SPLINE CURVES
+    interface OrbitalRingConfig {
+      mesh: THREE.Mesh;
+      group: THREE.Group;
+      rotSpeedZ: number;
+      baseTiltX: number;
+      baseTiltY: number;
+      radiusX: number;
+      radiusY: number;
+      nodes: { mesh: THREE.Mesh; speed: number; phase: number }[];
+    }
+
+    const orbitalRings: OrbitalRingConfig[] = [];
+
+    const ringParams = [
+      { r: 84, tube: 0.44, tiltX: 0.34, tiltY: 0.20, rotSpeedZ: 0.052, scaleY: 0.88, numNodes: 2 },
+      { r: 114, tube: 0.38, tiltX: -0.46, tiltY: 0.52, rotSpeedZ: -0.038, scaleY: 0.85, numNodes: 2 },
+      { r: 148, tube: 0.32, tiltX: 0.62, tiltY: -0.34, rotSpeedZ: 0.028, scaleY: 0.90, numNodes: 1 },
+      { r: 182, tube: 0.28, tiltX: -0.26, tiltY: 0.78, rotSpeedZ: -0.019, scaleY: 0.82, numNodes: 2 },
+    ];
+
+    const nodeGeo = new THREE.OctahedronGeometry(1.6, 0);
+
+    ringParams.forEach((param, ringIdx) => {
+      const ringGroup = new THREE.Group();
+      ringGroup.rotation.x = param.tiltX;
+      ringGroup.rotation.y = param.tiltY;
+      orbitalSystemGroup.add(ringGroup);
+
+      const ringGeo = new THREE.TorusGeometry(param.r, param.tube, 16, 140);
+      ringGeo.scale(1.0, param.scaleY, 1.0);
+      const ringMesh = new THREE.Mesh(ringGeo, orbitalRingMat);
+      ringGroup.add(ringMesh);
+
+      const nodes: { mesh: THREE.Mesh; speed: number; phase: number }[] = [];
+      for (let n = 0; n < param.numNodes; n++) {
+        const nMesh = new THREE.Mesh(nodeGeo, orbitalNodeMat);
+        ringGroup.add(nMesh);
+        nodes.push({
+          mesh: nMesh,
+          speed: (param.rotSpeedZ > 0 ? 0.32 : -0.28) * (1 + n * 0.25),
+          phase: (Math.PI * 2 * n) / param.numNodes + ringIdx * 0.7,
+        });
+      }
+
+      orbitalRings.push({
+        mesh: ringMesh,
+        group: ringGroup,
+        rotSpeedZ: param.rotSpeedZ,
+        baseTiltX: param.tiltX,
+        baseTiltY: param.tiltY,
+        radiusX: param.r,
+        radiusY: param.r * param.scaleY,
+        nodes,
+      });
+    });
+
+    // C. FLOATING METALLIC RIBBONS & SPLINE CURVES
     const ribbonCurvesGroup = new THREE.Group();
     environmentMaster.add(ribbonCurvesGroup);
 
@@ -196,7 +307,7 @@ export function ThreeSceneBackground() {
     const ribbonTube2 = new THREE.Mesh(tubeGeo2, chromeTubeMat);
     ribbonCurvesGroup.add(ribbonTube2);
 
-    // C. SMALL CHROME SPHERES & SATELLITE NODES
+    // D. SMALL CHROME SPHERES & SATELLITE NODES
     const sphereGroup = new THREE.Group();
     environmentMaster.add(sphereGroup);
 
@@ -230,7 +341,7 @@ export function ThreeSceneBackground() {
       });
     });
 
-    // D. TRANSLUCENT GLASS PANELS WITH DEPTH
+    // E. TRANSLUCENT GLASS PANELS WITH DEPTH
     const glassGroup = new THREE.Group();
     environmentMaster.add(glassGroup);
 
@@ -262,7 +373,7 @@ export function ThreeSceneBackground() {
     glassPanel1.add(new THREE.Mesh(glassFrameGeo, glassFrameMat));
     glassPanel2.add(new THREE.Mesh(glassFrameGeo, glassFrameMat));
 
-    // E. FLOATING GEOMETRIC SHARDS & FRAGMENTS
+    // F. FLOATING GEOMETRIC SHARDS & FRAGMENTS
     const shardGroup = new THREE.Group();
     environmentMaster.add(shardGroup);
 
@@ -292,7 +403,7 @@ export function ThreeSceneBackground() {
       });
     }
 
-    // F. DYNAMIC HIGH-LUMINOSITY SILK FABRIC SIMULATION
+    // G. DYNAMIC HIGH-LUMINOSITY SILK FABRIC SIMULATION
     const fabricGroup = new THREE.Group();
     fabricGroup.position.set(isMobile ? 0 : 30, -6, -15);
     environmentMaster.add(fabricGroup);
@@ -340,7 +451,7 @@ export function ThreeSceneBackground() {
     const posAttr2 = ribbon2Geo.attributes.position;
     const originalPositions2 = Float32Array.from(posAttr2.array);
 
-    // G. TECHNICAL TAILORING MEASUREMENT GEOMETRY (Chapter 01 & 02)
+    // H. TECHNICAL TAILORING MEASUREMENT GEOMETRY (Chapter 01 & 02)
     const techGroup = new THREE.Group();
     techGroup.position.set(isMobile ? 0 : 38, 8, -55);
     environmentMaster.add(techGroup);
@@ -367,7 +478,7 @@ export function ThreeSceneBackground() {
     const scanLine = new THREE.Line(scanLineGeo, scanLineMat);
     fabricGroup.add(scanLine);
 
-    // H. HIGH-INTERACTION METALLIC PARTICLES
+    // I. HIGH-INTERACTION METALLIC PARTICLES
     const particleCount = isMobile ? 380 : 850;
     const particlePositions = new Float32Array(particleCount * 3);
     const particleVelocities = new Float32Array(particleCount * 3);
@@ -497,6 +608,7 @@ export function ThreeSceneBackground() {
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
       sculptureGroup.position.x = isMobile ? 0 : 38;
+      orbitalSystemGroup.position.x = isMobile ? 0 : 38;
       fabricGroup.position.x = isMobile ? 0 : 30;
       techGroup.position.x = isMobile ? 0 : 38;
     };
@@ -506,6 +618,12 @@ export function ThreeSceneBackground() {
     let animationFrameId: number;
     const startTime = performance.now();
     let scanLineY = 0;
+
+    // Smoothed transition variables with physical damping
+    let currentCameraZ = 310;
+    let currentSculptureScale = 1.0;
+    let currentFabricScale = 1.0;
+    let currentOrbitalScale = 1.0;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -535,8 +653,20 @@ export function ThreeSceneBackground() {
         sculptureGroup.rotation.y = baseKnotRotY + userRotationY + mouseTiltY;
         sculptureGroup.rotation.x = baseKnotRotX + userRotationX + mouseTiltX;
 
-        orbitRing1.rotation.z = elapsed * 0.09;
-        orbitRing2.rotation.z = -elapsed * 0.07;
+        // Animate Premium Orbital Rings System
+        orbitalRings.forEach((orb) => {
+          orb.group.rotation.z += orb.rotSpeedZ * 0.018;
+
+          // Animate nodes gliding along this orbital ring's perimeter
+          orb.nodes.forEach((node) => {
+            const angle = node.phase + elapsed * node.speed;
+            node.mesh.position.set(
+              Math.cos(angle) * orb.radiusX,
+              Math.sin(angle) * orb.radiusY,
+              Math.sin(angle * 2.0) * 4.0
+            );
+          });
+        });
 
         // Animate floating chrome spline ribbons
         ribbonCurvesGroup.rotation.y = elapsed * 0.05;
@@ -566,7 +696,7 @@ export function ThreeSceneBackground() {
           s.mesh.rotation.y += s.rotSpeedY * 0.02;
         });
 
-        // 3. Dynamic Silk Fabric Undulation with Cursor Proximity Ripples!
+        // 3. Dynamic Silk Fabric Undulation with Cursor Proximity Ripples
         const pos1 = ribbon1Geo.attributes.position;
         const orig1 = originalPositions1;
         const count1 = pos1.count;
@@ -663,49 +793,36 @@ export function ThreeSceneBackground() {
       camera.position.x += (targetCameraX - camera.position.x) * 0.04;
       camera.position.y += (targetCameraY - camera.position.y) * 0.04;
 
-      // 7. Scroll-Driven Cinematic Chapter Transitions & Parallax Depth
+      // 7. Continuous Scroll Interpolation Across All Chapters & FAQ
       const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
       const scrollProgress = Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
 
-      // Layered Parallax: Foreground glass moves faster than background sculpture
+      // Layered Parallax: Foreground elements move faster than background sculpture
       glassGroup.position.y = scrollProgress * -90;
       ribbonCurvesGroup.position.y = scrollProgress * -45;
 
-      if (scrollProgress < 0.22) {
-        // HERO: Sculptural chrome & silk ribbon framing deep-space behind content
-        camera.position.z += (310 - camera.position.z) * 0.05;
-        sculptureGroup.scale.set(1.0, 1.0, 1.0);
-        fabricGroup.scale.set(1.0, 1.0, 1.0);
-        arcMat.opacity = 0.35;
-        scanLineMat.opacity = 0.25;
-      } else if (scrollProgress >= 0.22 && scrollProgress < 0.42) {
-        // CHAPTER 01: Measurement Laboratory (Camera glides closer, tailoring arcs illuminate)
-        camera.position.z += (285 - camera.position.z) * 0.05;
-        sculptureGroup.scale.set(1.1, 1.1, 1.1);
-        fabricGroup.scale.set(1.08, 1.08, 1.08);
-        arcMat.opacity = 0.75;
-        scanLineMat.opacity = 0.4;
-      } else if (scrollProgress >= 0.42 && scrollProgress < 0.62) {
-        // CHAPTER 02: Garment Ingestion (Silk fabric ribbons billow into focus with scanning beam)
-        camera.position.z += (295 - camera.position.z) * 0.05;
-        fabricGroup.scale.set(1.25, 1.25, 1.25);
-        arcMat.opacity = 0.4;
-        scanLineMat.opacity = 0.95;
-      } else if (scrollProgress >= 0.62 && scrollProgress < 0.78) {
-        // CHAPTER 03: Fit Synthesis (Harmonic alignment of sculpture & fabric)
-        camera.position.z += (305 - camera.position.z) * 0.05;
-        sculptureGroup.scale.set(1.15, 1.15, 1.15);
-        fabricGroup.scale.set(1.18, 1.18, 1.18);
-        arcMat.opacity = 0.6;
-        scanLineMat.opacity = 0.5;
-      } else {
-        // FAQ & FOOTER: Smooth, deep, subdued atmospheric perspective with zero empty space
-        camera.position.z += (360 - camera.position.z) * 0.05;
-        sculptureGroup.scale.set(0.9, 0.9, 0.9);
-        fabricGroup.scale.set(0.85, 0.85, 0.85);
-        arcMat.opacity = 0.2;
-        scanLineMat.opacity = 0.15;
-      }
+      // Evaluate C¹ continuous piecewise-smoothstep keyframe target
+      const targetKf = getInterpolatedKeyframe(scrollProgress);
+
+      // Physical frame damping for 100% fluid, pop-free transitions
+      currentCameraZ += (targetKf.cameraZ - currentCameraZ) * 0.06;
+      camera.position.z = currentCameraZ;
+
+      currentSculptureScale += (targetKf.sculptureScale - currentSculptureScale) * 0.06;
+      sculptureGroup.scale.setScalar(currentSculptureScale);
+
+      currentFabricScale += (targetKf.fabricScale - currentFabricScale) * 0.06;
+      fabricGroup.scale.setScalar(currentFabricScale);
+
+      currentOrbitalScale += (targetKf.orbitalScale - currentOrbitalScale) * 0.06;
+      orbitalSystemGroup.scale.setScalar(currentOrbitalScale);
+
+      // Scroll-driven orbital system progressive tilt (smoothly evolving between chapters)
+      orbitalSystemGroup.rotation.x = scrollProgress * 0.45 + (-mouseY * 0.15);
+      orbitalSystemGroup.rotation.y = scrollProgress * 0.65 + (mouseX * 0.20);
+
+      arcMat.opacity += (targetKf.arcOpacity - arcMat.opacity) * 0.06;
+      scanLineMat.opacity += (targetKf.scanOpacity - scanLineMat.opacity) * 0.06;
 
       camera.lookAt(0, 0, 0);
 
@@ -726,9 +843,9 @@ export function ThreeSceneBackground() {
       chromeMat.dispose();
       cageGeo.dispose();
       cageMat.dispose();
-      orbitRing1Geo.dispose();
-      orbitRing1Mat.dispose();
-      orbitRing2Geo.dispose();
+      orbitalRingMat.dispose();
+      orbitalNodeMat.dispose();
+      nodeGeo.dispose();
       tubeGeo1.dispose();
       tubeGeo2.dispose();
       chromeTubeMat.dispose();

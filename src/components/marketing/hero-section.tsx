@@ -174,18 +174,10 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
-              className="relative w-full max-w-[430px] border border-[#2a2a2a] rounded-3xl bg-[#0a0a0a]/90 backdrop-blur-md p-4 sm:p-6 shadow-2xl transition-colors hover:border-neutral-500 overflow-hidden"
+              className="relative w-full max-w-[440px] border border-[#2a2a2a] rounded-3xl bg-[#0a0a0a]/90 backdrop-blur-md p-3 sm:p-5 shadow-2xl transition-colors hover:border-neutral-500 overflow-hidden"
             >
-              {/* Subtle top indicator */}
-              <div aria-hidden="true" className="absolute top-3 left-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
-                3D CALIBRATION RIG
-              </div>
-              <div aria-hidden="true" className="absolute top-3 right-4 text-[9px] font-mono text-[#666] uppercase tracking-wider select-none">
-                DRAG TO ROTATE
-              </div>
-
               {/* The Genuine 3D Wireframe Calibration Instrument */}
-              <BodyMesh3D interactive={true} />
+              <BodyMesh3D interactive={true} className="w-full min-h-[480px] sm:min-h-[540px]" />
             </motion.div>
           </div>
         </div>

@@ -44,9 +44,25 @@ export function BodyMesh3D({
     // 1. SCENE, CAMERA, RENDERER
     const scene = new THREE.Scene();
 
-    // Camera at z: 152 with fov: 40 makes the human model large and visually dominant (filling ~90% of card height)
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
-    camera.position.set(0, 1.5, 152);
+    // Camera framed so the COMPLETE human body + pedestal (from top of cranium to bottom of feet)
+    // is 100% visible with ~11% headroom and ~11% footroom.
+    const fov = 37;
+    const camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 1000);
+
+    const updateCameraFraming = (w: number, h: number) => {
+      const aspect = w / h;
+      camera.aspect = aspect;
+      // Base distance: 236 gives 158 units of visible vertical height on desktop.
+      // Total model height + pedestal = 124 units (78.5% height utilization).
+      // On narrow mobile cards (aspect < 0.75), scale distance proportionally to keep ample horizontal clearance for flanking badges.
+      const baseDistance = 236;
+      const targetDist = aspect < 0.75 ? baseDistance * (0.78 / Math.max(aspect, 0.48)) : baseDistance;
+      camera.position.set(0, 0, targetDist);
+      camera.lookAt(0, 0, 0);
+      camera.updateProjectionMatrix();
+    };
+
+    updateCameraFraming(width, height);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -57,38 +73,40 @@ export function BodyMesh3D({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.3;
+    renderer.toneMappingExposure = 1.35;
     mount.appendChild(renderer.domElement);
 
     // 2. STUDIO SCIENTIFIC LIGHTING RIG
     const ambientLight = new THREE.AmbientLight(0x283244, 2.8);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 5.0);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 5.2);
     keyLight.position.set(65, 130, 100);
     scene.add(keyLight);
 
-    const rimLightLeft = new THREE.DirectionalLight(0xc2dcff, 6.5);
+    const rimLightLeft = new THREE.DirectionalLight(0xc2dcff, 6.8);
     rimLightLeft.position.set(-120, 85, -70);
     scene.add(rimLightLeft);
 
-    const rimLightRight = new THREE.DirectionalLight(0xfff6ec, 5.5);
+    const rimLightRight = new THREE.DirectionalLight(0xfff6ec, 5.8);
     rimLightRight.position.set(120, 85, -70);
     scene.add(rimLightRight);
 
-    const fillLight = new THREE.DirectionalLight(0x202838, 2.0);
+    const fillLight = new THREE.DirectionalLight(0x202838, 2.2);
     fillLight.position.set(0, -75, 55);
     scene.add(fillLight);
 
     // Internal Thoracic Point Light (Subtle luminescent core)
-    const thoracicGlow = new THREE.PointLight(0xdde8ff, 3.2, 80);
+    const thoracicGlow = new THREE.PointLight(0xdde8ff, 3.4, 85);
     thoracicGlow.position.set(0, 29, 10);
 
-    // 3. HUMAN MODEL GROUP — CENTERED, TALL & ANATOMICALLY DETAILED
+    // 3. HUMAN MODEL GROUP — PERFECTLY CENTERED VERTICALLY
+    // Model bounds: Cranium top = +66, Pedestal bottom = -58. Total span = 124.
+    // Offsetting bodyGroup by Y = -4.0 places cranium top at +62 and pedestal at -62, perfectly centered around Y = 0!
     const bodyGroup = new THREE.Group();
     scene.add(bodyGroup);
     bodyGroup.add(thoracicGlow);
-    bodyGroup.position.set(0, -1.5, 0);
+    bodyGroup.position.set(0, -4.0, 0);
 
     // HIGH-SPECULAR SILVER & CHROME METALLIC MATERIALS
     const silverMetalMat = new THREE.MeshStandardMaterial({
@@ -110,7 +128,7 @@ export function BodyMesh3D({
     const segmentHighlightMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0x446688,
-      emissiveIntensity: 0.85,
+      emissiveIntensity: 0.95,
       metalness: 0.98,
       roughness: 0.08,
       transparent: true,
@@ -140,7 +158,7 @@ export function BodyMesh3D({
     const headGroup = new THREE.Group();
     bodyGroup.add(headGroup);
 
-    // Cranium with cranial vault
+    // Cranium with cranial vault (top reaches Y = +66)
     const craniumGeo = new THREE.SphereGeometry(7.6, 28, 24);
     craniumGeo.scale(1.0, 1.25, 1.08);
     createBodySegment("cranium", craniumGeo, 56.5, headGroup);
@@ -214,7 +232,7 @@ export function BodyMesh3D({
     createArm(false);
     createArm(true);
 
-    // D. PLANTED ATHLETIC LEGS
+    // D. PLANTED ATHLETIC LEGS (from crotch Y: 0 to feet bottom Y: -57.0)
     const createLeg = (isRight: boolean) => {
       const legGroup = new THREE.Group();
       const sign = isRight ? 1 : -1;
@@ -335,10 +353,80 @@ export function BodyMesh3D({
       chest: createCaliperLoop(16.5, 29.5, 0.82),
       waist: createCaliperLoop(13.2, 16.5, 0.78),
       hip: createCaliperLoop(15.8, 4.5, 0.85),
-      inseam: createCaliperLoop(10.2, -22.0, 0.80),
     };
 
-    // 5. TRAVELING VERTICAL SCANNING LASER PLANE
+    // 5. ANATOMICALLY ACCURATE INSEAM CALIPER SYSTEM (Crotch Seam to Bottom Hem along Inner Leg)
+    const inseamGroup = new THREE.Group();
+    bodyGroup.add(inseamGroup);
+
+    // Inner leg seam curve coordinates: from crotch seam apex down inner right leg to bottom hem
+    const inseamCurvePoints = [
+      new THREE.Vector3(1.8, -0.5, 0.6),    // 0: Crotch Seam Junction
+      new THREE.Vector3(2.7, -14.0, 0.8),   // 1: Inner Medial Thigh
+      new THREE.Vector3(3.4, -27.5, 0.8),   // 2: Inner Knee Joint
+      new THREE.Vector3(4.0, -41.0, 0.7),   // 3: Inner Medial Calf
+      new THREE.Vector3(4.4, -54.0, 0.6),   // 4: Bottom Hem / Inner Ankle
+    ];
+    const inseamSpline = new THREE.CatmullRomCurve3(inseamCurvePoints);
+    const inseamTubeGeo = new THREE.TubeGeometry(inseamSpline, 36, 0.36, 12, false);
+    const inseamSeamMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0x446688,
+      emissiveIntensity: 0.6,
+      metalness: 0.98,
+      roughness: 0.08,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const inseamSeamMesh = new THREE.Mesh(inseamTubeGeo, inseamSeamMat);
+    inseamGroup.add(inseamSeamMesh);
+
+    // Crotch Seam Apex Caliper Diamond Indicator & Horizontal Caliper Tick
+    const crotchNodeGeo = new THREE.OctahedronGeometry(1.2, 0);
+    const crotchNodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const crotchNodeMesh = new THREE.Mesh(crotchNodeGeo, crotchNodeMat);
+    crotchNodeMesh.position.set(1.8, -0.5, 0.6);
+    inseamGroup.add(crotchNodeMesh);
+
+    const crotchTickGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-0.6, -0.5, 0.6),
+      new THREE.Vector3(4.2, -0.5, 0.6),
+    ]);
+    const tickMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
+    const crotchTickLine = new THREE.Line(crotchTickGeo, tickMat);
+    inseamGroup.add(crotchTickLine);
+
+    // Bottom Hem Caliper Diamond Indicator & Horizontal Caliper Tick
+    const hemNodeMesh = new THREE.Mesh(crotchNodeGeo, crotchNodeMat);
+    hemNodeMesh.position.set(4.4, -54.0, 0.6);
+    inseamGroup.add(hemNodeMesh);
+
+    const hemTickGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(2.0, -54.0, 0.6),
+      new THREE.Vector3(6.8, -54.0, 0.6),
+    ]);
+    const hemTickLine = new THREE.Line(hemTickGeo, tickMat);
+    inseamGroup.add(hemTickLine);
+
+    // Subtle Outseam Reference Spline (Waistband to Hem along Lateral Hip/Leg)
+    const outseamCurvePoints = [
+      new THREE.Vector3(13.2, 16.5, 0.4),   // Waistband
+      new THREE.Vector3(15.2, 4.5, 0.5),    // Lateral Hip
+      new THREE.Vector3(12.2, -14.0, 0.5),  // Lateral Thigh
+      new THREE.Vector3(10.2, -27.5, 0.5),  // Lateral Knee
+      new THREE.Vector3(9.2, -54.0, 0.5),   // Lateral Hem
+    ];
+    const outseamSpline = new THREE.CatmullRomCurve3(outseamCurvePoints);
+    const outseamTubeGeo = new THREE.TubeGeometry(outseamSpline, 36, 0.18, 8, false);
+    const outseamMat = new THREE.MeshBasicMaterial({
+      color: 0x556677,
+      transparent: true,
+      opacity: 0.35,
+    });
+    const outseamMesh = new THREE.Mesh(outseamTubeGeo, outseamMat);
+    inseamGroup.add(outseamMesh);
+
+    // 6. TRAVELING VERTICAL SCANNING LASER PLANE
     const scanPlaneGroup = new THREE.Group();
     bodyGroup.add(scanPlaneGroup);
 
@@ -366,11 +454,11 @@ export function BodyMesh3D({
     );
     scanPlaneGroup.add(laserLine);
 
-    // Attached Laser Point Light (Casts moving illumination onto anatomical curves!)
+    // Attached Laser Point Light (Casts moving illumination onto anatomical curves)
     const laserLight = new THREE.PointLight(0xffffff, 3.8, 48);
     scanPlaneGroup.add(laserLight);
 
-    // 6. INTERACTION & CONTROLLED DRAGGING — NO DRIFT!
+    // 7. INTERACTION & CONTROLLED DRAGGING — NO DRIFT ON RELEASE
     let isDragging = false;
     let previousPointerX = 0;
     let userRotationY = 0;
@@ -404,7 +492,7 @@ export function BodyMesh3D({
       window.addEventListener("pointerup", onPointerUp);
     }
 
-    // 7. SEQUENTIAL SCANNING SEQUENCE & ANIMATION LOOP
+    // 8. ANIMATION LOOP
     let animId: number;
     const startTime = performance.now();
 
@@ -423,28 +511,33 @@ export function BodyMesh3D({
       userRotationY += (targetRotationY - userRotationY) * 0.25;
       bodyGroup.rotation.y = userRotationY;
 
-      // Traveling Scan Beam (from shoulders Y: 42 to hips/inseam Y: -20)
-      const scanY = 11 + Math.sin(elapsed * 1.8) * 30;
+      // Traveling Scan Beam (from shoulders Y: 42 to hips/inseam Y: -25)
+      const scanY = 9 + Math.sin(elapsed * 1.8) * 33;
       scanPlaneGroup.position.y = scanY;
 
-      // Highlight active body segment and measurement ring
+      // Highlight active body segment
       Object.keys(segmentMeshes).forEach((key) => {
         const seg = segmentMeshes[key];
         const isActive = activeZone && (key === activeZone || key.startsWith(activeZone));
         seg.solid.material = isActive ? segmentHighlightMat : silverMetalMat;
       });
 
+      // Caliper loops pulse
       Object.keys(caliperLoops).forEach((key) => {
         const loop = caliperLoops[key];
         const isActive = activeZone === key;
-
-        // Proximity pulse when laser passes the loop
         const distToLaser = Math.abs(loop.baseY - scanY);
         const laserPulse = Math.max(0, 1 - distToLaser / 8) * 0.12;
-
         loop.mesh.material = isActive ? activeRingMat : ringMat;
         loop.group.scale.setScalar(isActive ? 1.08 : 1.0 + laserPulse);
       });
+
+      // Inseam guide highlighting
+      const isInseamActive = activeZone === "inseam";
+      inseamSeamMat.emissiveIntensity = isInseamActive ? 1.4 : 0.45;
+      inseamSeamMat.opacity = isInseamActive ? 1.0 : 0.75;
+      crotchNodeMesh.scale.setScalar(isInseamActive ? 1.35 : 1.0);
+      hemNodeMesh.scale.setScalar(isInseamActive ? 1.35 : 1.0);
 
       renderer.render(scene, camera);
     };
@@ -455,8 +548,7 @@ export function BodyMesh3D({
       if (!mount) return;
       const w = mount.clientWidth;
       const h = mount.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      updateCameraFraming(w, h);
       renderer.setSize(w, h);
     };
 
@@ -485,20 +577,20 @@ export function BodyMesh3D({
         className="w-full h-[500px] sm:h-[560px] cursor-grab active:cursor-grabbing relative z-10"
       />
 
-      {/* Futuristic Precision Caliper HUD Callouts with Balanced Flanking Layout */}
-      <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 sm:p-5">
+      {/* Precision Caliper HUD Callouts with Balanced Flanking Layout */}
+      <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 sm:p-5">
         {/* Top Header Technical Tag with Reset View Button */}
-        <div className="flex items-center justify-between text-[10px] font-mono text-[#888]">
+        <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-[#888]">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-white font-medium uppercase">3D ANTHROPOMETRIC RIG</span>
+            <span className="text-white font-medium uppercase tracking-wide">3D ANTHROPOMETRIC RIG</span>
           </span>
           <button
             type="button"
             onClick={() => resetCallbackRef.current?.()}
-            className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 transition-colors"
+            className="pointer-events-auto flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 transition-colors text-[9px] sm:text-[10px]"
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             <span>RESET VIEW</span>
           </button>
         </div>
@@ -506,20 +598,20 @@ export function BodyMesh3D({
         {/* Balanced Anatomical Measurement Callouts across Left & Right Flanks */}
         <div className="relative flex-1 my-2 flex items-center justify-between pointer-events-none">
           {/* Left Flank Callouts: Shoulders (Top), Waist (Center), Inseam (Lower) */}
-          <div className="flex flex-col justify-between h-[85%] pointer-events-auto z-20 space-y-4">
+          <div className="flex flex-col justify-between h-[85%] pointer-events-auto z-20 space-y-3 sm:space-y-4">
             {/* Shoulders */}
             <div
               onClick={() => onSelectDimension?.("shoulder")}
               onMouseEnter={() => setHoveredZone("shoulder")}
               onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
                 activeZone === "shoulder"
                   ? "border-white bg-white/20 text-white"
                   : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
               }`}
             >
-              <span className="text-[9px] uppercase tracking-wider">01 // SHOULDERS</span>
-              <span className="font-bold text-white text-[11px]">
+              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">01 // SHOULDERS</span>
+              <span className="font-bold text-white text-[10px] sm:text-[11px]">
                 {currentValues?.shoulder ? `${currentValues.shoulder} ${unit}` : "46 cm"}
               </span>
             </div>
@@ -529,51 +621,54 @@ export function BodyMesh3D({
               onClick={() => onSelectDimension?.("waist")}
               onMouseEnter={() => setHoveredZone("waist")}
               onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
                 activeZone === "waist"
                   ? "border-white bg-white/20 text-white"
                   : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
               }`}
             >
-              <span className="text-[9px] uppercase tracking-wider">03 // WAIST</span>
-              <span className="font-bold text-white text-[11px]">
+              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">03 // WAIST</span>
+              <span className="font-bold text-white text-[10px] sm:text-[11px]">
                 {currentValues?.waist ? `${currentValues.waist} ${unit}` : "84 cm"}
               </span>
             </div>
 
-            {/* Inner Inseam */}
+            {/* Inner Inseam (Crotch Seam to Bottom Hem along inside leg) */}
             <div
               onClick={() => onSelectDimension?.("inseam")}
               onMouseEnter={() => setHoveredZone("inseam")}
               onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              className={`group flex flex-col gap-0.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
                 activeZone === "inseam"
                   ? "border-white bg-white/20 text-white"
                   : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
               }`}
             >
-              <span className="text-[9px] uppercase tracking-wider">05 // INSEAM</span>
-              <span className="font-bold text-white text-[11px]">
-                {currentValues?.inseam ? `${currentValues.inseam} ${unit}` : "82 cm"}
-              </span>
+              <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">05 // INSEAM</span>
+                <span className="font-bold text-white text-[10px] sm:text-[11px]">
+                  {currentValues?.inseam ? `${currentValues.inseam} ${unit}` : "82 cm"}
+                </span>
+              </div>
+              <span className="text-[7px] sm:text-[8px] text-[#708095] tracking-tight">CROTCH SEAM → HEM</span>
             </div>
           </div>
 
           {/* Right Flank Callouts: Chest (Top), Hips (Lower) */}
-          <div className="flex flex-col justify-around h-[70%] pointer-events-auto z-20 space-y-6">
+          <div className="flex flex-col justify-around h-[70%] pointer-events-auto z-20 space-y-4 sm:space-y-6">
             {/* Chest / Bust */}
             <div
               onClick={() => onSelectDimension?.("chest")}
               onMouseEnter={() => setHoveredZone("chest")}
               onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
                 activeZone === "chest"
                   ? "border-white bg-white/20 text-white"
                   : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
               }`}
             >
-              <span className="text-[9px] uppercase tracking-wider">02 // CHEST</span>
-              <span className="font-bold text-white text-[11px]">
+              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">02 // CHEST</span>
+              <span className="font-bold text-white text-[10px] sm:text-[11px]">
                 {currentValues?.chest ? `${currentValues.chest} ${unit}` : "98 cm"}
               </span>
             </div>
@@ -583,14 +678,14 @@ export function BodyMesh3D({
               onClick={() => onSelectDimension?.("hip")}
               onMouseEnter={() => setHoveredZone("hip")}
               onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
                 activeZone === "hip"
                   ? "border-white bg-white/20 text-white"
                   : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
               }`}
             >
-              <span className="text-[9px] uppercase tracking-wider">04 // HIPS</span>
-              <span className="font-bold text-white text-[11px]">
+              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">04 // HIPS</span>
+              <span className="font-bold text-white text-[10px] sm:text-[11px]">
                 {currentValues?.hip ? `${currentValues.hip} ${unit}` : "102 cm"}
               </span>
             </div>
@@ -600,7 +695,7 @@ export function BodyMesh3D({
         {/* Footer Coordinate Ticks */}
         <div className="flex items-center justify-between pt-2.5 border-t border-white/10 text-[9px] font-mono text-[#666]">
           <span>HORIZONTAL YAW: DRAG 360°</span>
-          <span>LASER: ±0.8MM ACCURACY</span>
+          <span>INSEAM: INNER SEAM // OUTSEAM: WAIST-TO-HEM</span>
         </div>
       </div>
     </div>

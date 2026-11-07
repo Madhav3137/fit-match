@@ -6,15 +6,16 @@ export interface SizeRow {
   label: string; // e.g. XS, S, M, L, XL, 32
   bodyRanges?: Partial<
     Record<
-      "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam",
+      "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam",
       { min: number; max: number }
     >
   >;
   garmentMeasures?: Partial<
-    Record<"chest" | "waist" | "hip" | "shoulder" | "length" | "inseam", number>
+    Record<"chest" | "waist" | "hip" | "shoulder" | "length" | "inseam" | "outseam", number>
   >;
   source: "product_chart" | "brand_chart" | "manual";
   sourceUrl?: string;
+  legMeasurementType?: "inseam" | "outseam" | "both" | "none";
 }
 
 export interface SizeChartData {

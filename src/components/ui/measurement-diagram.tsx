@@ -466,7 +466,7 @@ export function MeasurementDiagram({
             letterSpacing="0.14em"
             className="transition-colors duration-200"
           >
-            INSEAM {currentValues?.inseam ? `[${currentValues.inseam}]` : ""}
+            INSEAM (CROTCH TO HEM) {currentValues?.inseam ? `[${currentValues.inseam}]` : ""}
           </text>
         </g>
 

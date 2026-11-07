@@ -195,7 +195,7 @@ export function ManualChartDrawer({
                     <>
                       <th className="p-3">Waist Range (Min - Max)</th>
                       <th className="p-3">Hips Range (Min - Max)</th>
-                      <th className="p-3">Inseam (Min - Max)</th>
+                      <th className="p-3">Inseam [Inner Leg: Crotch to Hem] (Min - Max)</th>
                     </>
                   )}
                   <th className="p-3 w-10"></th>
@@ -343,6 +343,12 @@ export function ManualChartDrawer({
               </tbody>
             </table>
           </div>
+
+          {isTrouser && (
+            <p className="text-[11px] font-mono text-[#888] pt-1">
+              NOTE: Enter true <span className="text-white font-medium">Inseam</span> (crotch seam to bottom hem). Do not enter total waistband-to-hem outseam length.
+            </p>
+          )}
         </div>
 
         {/* Footer CTAs */}

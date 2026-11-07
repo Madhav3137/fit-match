@@ -27,7 +27,7 @@ const DIMENSIONS: DimensionConfig[] = [
   { key: "chest", label: "Chest Circumference", sublabel: "Fullest Bust Line", min: 78, max: 130, defaultVal: 98 },
   { key: "waist", label: "Natural Waist", sublabel: "Narrowest Torso Point", min: 62, max: 120, defaultVal: 84 },
   { key: "hip", label: "Hip & Seat", sublabel: "Fullest Pelvic Width", min: 82, max: 135, defaultVal: 102 },
-  { key: "inseam", label: "Inner Inseam", sublabel: "Crotch to Ankle Bone", min: 68, max: 96, defaultVal: 82 },
+  { key: "inseam", label: "Inner Inseam", sublabel: "Crotch Seam to Bottom Hem", min: 68, max: 96, defaultVal: 82 },
 ];
 
 export function Chapter01Profile() {
