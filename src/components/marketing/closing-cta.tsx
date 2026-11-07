@@ -35,7 +35,7 @@ export function ClosingCTA() {
             className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full border border-neutral-800 bg-[#121212]/90 backdrop-blur-sm"
           >
             <Sparkles className="w-3 h-3 text-white" />
-            <span className="text-[10px] font-mono tracking-technical text-[#888] uppercase">
+            <span className="text-[10px] font-mono tracking-technical text-neutral-400 uppercase">
               UNIVERSAL ENGINE // INITIATION
             </span>
           </motion.div>
@@ -59,7 +59,7 @@ export function ClosingCTA() {
                 delay={0.25}
                 wrap={true}
                 mode="characters"
-                className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.1] justify-center"
+                className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-medium tracking-tight text-neutral-200 uppercase leading-[1.1] justify-center"
               >
                 A BETTER FIT.
               </MaskedHeading>
@@ -72,7 +72,7 @@ export function ClosingCTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.4, ease: TRANSITION_EASE }}
-            className="text-base sm:text-lg text-[#999999] max-w-xl mx-auto leading-relaxed font-normal"
+            className="text-base sm:text-lg text-neutral-300 max-w-xl mx-auto leading-relaxed font-normal"
           >
             Your measurements. Every brand. One universal profile.
           </motion.p>

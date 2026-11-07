@@ -7,6 +7,7 @@ export const PLAUSIBLE_RANGES_CM = {
   hip: { min: 65, max: 170, label: "Hips" },
   shoulder: { min: 30, max: 65, label: "Shoulder Width" },
   inseam: { min: 55, max: 105, label: "Inseam" },
+  outseam: { min: 75, max: 135, label: "Outseam" },
 } as const;
 
 export const MeasurementProfileSchema = z.object({
@@ -42,6 +43,12 @@ export const MeasurementProfileSchema = z.object({
     .max(PLAUSIBLE_RANGES_CM.inseam.max, `Inseam must not exceed ${PLAUSIBLE_RANGES_CM.inseam.max} cm`)
     .nullable()
     .optional(),
+  outseamCm: z
+    .number({ message: "Outseam must be a number" })
+    .min(PLAUSIBLE_RANGES_CM.outseam.min, `Outseam must be at least ${PLAUSIBLE_RANGES_CM.outseam.min} cm`)
+    .max(PLAUSIBLE_RANGES_CM.outseam.max, `Outseam must not exceed ${PLAUSIBLE_RANGES_CM.outseam.max} cm`)
+    .nullable()
+    .optional(),
   fitPreference: z.enum(["slim", "regular", "relaxed"]).default("regular"),
   consentToStore: z.boolean().refine((val) => val === true, {
     message: "You must confirm consent to store your sizing measurements.",
@@ -58,6 +65,7 @@ export interface ProfileFormValues {
   hip?: number | string;
   shoulder?: number | string;
   inseam?: number | string;
+  outseam?: number | string;
   fitPreference: "slim" | "regular" | "relaxed";
   consentToStore: boolean;
 }

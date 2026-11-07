@@ -48,7 +48,7 @@ export function FAQSection() {
       <Container>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10 space-y-2">
-            <div className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
+            <div className="text-[11px] font-mono tracking-[0.2em] text-neutral-400 uppercase">
               // TECHNICAL KNOWLEDGE BASE
             </div>
             <MaskedHeading as="h2" className="font-display text-3xl sm:text-5xl font-medium tracking-tight text-white uppercase justify-center">
@@ -64,8 +64,8 @@ export function FAQSection() {
                   key={idx}
                   className={`rounded-2xl border transition-all duration-300 ${
                     isOpen
-                      ? "border-neutral-500 bg-[#121212]"
-                      : "border-[#222] bg-[#0c0c0c] hover:border-[#383838]"
+                      ? "border-neutral-500 bg-[#121216] shadow-xl"
+                      : "border-neutral-800 bg-[#0c0c0e] hover:border-neutral-700 hover:bg-[#101012]"
                   }`}
                 >
                   <button
@@ -74,19 +74,19 @@ export function FAQSection() {
                     aria-expanded={isOpen}
                   >
                     <div>
-                      <span className="text-[10px] font-mono text-[#555] tracking-technical uppercase block mb-1">
+                      <span className="text-[10px] font-mono text-neutral-400 tracking-wider uppercase block mb-1">
                         {faq.meta}
                       </span>
-                      <span className="text-sm sm:text-base font-semibold text-white tracking-tight">
+                      <span className="text-base font-medium text-white tracking-tight">
                         {faq.q}
                       </span>
                     </div>
                     <motion.div
                       animate={{ rotate: isOpen ? 180 : 0 }}
                       transition={{ duration: 0.3 }}
-                      className="p-1 rounded-full text-[#888]"
+                      className="p-1 rounded-full text-neutral-400"
                     >
-                      <ChevronDown className="w-4 h-4 text-[#888] shrink-0" />
+                      <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
                     </motion.div>
                   </button>
 
@@ -99,7 +99,7 @@ export function FAQSection() {
                         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                         className="overflow-hidden"
                       >
-                        <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-1 text-xs sm:text-sm text-[#929292] leading-relaxed border-t border-[#1a1a1a]">
+                        <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-2 text-sm text-neutral-300 leading-relaxed border-t border-neutral-800/80 font-normal">
                           {faq.a}
                         </div>
                       </motion.div>

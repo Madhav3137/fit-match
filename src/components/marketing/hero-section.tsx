@@ -11,6 +11,7 @@ import { Magnetic } from "../motion/magnetic-button";
 import { AnimatedCounter } from "../motion/animated-counter";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { fadeInUp, TRANSITION_EASE } from "@/lib/motion/variants";
+import { getStoredProfile } from "@/lib/storage/profile-storage";
 
 export function HeroSection() {
   // 3D Parallax Tilt for the Card Frame
@@ -22,6 +23,34 @@ export function HeroSection() {
 
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["6deg", "-6deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
+
+  // Normalized measurements flow (stored profile or calibrated default)
+  const [profileValues, setProfileValues] = React.useState({
+    height: 178,
+    shoulder: 46,
+    chest: 98,
+    waist: 84,
+    hip: 102,
+    inseam: 82,
+    outseam: 106,
+  });
+  const [unit, setUnit] = React.useState<"cm" | "in">("cm");
+
+  React.useEffect(() => {
+    const stored = getStoredProfile();
+    if (stored) {
+      setProfileValues({
+        height: stored.heightCm || 178,
+        shoulder: stored.shoulderCm || 46,
+        chest: stored.chestCm || 98,
+        waist: stored.waistCm || 84,
+        hip: stored.hipCm || 102,
+        inseam: stored.inseamCm || 82,
+        outseam: stored.outseamCm || (stored.inseamCm ? stored.inseamCm + 24 : 106),
+      });
+      if (stored.unit) setUnit(stored.unit);
+    }
+  }, []);
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -37,7 +66,7 @@ export function HeroSection() {
   return (
     <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden bg-transparent">
       <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 xl:gap-14 items-center">
           {/* Left Column: Editorial Headline & Actions */}
           <div className="lg:col-span-7 space-y-8">
             {/* Technical Sub-Header Tag */}
@@ -47,25 +76,25 @@ export function HeroSection() {
               transition={{ duration: 0.8, ease: TRANSITION_EASE }}
               className="flex items-center gap-3"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              <span className="text-[11px] font-mono tracking-technical text-[#8e8e8e] uppercase">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] font-mono tracking-[0.2em] text-neutral-400 uppercase">
                 FIT ENGINE // SYS.01
               </span>
-              <span className="text-[#303030]">/</span>
-              <span className="text-[11px] font-mono tracking-technical text-[#626262] uppercase">
+              <span className="text-neutral-700">/</span>
+              <span className="text-[11px] font-mono tracking-[0.2em] text-neutral-400 uppercase">
                 UNIVERSAL SIZING MATRIX
               </span>
             </motion.div>
 
-            {/* Split Headline with Character-by-Character Mask Reveals */}
-            <div className="space-y-1">
+            {/* Split Headline with High Contrast & Balanced Serif Weights */}
+            <div className="space-y-1 sm:space-y-2">
               <div>
                 <MaskedHeading
                   as="h1"
                   delay={0.1}
                   wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-medium tracking-tight text-white uppercase leading-[1.08]"
+                  className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] font-medium tracking-tight text-white uppercase leading-[1.06]"
                 >
                   YOUR SIZE.
                 </MaskedHeading>
@@ -76,20 +105,20 @@ export function HeroSection() {
                   delay={0.25}
                   wrap={true}
                   mode="characters"
-                  className="font-display text-4xl sm:text-6xl md:text-6xl lg:text-[4rem] xl:text-[5.25rem] font-normal tracking-tight text-[#888888] uppercase leading-[1.08]"
+                  className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] font-medium tracking-tight text-neutral-200 uppercase leading-[1.06]"
                 >
                   EVERY BRAND.
                 </MaskedHeading>
               </div>
             </div>
 
-            {/* Supporting Copy with Balanced Wrap */}
+            {/* Supporting Copy with Clean Contrast */}
             <motion.p
               variants={fadeInUp}
               initial="hidden"
               animate="visible"
               transition={{ delay: 0.4 }}
-              className="text-base sm:text-lg text-[#999999] max-w-xl font-normal leading-relaxed text-balance"
+              className="text-base sm:text-lg text-neutral-300 max-w-xl font-normal leading-relaxed text-balance"
             >
               One reusable body profile. Paste any product link to receive brand- and
               garment-aware size recommendations based on real sizing data.
@@ -127,13 +156,13 @@ export function HeroSection() {
               initial="hidden"
               animate="visible"
               transition={{ delay: 0.7 }}
-              className="grid grid-cols-3 gap-6 pt-6 border-t border-[#202020] text-left max-w-lg"
+              className="grid grid-cols-3 gap-6 pt-6 border-t border-neutral-800 text-left max-w-lg"
             >
               <div>
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
                   <AnimatedCounter value={100} suffix="%" />
                 </div>
-                <div className="text-[10px] font-mono text-[#777] uppercase tracking-wider mt-0.5">
+                <div className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider mt-0.5">
                   Algorithmic Clarity
                 </div>
               </div>
@@ -142,16 +171,16 @@ export function HeroSection() {
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
                   <AnimatedCounter value={0} suffix="%" />
                 </div>
-                <div className="text-[10px] font-mono text-[#777] uppercase tracking-wider mt-0.5">
+                <div className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider mt-0.5">
                   Fabricated Sizing Data
                 </div>
               </div>
 
               <div>
                 <div className="text-white text-base sm:text-lg font-mono font-bold">
-                  <AnimatedCounter value={6} suffix="" />
+                  <AnimatedCounter value={7} suffix="" />
                 </div>
-                <div className="text-[10px] font-mono text-[#777] uppercase tracking-wider mt-0.5">
+                <div className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider mt-0.5">
                   Calibrated Dimensions
                 </div>
               </div>
@@ -174,10 +203,15 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, delay: 0.3, ease: TRANSITION_EASE }}
-              className="relative w-full max-w-[440px] border border-[#2a2a2a] rounded-3xl bg-[#0a0a0a]/90 backdrop-blur-md p-3 sm:p-5 shadow-2xl transition-colors hover:border-neutral-500 overflow-hidden"
+              className="relative w-full max-w-[450px] border border-neutral-800 rounded-3xl bg-[#0a0a0c]/90 backdrop-blur-md p-3 sm:p-5 shadow-2xl transition-colors hover:border-neutral-700 overflow-hidden"
             >
-              {/* The Genuine 3D Wireframe Calibration Instrument */}
-              <BodyMesh3D interactive={true} className="w-full min-h-[480px] sm:min-h-[540px]" />
+              {/* The Genuine 3D Calibration Instrument with Flowing User Profile */}
+              <BodyMesh3D
+                interactive={true}
+                currentValues={profileValues}
+                unit={unit}
+                className="w-full min-h-[500px] sm:min-h-[560px]"
+              />
             </motion.div>
           </div>
         </div>
@@ -190,10 +224,10 @@ export function HeroSection() {
           className="flex justify-center pt-10 text-neutral-600 hover:text-neutral-400 transition-colors"
         >
           <Link href="#how-it-works" className="flex flex-col items-center gap-1 group">
-            <span className="text-[10px] font-mono tracking-technical uppercase text-[#555] group-hover:text-[#999]">
+            <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-neutral-400 group-hover:text-white transition-colors">
               EXPLORE ARCHITECTURE
             </span>
-            <ChevronDown className="w-4 h-4 animate-bounce text-[#666]" />
+            <ChevronDown className="w-4 h-4 animate-bounce text-neutral-400" />
           </Link>
         </motion.div>
       </Container>

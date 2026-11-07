@@ -124,7 +124,7 @@ function RetailerCard({ retailer, index }: { retailer: RetailerItem; index: numb
 
       {/* Card Header: Category & Badge */}
       <div className="flex items-center justify-between mb-4 relative z-10">
-        <span className="text-[10px] font-mono text-[#666] tracking-wider uppercase group-hover:text-[#999] transition-colors">
+        <span className="text-[10px] font-mono text-neutral-400 tracking-wider uppercase group-hover:text-neutral-200 transition-colors">
           {retailer.category}
         </span>
         <Badge
@@ -148,15 +148,15 @@ function RetailerCard({ retailer, index }: { retailer: RetailerItem; index: numb
       <div className="relative z-10 space-y-1 my-3">
         <div className="text-xl sm:text-2xl font-bold tracking-tight text-white font-display flex items-center justify-between">
           <span>{retailer.name}</span>
-          <ArrowUpRight className="w-3.5 h-3.5 text-[#555] group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+          <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
         </div>
-        <div className="text-[11px] font-mono text-[#666] group-hover:text-[#aaa] transition-colors">
+        <div className="text-[11px] font-mono text-neutral-400 group-hover:text-white transition-colors">
           {retailer.domain}
         </div>
       </div>
 
       {/* Integration Note */}
-      <div className="pt-3 border-t border-[#1a1a1a] text-[10px] font-mono text-[#555] group-hover:text-[#888] transition-colors relative z-10">
+      <div className="pt-3 border-t border-[#1a1a1a] text-[10px] font-mono text-neutral-400 group-hover:text-neutral-200 transition-colors relative z-10">
         {retailer.notes}
       </div>
     </motion.div>
@@ -174,7 +174,7 @@ export function RetailerStrip() {
         <motion.div
           animate={{ x: [0, -1200] }}
           transition={{ duration: 34, repeat: Infinity, ease: "linear" }}
-          className="flex whitespace-nowrap text-xs font-mono tracking-widest text-[#666]"
+          className="flex whitespace-nowrap text-xs font-mono tracking-widest text-neutral-400"
         >
           <span>{marqueeText}</span>
           <span>{marqueeText}</span>
@@ -187,7 +187,7 @@ export function RetailerStrip() {
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              <span className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
+              <span className="text-[11px] font-mono tracking-technical text-neutral-400 uppercase">
                 ECOSYSTEM & COMPATIBILITY
               </span>
             </div>
@@ -195,7 +195,7 @@ export function RetailerStrip() {
               Supported Retailers & Brands
             </MaskedHeading>
           </div>
-          <p className="text-xs sm:text-sm text-[#8a8a8a] max-w-md leading-relaxed font-normal">
+          <p className="text-xs sm:text-sm text-neutral-300 max-w-md leading-relaxed font-normal">
             Transparent integration tiers. Automated extraction is explicitly labeled by live adapter status;
             other brands seamlessly support direct published chart entry.
           </p>
@@ -214,7 +214,7 @@ export function RetailerStrip() {
         </motion.div>
 
         {/* Security & Integrity Footnote */}
-        <div className="mt-12 pt-6 border-t border-[#1a1a1a] flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] font-mono text-[#666] gap-2">
+        <div className="mt-12 pt-6 border-t border-[#1a1a1a] flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] font-mono text-neutral-400 gap-2">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
             <span>SSRF PROTECTED // ONLY HTTPS SERVER-SIDE FETCH</span>

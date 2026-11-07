@@ -6,8 +6,8 @@ import { RotateCcw } from "lucide-react";
 
 interface BodyMesh3DProps {
   interactive?: boolean;
-  activeDimension?: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | null;
-  onSelectDimension?: (dim: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam") => void;
+  activeDimension?: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam" | null;
+  onSelectDimension?: (dim: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam") => void;
   currentValues?: {
     height?: number | string;
     chest?: number | string;
@@ -15,6 +15,7 @@ interface BodyMesh3DProps {
     hip?: number | string;
     shoulder?: number | string;
     inseam?: number | string;
+    outseam?: number | string;
   };
   unit?: string;
   className?: string;
@@ -44,19 +45,17 @@ export function BodyMesh3D({
     // 1. SCENE, CAMERA, RENDERER
     const scene = new THREE.Scene();
 
-    // Camera framed so the COMPLETE human body + pedestal (from top of cranium to bottom of feet)
-    // is 100% visible with ~11% headroom and ~11% footroom.
     const fov = 37;
     const camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 1000);
 
     const updateCameraFraming = (w: number, h: number) => {
       const aspect = w / h;
       camera.aspect = aspect;
-      // Base distance: 236 gives 158 units of visible vertical height on desktop.
-      // Total model height + pedestal = 124 units (78.5% height utilization).
-      // On narrow mobile cards (aspect < 0.75), scale distance proportionally to keep ample horizontal clearance for flanking badges.
-      const baseDistance = 236;
-      const targetDist = aspect < 0.75 ? baseDistance * (0.78 / Math.max(aspect, 0.48)) : baseDistance;
+      // Base distance: 242 gives ~162 units of visible vertical height.
+      // Total model height + pedestal = 124 units (76.5% height utilization).
+      // Leaves generous 11.7% headroom & footroom clearing all HUD overlays.
+      const baseDistance = 242;
+      const targetDist = aspect < 0.75 ? baseDistance * (0.80 / Math.max(aspect, 0.46)) : baseDistance;
       camera.position.set(0, 0, targetDist);
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
@@ -101,8 +100,8 @@ export function BodyMesh3D({
     thoracicGlow.position.set(0, 29, 10);
 
     // 3. HUMAN MODEL GROUP — PERFECTLY CENTERED VERTICALLY
-    // Model bounds: Cranium top = +66, Pedestal bottom = -58. Total span = 124.
-    // Offsetting bodyGroup by Y = -4.0 places cranium top at +62 and pedestal at -62, perfectly centered around Y = 0!
+    // Cranium top at +66, pedestal bottom at -58 -> total span = 124 units.
+    // Offsetting by Y = -4.0 centers cranium apex at +62 and pedestal at -62.
     const bodyGroup = new THREE.Group();
     scene.add(bodyGroup);
     bodyGroup.add(thoracicGlow);
@@ -192,12 +191,12 @@ export function BodyMesh3D({
     chestGeo.scale(1.08, 1.0, 0.82);
     createBodySegment("chest", chestGeo, 29.5, torsoGroup);
 
-    // Natural Waist & Abdominal Wall
+    // Natural Waist & Abdominal Wall (Waistband top is at Y = 17.5)
     const waistGeo = new THREE.CylinderGeometry(12.5, 13.5, 12.5, 22, 3);
     waistGeo.scale(1.02, 1.0, 0.78);
     createBodySegment("waist", waistGeo, 16.5, torsoGroup);
 
-    // Pelvis & Iliac Flare
+    // Pelvis & Iliac Flare (Y = 4.5)
     const pelvisGeo = new THREE.CylinderGeometry(13.8, 15.8, 13.5, 24, 3);
     pelvisGeo.scale(1.08, 1.0, 0.85);
     createBodySegment("hip", pelvisGeo, 4.5, bodyGroup);
@@ -232,7 +231,7 @@ export function BodyMesh3D({
     createArm(false);
     createArm(true);
 
-    // D. PLANTED ATHLETIC LEGS (from crotch Y: 0 to feet bottom Y: -57.0)
+    // D. PLANTED ATHLETIC LEGS (Crotch junction at Y: -0.5, Trouser hem at Y: -53.5, Feet at Y: -55.5)
     const createLeg = (isRight: boolean) => {
       const legGroup = new THREE.Group();
       const sign = isRight ? 1 : -1;
@@ -355,76 +354,111 @@ export function BodyMesh3D({
       hip: createCaliperLoop(15.8, 4.5, 0.85),
     };
 
-    // 5. ANATOMICALLY ACCURATE INSEAM CALIPER SYSTEM (Crotch Seam to Bottom Hem along Inner Leg)
-    const inseamGroup = new THREE.Group();
-    bodyGroup.add(inseamGroup);
+    // 5. ANATOMICALLY ACCURATE INSEAM & OUTSEAM 3D CALIPER GUIDES
+    const legGuidesGroup = new THREE.Group();
+    bodyGroup.add(legGuidesGroup);
 
-    // Inner leg seam curve coordinates: from crotch seam apex down inner right leg to bottom hem
+    // ==========================================
+    // A. INSEAM: Crotch Seam Junction down to Ankle Hem along Inner Leg
+    // ==========================================
     const inseamCurvePoints = [
-      new THREE.Vector3(1.8, -0.5, 0.6),    // 0: Crotch Seam Junction
-      new THREE.Vector3(2.7, -14.0, 0.8),   // 1: Inner Medial Thigh
-      new THREE.Vector3(3.4, -27.5, 0.8),   // 2: Inner Knee Joint
-      new THREE.Vector3(4.0, -41.0, 0.7),   // 3: Inner Medial Calf
-      new THREE.Vector3(4.4, -54.0, 0.6),   // 4: Bottom Hem / Inner Ankle
+      new THREE.Vector3(1.6, -0.5, 0.8),    // Point 0: Crotch Seam Apex
+      new THREE.Vector3(2.4, -13.5, 0.8),   // Point 1: Inner Medial Thigh
+      new THREE.Vector3(3.3, -27.5, 0.8),   // Point 2: Inner Knee Joint
+      new THREE.Vector3(3.9, -41.5, 0.8),   // Point 3: Inner Medial Calf
+      new THREE.Vector3(4.3, -53.5, 0.8),   // Point 4: Inner Ankle / Trouser Hem
     ];
     const inseamSpline = new THREE.CatmullRomCurve3(inseamCurvePoints);
-    const inseamTubeGeo = new THREE.TubeGeometry(inseamSpline, 36, 0.36, 12, false);
-    const inseamSeamMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      emissive: 0x446688,
-      emissiveIntensity: 0.6,
+    const inseamTubeGeo = new THREE.TubeGeometry(inseamSpline, 36, 0.40, 12, false);
+    const inseamMat = new THREE.MeshStandardMaterial({
+      color: 0x99ddff,
+      emissive: 0x0088cc,
+      emissiveIntensity: 0.65,
       metalness: 0.98,
       roughness: 0.08,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.90,
     });
-    const inseamSeamMesh = new THREE.Mesh(inseamTubeGeo, inseamSeamMat);
-    inseamGroup.add(inseamSeamMesh);
+    const inseamMesh = new THREE.Mesh(inseamTubeGeo, inseamMat);
+    legGuidesGroup.add(inseamMesh);
 
-    // Crotch Seam Apex Caliper Diamond Indicator & Horizontal Caliper Tick
-    const crotchNodeGeo = new THREE.OctahedronGeometry(1.2, 0);
-    const crotchNodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const crotchNodeMesh = new THREE.Mesh(crotchNodeGeo, crotchNodeMat);
-    crotchNodeMesh.position.set(1.8, -0.5, 0.6);
-    inseamGroup.add(crotchNodeMesh);
+    // Inseam Upper Endpoint: Crotch Seam Caliper Tick & Node
+    const caliperNodeGeo = new THREE.OctahedronGeometry(1.2, 0);
+    const crotchNodeMat = new THREE.MeshBasicMaterial({ color: 0x99eeff });
+    const crotchNodeMesh = new THREE.Mesh(caliperNodeGeo, crotchNodeMat);
+    crotchNodeMesh.position.set(1.6, -0.5, 0.8);
+    legGuidesGroup.add(crotchNodeMesh);
 
+    const tickLineMat = new THREE.LineBasicMaterial({ color: 0x99eeff, transparent: true, opacity: 0.95 });
     const crotchTickGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-0.6, -0.5, 0.6),
-      new THREE.Vector3(4.2, -0.5, 0.6),
+      new THREE.Vector3(-0.8, -0.5, 0.8),
+      new THREE.Vector3(4.0, -0.5, 0.8),
     ]);
-    const tickMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
-    const crotchTickLine = new THREE.Line(crotchTickGeo, tickMat);
-    inseamGroup.add(crotchTickLine);
+    const crotchTickLine = new THREE.Line(crotchTickGeo, tickLineMat);
+    legGuidesGroup.add(crotchTickLine);
 
-    // Bottom Hem Caliper Diamond Indicator & Horizontal Caliper Tick
-    const hemNodeMesh = new THREE.Mesh(crotchNodeGeo, crotchNodeMat);
-    hemNodeMesh.position.set(4.4, -54.0, 0.6);
-    inseamGroup.add(hemNodeMesh);
+    // Inseam Lower Endpoint: Bottom Hem Caliper Tick & Node
+    const hemNodeMesh = new THREE.Mesh(caliperNodeGeo, crotchNodeMat);
+    hemNodeMesh.position.set(4.3, -53.5, 0.8);
+    legGuidesGroup.add(hemNodeMesh);
 
     const hemTickGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(2.0, -54.0, 0.6),
-      new THREE.Vector3(6.8, -54.0, 0.6),
+      new THREE.Vector3(1.8, -53.5, 0.8),
+      new THREE.Vector3(6.8, -53.5, 0.8),
     ]);
-    const hemTickLine = new THREE.Line(hemTickGeo, tickMat);
-    inseamGroup.add(hemTickLine);
+    const hemTickLine = new THREE.Line(hemTickGeo, tickLineMat);
+    legGuidesGroup.add(hemTickLine);
 
-    // Subtle Outseam Reference Spline (Waistband to Hem along Lateral Hip/Leg)
+    // ==========================================
+    // B. OUTSEAM: Waistband down to Ankle Hem along Lateral Outer Leg
+    // ==========================================
     const outseamCurvePoints = [
-      new THREE.Vector3(13.2, 16.5, 0.4),   // Waistband
-      new THREE.Vector3(15.2, 4.5, 0.5),    // Lateral Hip
-      new THREE.Vector3(12.2, -14.0, 0.5),  // Lateral Thigh
-      new THREE.Vector3(10.2, -27.5, 0.5),  // Lateral Knee
-      new THREE.Vector3(9.2, -54.0, 0.5),   // Lateral Hem
+      new THREE.Vector3(13.5, 17.5, 0.6),   // Point 0: Top of Waistband
+      new THREE.Vector3(15.5, 4.5, 0.6),    // Point 1: Lateral Hip / Iliac Crest
+      new THREE.Vector3(12.2, -13.5, 0.6),  // Point 2: Lateral Thigh
+      new THREE.Vector3(10.3, -27.5, 0.6),  // Point 3: Lateral Knee
+      new THREE.Vector3(9.8, -41.5, 0.6),   // Point 4: Lateral Calf
+      new THREE.Vector3(9.3, -53.5, 0.6),   // Point 5: Lateral Trouser Hem
     ];
     const outseamSpline = new THREE.CatmullRomCurve3(outseamCurvePoints);
-    const outseamTubeGeo = new THREE.TubeGeometry(outseamSpline, 36, 0.18, 8, false);
-    const outseamMat = new THREE.MeshBasicMaterial({
-      color: 0x556677,
+    const outseamTubeGeo = new THREE.TubeGeometry(outseamSpline, 42, 0.36, 12, false);
+    const outseamMat = new THREE.MeshStandardMaterial({
+      color: 0xffdfba,
+      emissive: 0xaa6622,
+      emissiveIntensity: 0.50,
+      metalness: 0.98,
+      roughness: 0.10,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.85,
     });
     const outseamMesh = new THREE.Mesh(outseamTubeGeo, outseamMat);
-    inseamGroup.add(outseamMesh);
+    legGuidesGroup.add(outseamMesh);
+
+    // Outseam Upper Endpoint: Waistband Caliper Tick & Node
+    const outseamNodeMat = new THREE.MeshBasicMaterial({ color: 0xffeedd });
+    const waistNodeMesh = new THREE.Mesh(caliperNodeGeo, outseamNodeMat);
+    waistNodeMesh.position.set(13.5, 17.5, 0.6);
+    legGuidesGroup.add(waistNodeMesh);
+
+    const outseamTickMat = new THREE.LineBasicMaterial({ color: 0xffeedd, transparent: true, opacity: 0.95 });
+    const waistTickGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(11.0, 17.5, 0.6),
+      new THREE.Vector3(16.0, 17.5, 0.6),
+    ]);
+    const waistTickLine = new THREE.Line(waistTickGeo, outseamTickMat);
+    legGuidesGroup.add(waistTickLine);
+
+    // Outseam Lower Endpoint: Lateral Trouser Hem Tick & Node
+    const outerHemNodeMesh = new THREE.Mesh(caliperNodeGeo, outseamNodeMat);
+    outerHemNodeMesh.position.set(9.3, -53.5, 0.6);
+    legGuidesGroup.add(outerHemNodeMesh);
+
+    const outerHemTickGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(7.0, -53.5, 0.6),
+      new THREE.Vector3(11.6, -53.5, 0.6),
+    ]);
+    const outerHemTickLine = new THREE.Line(outerHemTickGeo, outseamTickMat);
+    legGuidesGroup.add(outerHemTickLine);
 
     // 6. TRAVELING VERTICAL SCANNING LASER PLANE
     const scanPlaneGroup = new THREE.Group();
@@ -532,12 +566,17 @@ export function BodyMesh3D({
         loop.group.scale.setScalar(isActive ? 1.08 : 1.0 + laserPulse);
       });
 
-      // Inseam guide highlighting
+      // Inseam guide dynamic lighting
       const isInseamActive = activeZone === "inseam";
-      inseamSeamMat.emissiveIntensity = isInseamActive ? 1.4 : 0.45;
-      inseamSeamMat.opacity = isInseamActive ? 1.0 : 0.75;
+      inseamMat.emissiveIntensity = isInseamActive ? 1.4 : 0.65;
       crotchNodeMesh.scale.setScalar(isInseamActive ? 1.35 : 1.0);
       hemNodeMesh.scale.setScalar(isInseamActive ? 1.35 : 1.0);
+
+      // Outseam guide dynamic lighting
+      const isOutseamActive = activeZone === "outseam";
+      outseamMat.emissiveIntensity = isOutseamActive ? 1.4 : 0.50;
+      waistNodeMesh.scale.setScalar(isOutseamActive ? 1.35 : 1.0);
+      outerHemNodeMesh.scale.setScalar(isOutseamActive ? 1.35 : 1.0);
 
       renderer.render(scene, camera);
     };
@@ -569,133 +608,172 @@ export function BodyMesh3D({
     };
   }, [interactive, activeZone]);
 
+  const inseamVal = currentValues?.inseam ? String(currentValues.inseam) : "82";
+  const outseamVal = currentValues?.outseam
+    ? String(currentValues.outseam)
+    : String(Number(inseamVal) + 24);
+
   return (
     <div className={`relative flex items-center justify-center select-none ${className}`}>
       {/* 3D WebGL Canvas Mount */}
       <div
         ref={mountRef}
-        className="w-full h-[500px] sm:h-[560px] cursor-grab active:cursor-grabbing relative z-10"
+        className="w-full h-[520px] sm:h-[580px] cursor-grab active:cursor-grabbing relative z-10"
       />
 
-      {/* Precision Caliper HUD Callouts with Balanced Flanking Layout */}
+      {/* Precision Caliper HUD Overlay */}
       <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 sm:p-5">
         {/* Top Header Technical Tag with Reset View Button */}
-        <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-[#888]">
+        <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-white font-medium uppercase tracking-wide">3D ANTHROPOMETRIC RIG</span>
+            <span className="text-white font-medium uppercase tracking-wider">3D ANTHROPOMETRIC RIG</span>
           </span>
           <button
             type="button"
             onClick={() => resetCallbackRef.current?.()}
-            className="pointer-events-auto flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 transition-colors text-[9px] sm:text-[10px]"
+            className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white/90 hover:text-white border border-white/15 transition-colors text-[10px]"
           >
-            <RotateCcw className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            <RotateCcw className="w-3 h-3" />
             <span>RESET VIEW</span>
           </button>
         </div>
 
-        {/* Balanced Anatomical Measurement Callouts across Left & Right Flanks */}
-        <div className="relative flex-1 my-2 flex items-center justify-between pointer-events-none">
-          {/* Left Flank Callouts: Shoulders (Top), Waist (Center), Inseam (Lower) */}
-          <div className="flex flex-col justify-between h-[85%] pointer-events-auto z-20 space-y-3 sm:space-y-4">
-            {/* Shoulders */}
-            <div
-              onClick={() => onSelectDimension?.("shoulder")}
-              onMouseEnter={() => setHoveredZone("shoulder")}
-              onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
-                activeZone === "shoulder"
-                  ? "border-white bg-white/20 text-white"
-                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
-              }`}
-            >
-              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">01 // SHOULDERS</span>
-              <span className="font-bold text-white text-[10px] sm:text-[11px]">
-                {currentValues?.shoulder ? `${currentValues.shoulder} ${unit}` : "46 cm"}
-              </span>
-            </div>
+        {/* Anatomically Pinned Callouts with Guaranteed Non-Overlapping Interleaved Heights */}
+        <div className="relative flex-1 my-2 pointer-events-none">
+          {/* ======================================================== */}
+          {/* LEFT FLANK: 01 Shoulders (14%), 03 Waist (38%), 05 Inseam (62%) */}
+          {/* ======================================================== */}
 
-            {/* Natural Waist */}
-            <div
-              onClick={() => onSelectDimension?.("waist")}
-              onMouseEnter={() => setHoveredZone("waist")}
-              onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
-                activeZone === "waist"
-                  ? "border-white bg-white/20 text-white"
-                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
-              }`}
-            >
-              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">03 // WAIST</span>
-              <span className="font-bold text-white text-[10px] sm:text-[11px]">
-                {currentValues?.waist ? `${currentValues.waist} ${unit}` : "84 cm"}
-              </span>
-            </div>
-
-            {/* Inner Inseam (Crotch Seam to Bottom Hem along inside leg) */}
-            <div
-              onClick={() => onSelectDimension?.("inseam")}
-              onMouseEnter={() => setHoveredZone("inseam")}
-              onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex flex-col gap-0.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
-                activeZone === "inseam"
-                  ? "border-white bg-white/20 text-white"
-                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-1.5 sm:gap-2">
-                <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">05 // INSEAM</span>
-                <span className="font-bold text-white text-[10px] sm:text-[11px]">
-                  {currentValues?.inseam ? `${currentValues.inseam} ${unit}` : "82 cm"}
-                </span>
-              </div>
-              <span className="text-[7px] sm:text-[8px] text-[#708095] tracking-tight">CROTCH SEAM → HEM</span>
-            </div>
+          {/* 01 Shoulders */}
+          <div
+            onClick={() => onSelectDimension?.("shoulder")}
+            onMouseEnter={() => setHoveredZone("shoulder")}
+            onMouseLeave={() => setHoveredZone(null)}
+            style={{ top: "14%", left: "0px" }}
+            className={`absolute pointer-events-auto group flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              activeZone === "shoulder"
+                ? "border-white bg-white/20 text-white"
+                : "border-white/15 bg-[#0a0c10]/90 text-neutral-300 hover:border-white/40 hover:text-white"
+            }`}
+          >
+            <span className="text-[9px] uppercase tracking-wider font-semibold">01 // SHOULDERS</span>
+            <span className="font-bold text-white text-[11px] font-mono">
+              {currentValues?.shoulder ? `${currentValues.shoulder} ${unit}` : "46 cm"}
+            </span>
           </div>
 
-          {/* Right Flank Callouts: Chest (Top), Hips (Lower) */}
-          <div className="flex flex-col justify-around h-[70%] pointer-events-auto z-20 space-y-4 sm:space-y-6">
-            {/* Chest / Bust */}
-            <div
-              onClick={() => onSelectDimension?.("chest")}
-              onMouseEnter={() => setHoveredZone("chest")}
-              onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
-                activeZone === "chest"
-                  ? "border-white bg-white/20 text-white"
-                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
-              }`}
-            >
-              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">02 // CHEST</span>
-              <span className="font-bold text-white text-[10px] sm:text-[11px]">
-                {currentValues?.chest ? `${currentValues.chest} ${unit}` : "98 cm"}
-              </span>
-            </div>
+          {/* 03 Natural Waist */}
+          <div
+            onClick={() => onSelectDimension?.("waist")}
+            onMouseEnter={() => setHoveredZone("waist")}
+            onMouseLeave={() => setHoveredZone(null)}
+            style={{ top: "38%", left: "0px" }}
+            className={`absolute pointer-events-auto group flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              activeZone === "waist"
+                ? "border-white bg-white/20 text-white"
+                : "border-white/15 bg-[#0a0c10]/90 text-neutral-300 hover:border-white/40 hover:text-white"
+            }`}
+          >
+            <span className="text-[9px] uppercase tracking-wider font-semibold">03 // WAIST</span>
+            <span className="font-bold text-white text-[11px] font-mono">
+              {currentValues?.waist ? `${currentValues.waist} ${unit}` : "84 cm"}
+            </span>
+          </div>
 
-            {/* Pelvic Seat / Hips */}
-            <div
-              onClick={() => onSelectDimension?.("hip")}
-              onMouseEnter={() => setHoveredZone("hip")}
-              onMouseLeave={() => setHoveredZone(null)}
-              className={`group flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
-                activeZone === "hip"
-                  ? "border-white bg-white/20 text-white"
-                  : "border-white/10 bg-[#0c0d12]/85 text-[#888] hover:border-white/30 hover:text-white"
-              }`}
-            >
-              <span className="text-[8px] sm:text-[9px] uppercase tracking-wider">04 // HIPS</span>
-              <span className="font-bold text-white text-[10px] sm:text-[11px]">
-                {currentValues?.hip ? `${currentValues.hip} ${unit}` : "102 cm"}
+          {/* 05 Inner Inseam (Safely beside inner leg at 62%, WELL ABOVE the feet) */}
+          <div
+            onClick={() => onSelectDimension?.("inseam")}
+            onMouseEnter={() => setHoveredZone("inseam")}
+            onMouseLeave={() => setHoveredZone(null)}
+            style={{ top: "62%", left: "0px" }}
+            className={`absolute pointer-events-auto group flex flex-col gap-0.5 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              activeZone === "inseam"
+                ? "border-cyan-300 bg-cyan-950/40 text-cyan-200 ring-1 ring-cyan-400/50"
+                : "border-cyan-500/30 bg-[#0a0c10]/90 text-neutral-300 hover:border-cyan-400 hover:text-white"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] uppercase tracking-wider font-semibold text-cyan-200">05 // INSEAM</span>
+              <span className="font-bold text-white text-[11px] font-mono">
+                {inseamVal} {unit}
               </span>
             </div>
+            <span className="text-[7.5px] text-cyan-400/80 font-mono tracking-tight">
+              CROTCH SEAM → HEM (INNER)
+            </span>
+          </div>
+
+          {/* ======================================================== */}
+          {/* RIGHT FLANK: 02 Chest (25%), 04 Hips (49%), 06 Outseam (73%) */}
+          {/* ======================================================== */}
+
+          {/* 02 Chest / Bust */}
+          <div
+            onClick={() => onSelectDimension?.("chest")}
+            onMouseEnter={() => setHoveredZone("chest")}
+            onMouseLeave={() => setHoveredZone(null)}
+            style={{ top: "25%", right: "0px" }}
+            className={`absolute pointer-events-auto group flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              activeZone === "chest"
+                ? "border-white bg-white/20 text-white"
+                : "border-white/15 bg-[#0a0c10]/90 text-neutral-300 hover:border-white/40 hover:text-white"
+            }`}
+          >
+            <span className="text-[9px] uppercase tracking-wider font-semibold">02 // CHEST</span>
+            <span className="font-bold text-white text-[11px] font-mono">
+              {currentValues?.chest ? `${currentValues.chest} ${unit}` : "98 cm"}
+            </span>
+          </div>
+
+          {/* 04 Pelvic Seat / Hips */}
+          <div
+            onClick={() => onSelectDimension?.("hip")}
+            onMouseEnter={() => setHoveredZone("hip")}
+            onMouseLeave={() => setHoveredZone(null)}
+            style={{ top: "49%", right: "0px" }}
+            className={`absolute pointer-events-auto group flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              activeZone === "hip"
+                ? "border-white bg-white/20 text-white"
+                : "border-white/15 bg-[#0a0c10]/90 text-neutral-300 hover:border-white/40 hover:text-white"
+            }`}
+          >
+            <span className="text-[9px] uppercase tracking-wider font-semibold">04 // HIPS</span>
+            <span className="font-bold text-white text-[11px] font-mono">
+              {currentValues?.hip ? `${currentValues.hip} ${unit}` : "102 cm"}
+            </span>
+          </div>
+
+          {/* 06 Outer Outseam (Safely beside outer leg at 73%, WELL ABOVE the feet) */}
+          <div
+            onClick={() => onSelectDimension?.("outseam")}
+            onMouseEnter={() => setHoveredZone("outseam")}
+            onMouseLeave={() => setHoveredZone(null)}
+            style={{ top: "73%", right: "0px" }}
+            className={`absolute pointer-events-auto group flex flex-col gap-0.5 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 cursor-pointer shadow-xl ${
+              activeZone === "outseam"
+                ? "border-amber-300 bg-amber-950/40 text-amber-200 ring-1 ring-amber-400/50"
+                : "border-amber-500/30 bg-[#0a0c10]/90 text-neutral-300 hover:border-amber-400 hover:text-white"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] uppercase tracking-wider font-semibold text-amber-200">06 // OUTSEAM</span>
+              <span className="font-bold text-white text-[11px] font-mono">
+                {outseamVal} {unit}
+              </span>
+            </div>
+            <span className="text-[7.5px] text-amber-300/80 font-mono tracking-tight">
+              WAISTBAND → HEM (OUTER)
+            </span>
           </div>
         </div>
 
-        {/* Footer Coordinate Ticks */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-white/10 text-[9px] font-mono text-[#666]">
-          <span>HORIZONTAL YAW: DRAG 360°</span>
-          <span>INSEAM: INNER SEAM // OUTSEAM: WAIST-TO-HEM</span>
+        {/* Footer Coordinate Ticks (At bottom ~94%, completely clear of the feet at 86-92%) */}
+        <div className="flex items-center justify-between pt-2.5 border-t border-white/15 text-[9.5px] font-mono text-neutral-400">
+          <span className="tracking-wide uppercase">360° TURNTABLE: DRAG ROTATE</span>
+          <span className="tracking-wide uppercase text-neutral-300">
+            <span className="text-cyan-400">INSEAM:</span> INNER SEAM // <span className="text-amber-300">OUTSEAM:</span> WAIST-TO-HEM
+          </span>
         </div>
       </div>
     </div>

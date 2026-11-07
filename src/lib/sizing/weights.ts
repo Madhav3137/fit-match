@@ -1,6 +1,6 @@
 import { GarmentCategory } from "../retailers/types";
 
-export type DimensionKey = "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam";
+export type DimensionKey = "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam";
 
 export const DIMENSION_SCALES: Record<DimensionKey, number> = {
   chest: 6.0,
@@ -8,6 +8,7 @@ export const DIMENSION_SCALES: Record<DimensionKey, number> = {
   hip: 6.0,
   shoulder: 3.0,
   inseam: 4.0,
+  outseam: 5.0,
   height: 8.0,
 };
 
@@ -17,7 +18,8 @@ export const DIMENSION_LABELS: Record<DimensionKey, string> = {
   waist: "Waist",
   hip: "Hips",
   shoulder: "Shoulder Width",
-  inseam: "Inseam",
+  inseam: "Inner Inseam",
+  outseam: "Outer Outseam",
 };
 
 export const CATEGORY_BASE_WEIGHTS: Record<GarmentCategory, Partial<Record<DimensionKey, number>>> = {

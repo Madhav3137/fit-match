@@ -35,7 +35,7 @@ export function SiteHeader() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled
-          ? "bg-[#080808]/90 backdrop-blur-md border-b border-[#242424] py-3.5"
+          ? "bg-[#060608]/92 backdrop-blur-md border-b border-neutral-800/80 py-3.5 shadow-xl"
           : "bg-transparent py-5"
       )}
     >
@@ -43,10 +43,10 @@ export function SiteHeader() {
         <div className="flex items-center justify-between">
           {/* Brand Wordmark */}
           <Link href="/" className="group flex items-center gap-2.5">
-            <span className="text-sm font-bold tracking-[0.22em] uppercase text-white group-hover:text-neutral-300 transition-colors">
+            <span className="text-sm font-bold tracking-[0.24em] uppercase text-white group-hover:text-neutral-200 transition-colors">
               FITMATCH
             </span>
-            <span className="text-[10px] font-mono tracking-technical text-[#626262] uppercase hidden sm:inline-block">
+            <span className="text-[10px] font-mono tracking-widest text-neutral-400 uppercase hidden sm:inline-block">
               // STUDIO
             </span>
           </Link>
@@ -61,7 +61,7 @@ export function SiteHeader() {
                 key={link.name}
                 href={link.href}
                 onMouseEnter={() => setHoveredNav(link.name)}
-                className="relative py-1 text-xs tracking-wider uppercase text-[#929292] hover:text-white transition-colors duration-150"
+                className="relative py-1 text-[13px] tracking-wide uppercase text-neutral-300 hover:text-white font-medium transition-colors duration-150"
               >
                 <span>{link.name}</span>
                 {hoveredNav === link.name && (

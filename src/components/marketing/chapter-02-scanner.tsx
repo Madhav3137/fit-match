@@ -95,7 +95,7 @@ export function Chapter02Scanner() {
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              <span className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
+              <span className="text-[11px] font-mono tracking-technical text-neutral-400 uppercase">
                 CHAPTER 02 // REAL-TIME INGESTION
               </span>
             </div>
@@ -106,7 +106,7 @@ export function Chapter02Scanner() {
               Garment Link Ingestion Engine
             </MaskedHeading>
           </div>
-          <p className="text-xs sm:text-sm text-[#8a8a8a] max-w-md leading-relaxed font-normal">
+          <p className="text-xs sm:text-sm text-neutral-300 max-w-md leading-relaxed font-normal">
             Paste any garment URL. FITMATCH automatically resolves retailer DOM structures,
             extracts dimensional size charts, and isolates metric tolerance rules.
           </p>
@@ -114,7 +114,7 @@ export function Chapter02Scanner() {
 
         {/* Preset Selector Pill Tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-8">
-          <span className="text-[11px] font-mono text-[#777] uppercase mr-2 flex items-center gap-1.5">
+          <span className="text-[11px] font-mono text-neutral-400 uppercase mr-2 flex items-center gap-1.5">
             <Scan className="w-3.5 h-3.5 text-white" />
             SAMPLE WORKLOADS:
           </span>
@@ -126,7 +126,7 @@ export function Chapter02Scanner() {
               className={`px-3.5 py-1.5 rounded-xl border text-xs font-mono transition-all duration-200 ${
                 selectedIdx === i
                   ? "border-white bg-white text-black font-bold shadow-md"
-                  : "border-[#242424] bg-[#101010] text-[#888] hover:border-neutral-500 hover:text-white"
+                  : "border-[#242424] bg-[#101010] text-neutral-400 hover:border-neutral-500 hover:text-white"
               }`}
             >
               {p.brand} — {p.title}
@@ -144,10 +144,10 @@ export function Chapter02Scanner() {
                 <span className="text-white font-medium uppercase tracking-wide">
                   Ingestion Endpoint
                 </span>
-                <span className="text-[#666] text-[10px]">SSR SAFE FETCH</span>
+                <span className="text-neutral-400 text-[10px]">SSR SAFE FETCH</span>
               </div>
               <div className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-neutral-700 bg-[#141414] font-mono text-xs text-white">
-                <Link2 className="w-4 h-4 text-[#888] shrink-0" />
+                <Link2 className="w-4 h-4 text-neutral-400 shrink-0" />
                 <span className="truncate text-white font-medium">{currentProduct.url}</span>
                 <span className="ml-auto flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-white/10 text-white shrink-0 font-mono">
                   <Lock className="w-2.5 h-2.5" />
@@ -158,7 +158,7 @@ export function Chapter02Scanner() {
 
             {/* Connected Step Pipeline */}
             <div className="space-y-3">
-              <span className="text-[10px] font-mono tracking-technical text-[#777] uppercase block">
+              <span className="text-[10px] font-mono tracking-technical text-neutral-400 uppercase block">
                 Sequential Verification Sequence
               </span>
 
@@ -215,7 +215,7 @@ export function Chapter02Scanner() {
                             <RefreshCw className="w-3 h-3 text-white animate-spin" />
                           )}
                         </div>
-                        <div className="text-[10px] text-[#777] mt-0.5 leading-normal">
+                        <div className="text-[10px] text-neutral-400 mt-0.5 leading-normal">
                           {s.desc}
                         </div>
                       </div>
@@ -227,7 +227,7 @@ export function Chapter02Scanner() {
 
             {/* Bottom Action Footer */}
             <div className="pt-4 border-t border-[#1c1c1c] flex items-center justify-between">
-              <span className="text-[10px] font-mono text-[#666]">
+              <span className="text-[10px] font-mono text-neutral-400">
                 STATUS: <span className="text-white font-bold">{currentProduct.chartStatus.toUpperCase()}</span>
               </span>
               <Link href="/analyze">
@@ -292,7 +292,7 @@ export function Chapter02Scanner() {
 
             {/* Extracted Sizing Matrix Table */}
             <div className="space-y-2 pt-2">
-              <div className="text-[10px] font-mono text-[#666] uppercase flex justify-between px-3">
+              <div className="text-[10px] font-mono text-neutral-400 uppercase flex justify-between px-3">
                 <span>SIZE LABEL</span>
                 <span>CHEST RANGE</span>
                 <span>WAIST RANGE</span>
@@ -304,7 +304,7 @@ export function Chapter02Scanner() {
                     className={`flex items-center justify-between p-2.5 rounded-xl border transition-colors ${
                       idx === 1
                         ? "border-neutral-400 bg-[#161616] text-white font-semibold"
-                        : "border-[#1c1c1c] bg-[#101010]/80 text-[#888]"
+                        : "border-[#1c1c1c] bg-[#101010]/80 text-neutral-400"
                     }`}
                   >
                     <span className="text-white font-bold">{sz.label}</span>
@@ -320,7 +320,7 @@ export function Chapter02Scanner() {
             </div>
 
             {/* Bottom Proof Note */}
-            <div className="pt-4 mt-2 border-t border-[#1c1c1c] flex items-center justify-between text-[10px] font-mono text-[#666]">
+            <div className="pt-4 mt-2 border-t border-[#1c1c1c] flex items-center justify-between text-[10px] font-mono text-neutral-400">
               <span>GRADE TOLERANCE: ±1.2 CM</span>
               <span>NO FABRICATED LABELS</span>
             </div>

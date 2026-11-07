@@ -136,6 +136,7 @@ export function matchSize(
     checkDim("hip", profile.hipCm);
     checkDim("shoulder", profile.shoulderCm);
     checkDim("inseam", profile.inseamCm);
+    checkDim("outseam", profile.outseamCm || (profile.inseamCm ? profile.inseamCm + 24 : null));
 
     if (activeDims.length === 0) continue;
 

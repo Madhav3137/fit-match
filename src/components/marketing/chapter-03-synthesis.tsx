@@ -150,7 +150,7 @@ export function Chapter03Synthesis() {
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              <span className="text-[11px] font-mono tracking-technical text-[#888] uppercase">
+              <span className="text-[11px] font-mono tracking-technical text-neutral-400 uppercase">
                 CHAPTER 03 // FIT SYNTHESIS & RESOLUTION
               </span>
             </div>
@@ -161,7 +161,7 @@ export function Chapter03Synthesis() {
               The Climax Recommendation
             </MaskedHeading>
           </div>
-          <p className="text-xs sm:text-sm text-[#8a8a8a] max-w-md leading-relaxed font-normal">
+          <p className="text-xs sm:text-sm text-neutral-300 max-w-md leading-relaxed font-normal">
             FITMATCH synthesizes your calibrated body coordinates with brand-specific grade rules
             and your personal drape preference to output an incontrovertible sizing verdict.
           </p>
@@ -179,7 +179,7 @@ export function Chapter03Synthesis() {
                     Drape Preference Calibration
                   </span>
                 </div>
-                <span className="text-[10px] font-mono uppercase text-[#777]">
+                <span className="text-[10px] font-mono uppercase text-neutral-400">
                   ADAPTIVE EASING
                 </span>
               </div>
@@ -194,7 +194,7 @@ export function Chapter03Synthesis() {
                       type="button"
                       onClick={() => handleSelectPreference(pref)}
                       className={`relative py-3 rounded-xl text-xs font-mono uppercase transition-all duration-300 font-medium ${
-                        isActive ? "text-black font-semibold" : "text-[#777] hover:text-white"
+                        isActive ? "text-black font-semibold" : "text-neutral-400 hover:text-white"
                       }`}
                     >
                       {isActive && (
@@ -217,7 +217,7 @@ export function Chapter03Synthesis() {
 
               {/* Dimensional Convergence Range Bars */}
               <div className="space-y-4 pt-6">
-                <div className="flex items-center justify-between text-[11px] font-mono uppercase text-[#777]">
+                <div className="flex items-center justify-between text-[11px] font-mono uppercase text-neutral-400">
                   <span>Dimensional Ease Mapping</span>
                   <span>Target Bounds</span>
                 </div>
@@ -229,7 +229,7 @@ export function Chapter03Synthesis() {
                       <div className="flex items-center justify-between text-xs font-mono">
                         <span className="text-white font-medium">{dim.name}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-[#777]">{dim.bodyCm}cm body</span>
+                          <span className="text-[10px] text-neutral-400">{dim.bodyCm}cm body</span>
                           <span className="text-white font-bold">{dim.deltaText}</span>
                         </div>
                       </div>
@@ -244,9 +244,9 @@ export function Chapter03Synthesis() {
                           className="absolute left-0 inset-y-0 bg-gradient-to-r from-neutral-400 to-white rounded-full"
                         />
                       </div>
-                      <div className="flex items-center justify-between text-[9px] font-mono text-[#555]">
+                      <div className="flex items-center justify-between text-[9px] font-mono text-neutral-500">
                         <span>Zero Ease</span>
-                        <span className="text-[#888]">Target Zone</span>
+                        <span className="text-neutral-400">Target Zone</span>
                         <span>Loose Drape</span>
                       </div>
                     </div>
@@ -256,10 +256,10 @@ export function Chapter03Synthesis() {
             </div>
 
             {/* Cross-Validation Guarantees */}
-            <div className="pt-4 border-t border-[#1c1c1c] flex items-center justify-between text-xs font-mono text-[#777]">
+            <div className="pt-4 border-t border-[#1c1c1c] flex items-center justify-between text-xs font-mono text-neutral-400">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-white" />
-                <span className="text-[#aaa]">Statistical Fit Threshold</span>
+                <span className="text-neutral-300">Statistical Fit Threshold</span>
               </div>
               <span className="text-white font-semibold font-mono">P &gt; 0.95 CONFIRMED</span>
             </div>
@@ -290,13 +290,13 @@ export function Chapter03Synthesis() {
                 transition={{ duration: 0.35, ease: TRANSITION_EASE }}
                 className="py-2 text-center relative z-10"
               >
-                <span className="text-[11px] font-mono tracking-technical text-[#777] uppercase block mb-1">
+                <span className="text-[11px] font-mono tracking-technical text-neutral-400 uppercase block mb-1">
                   RECOMMENDED SIZE
                 </span>
                 <div className="font-display text-8xl sm:text-9xl font-semibold tracking-tighter text-white">
                   {preferenceData.recommendedSize}
                 </div>
-                <div className="text-xs font-mono text-[#999] tracking-wider uppercase mt-1">
+                <div className="text-xs font-mono text-neutral-300 tracking-wider uppercase mt-1">
                   EU 48 EQUIVALENT // TRUE TO GRADE
                 </div>
               </motion.div>
@@ -308,23 +308,23 @@ export function Chapter03Synthesis() {
                 <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" />
                 <span>{preferenceData.verdict}</span>
               </div>
-              <p className="text-xs text-[#888] leading-relaxed font-normal">
+              <p className="text-xs text-neutral-300 leading-relaxed font-normal">
                 {preferenceData.explanation}
               </p>
             </div>
 
             {/* Adjacent Size Trade-Offs */}
             <div className="space-y-2 relative z-10">
-              <div className="text-[10px] font-mono uppercase tracking-wider text-[#666]">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
                 Adjacent Sizing Trade-Offs
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl border border-[#202020] bg-[#141414] text-xs space-y-1">
                   <div className="flex items-center justify-between text-white font-mono font-medium">
                     <span>Size {preferenceData.alternativeTradeoff.larger.size}</span>
-                    <span className="text-[10px] text-[#777]">Larger</span>
+                    <span className="text-[10px] text-neutral-400">Larger</span>
                   </div>
-                  <p className="text-[11px] text-[#888] leading-tight">
+                  <p className="text-[11px] text-neutral-300 leading-tight">
                     {preferenceData.alternativeTradeoff.larger.note}
                   </p>
                 </div>
@@ -332,9 +332,9 @@ export function Chapter03Synthesis() {
                 <div className="p-3 rounded-xl border border-[#202020] bg-[#141414] text-xs space-y-1">
                   <div className="flex items-center justify-between text-white font-mono font-medium">
                     <span>Size {preferenceData.alternativeTradeoff.smaller.size}</span>
-                    <span className="text-[10px] text-[#777]">Smaller</span>
+                    <span className="text-[10px] text-neutral-400">Smaller</span>
                   </div>
-                  <p className="text-[11px] text-[#888] leading-tight">
+                  <p className="text-[11px] text-neutral-300 leading-tight">
                     {preferenceData.alternativeTradeoff.smaller.note}
                   </p>
                 </div>

@@ -9,11 +9,12 @@ export interface BodyProfile {
   hipCm?: number | null;
   shoulderCm?: number | null;
   inseamCm?: number | null;
+  outseamCm?: number | null;
   fitPreference: FitPreference;
 }
 
 export interface FitBreakdownItem {
-  dimension: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam";
+  dimension: "height" | "chest" | "waist" | "hip" | "shoulder" | "inseam" | "outseam";
   label: string;
   userValueCm: number;
   rangeMinCm: number;
